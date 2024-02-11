@@ -56,7 +56,6 @@ func main() {
 
 	var wg sync.WaitGroup
 	
-	// everytime alertsChan receives an alert, produce it to kafka for a continuous loop
 	for {
 		select {
 		case alert := <-alertsChan:
