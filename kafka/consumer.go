@@ -63,6 +63,7 @@ consumerLoop:
 				c.Logger.Printf("Error unmarshalling alert: %s\n", err)
 				continue
 			}
+			// c.Logger.Printf("Consumed alert: %v\n", alert)
 			alertsChan <- alert
 		case <-signals:
 			c.Logger.Printf("Interrupted\n")

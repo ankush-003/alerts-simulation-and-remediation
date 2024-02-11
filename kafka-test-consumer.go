@@ -24,8 +24,10 @@ func main() {
 
 	alertsChan := make(chan alerts.Alerts)
 	doneChan := make(chan struct{})
-	go consumer.ConsumeAlerts("alerts", alertsChan, doneChan)
 
+	logger.Println("Consuming alerts !")
+
+	go consumer.ConsumeAlerts("alerts", alertsChan, doneChan)
 consumerLoop:
 
 	for {

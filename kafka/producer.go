@@ -46,7 +46,7 @@ func (p *Producer) SendAlert(topic string, alert *alerts.Alerts) error {
 
 	select {
 	case p.Producer.Input() <- &sarama.ProducerMessage{Topic: topic, Value: sarama.StringEncoder(alertJSON)}:
-		p.Logger.Printf("Sent alert: %s\n", alertJSON)
+		p.Logger.Printf("Produced alert: %s\n", alertJSON)
 		return nil
 
 	case err := <-p.Producer.Errors():
