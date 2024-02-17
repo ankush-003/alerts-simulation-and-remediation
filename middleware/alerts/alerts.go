@@ -11,6 +11,7 @@ type Alerts struct {
 	Severity    string    `json:"severity"`
 	Source      string    `json:"source"`
 	CreatedAt   string    `json:"created_at"`
+	// type, origin, nodeid
 }
 
 func NewAlert(description, severity, source string) *Alerts {
