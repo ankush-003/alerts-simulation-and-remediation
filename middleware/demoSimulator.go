@@ -6,13 +6,13 @@ import (
 	"asmr/store"
 	"context"
 	"fmt"
+	"github.com/IBM/sarama"
+	"github.com/google/uuid"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"time"
-	"github.com/IBM/sarama"
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -21,7 +21,8 @@ func main() {
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
 	broker := os.Getenv("KAFKA_BROKER")
-	
+	redis_addr := os.Getenv("REDIS_ADDR")
+
 	if broker == "" {
 		logger.Println("KAFKA_BROKER not set, using default localhost:9092")
 		broker = "localhost:9092"
@@ -36,11 +37,16 @@ func main() {
 	}
 	defer producer.Close()
 
-	redis := store.NewRedisStore("localhost:6379")
+	if redis_addr == "" {
+		logger.Println("REDIS_ADDR not set, using default localhost:6379")
+		redis_addr = "localhost:6379"
+	}
+
+	redis := store.NewRedisStore(redis_addr)
 	defer redis.Close()
 
 	alertsConfigChan := make(chan *alerts.AlertConfig)
-	
+
 	signalChan := make(chan os.Signal, 2)
 	signal.Notify(signalChan, os.Interrupt)
 
@@ -66,11 +72,10 @@ func main() {
 				return
 			}
 		}
-	} ()
-
+	}()
 
 	var wg sync.WaitGroup
-	
+
 	for {
 		select {
 		case alertConfig := <-alertsConfigChan:
@@ -78,7 +83,7 @@ func main() {
 			go func(alertConfig *alerts.AlertConfig) {
 				defer wg.Done()
 				producer.SendAlert("alerts", alerts.NewAlert(alertConfig, NodeID, "demoSimulator"))
-			} (alertConfig)
+			}(alertConfig)
 
 		case <-signalChan:
 			logger.Printf("Stopping Simulator %s\n", NodeID.String())

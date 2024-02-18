@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	redis := store.NewRedisStore("localhost:6379")
+	redis := store.NewRedisStore("localhost:7000")
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
