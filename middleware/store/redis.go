@@ -1,11 +1,12 @@
 package store
 
 import (
+	"asmr/alerts"
 	"context"
 	"encoding/json"
-	"asmr/alerts"
-	"github.com/redis/go-redis/v9"
 	"fmt"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type RedisStore struct {
@@ -79,7 +80,6 @@ func (r *RedisStore) GetAlertConfigByID(ctx context.Context, id string) (alerts.
 
 }
 
-
 func (r *RedisStore) GetAlertByID(ctx context.Context, id string) (alerts.Alerts, error) {
 	data, err := r.Client.Get(ctx, id).Result()
 	if err != nil {
@@ -130,4 +130,27 @@ func (r *RedisStore) GetRandomAlertConfig(ctx context.Context) (alerts.AlertConf
 	}
 
 	return alertConfig, nil
+}
+
+func (r *RedisStore) GetAlertsByNodeID(ctx context.Context, nodeID string) ([]alerts.Alerts, error) {
+	alertKeys, err := r.Client.SMembers(ctx, fmt.Sprintf("node:%s:alerts", nodeID)).Result()
+	if err != nil {
+		return nil, fmt.Errorf("error getting alert keys: %s", err)
+	}
+
+	alertsList := make([]alerts.Alerts, 0, len(alertKeys))
+	for _, key := range alertKeys {
+		data, err := r.Client.Get(ctx, key).Result()
+		if err != nil {
+			return nil, fmt.Errorf("error getting alert: %s", err)
+		}
+
+		var alert alerts.Alerts
+		if err := json.Unmarshal([]byte(data), &alert); err != nil {
+			return nil, fmt.Errorf("error unmarshalling alert: %s", err)
+		}
+		alertsList = append(alertsList, alert)
+	}
+
+	return alertsList, nil
 }
