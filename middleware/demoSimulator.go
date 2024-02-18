@@ -11,7 +11,6 @@ import (
 	"os/signal"
 	"sync"
 	"time"
-
 	"github.com/IBM/sarama"
 	"github.com/google/uuid"
 )
@@ -21,7 +20,14 @@ func main() {
 	NodeID := uuid.New()
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
-	brokers := []string{"localhost:9092"}
+	broker := os.Getenv("KAFKA_BROKER")
+	
+	if broker == "" {
+		logger.Println("KAFKA_BROKER not set, using default localhost:9092")
+		broker = "localhost:9092"
+	}
+
+	brokers := []string{broker}
 	config := sarama.NewConfig()
 
 	producer, err := kafka.NewProducer(brokers, config, logger)
