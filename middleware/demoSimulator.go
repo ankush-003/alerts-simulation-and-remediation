@@ -4,17 +4,22 @@ import (
 	"asmr/alerts"
 	"asmr/kafka"
 	"asmr/store"
+	"context"
+	"fmt"
 	"log"
-	"sync"
 	"os"
 	"os/signal"
-	"context"
+	"sync"
 	"time"
+
 	"github.com/IBM/sarama"
+	"github.com/google/uuid"
 )
 
 func main() {
-	logger := log.New(os.Stdout, "Simulator: ", log.LstdFlags)
+
+	NodeID := uuid.New()
+	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
 	brokers := []string{"localhost:9092"}
 	config := sarama.NewConfig()
@@ -28,26 +33,30 @@ func main() {
 	redis := store.NewRedisStore("localhost:6379")
 	defer redis.Close()
 
-	alertsChan := make(chan alerts.Alerts)
+	alertsConfigChan := make(chan *alerts.AlertConfig)
 	
 	signalChan := make(chan os.Signal, 2)
 	signal.Notify(signalChan, os.Interrupt)
 
 	ctx := context.Background()
+
+	logger.Println("Creating alerts")
+
 	go func() {
-		ticker := time.NewTicker(5 * time.Second)
+		ticker := time.NewTicker(2 * time.Second)
 		for {
 			select {
 			case <-ticker.C:
-				alert, err := redis.GetRandomAlert(ctx)
+				alertConfig, err := redis.GetRandomAlertConfig(ctx)
 				if err != nil {
 					logger.Printf("Error getting random alert: %s\n", err)
 					continue
 				}
-				alertsChan <- alert
+				alertsConfigChan <- &alertConfig
 
 			case <-signalChan:
 				logger.Printf("Interrupted\n")
+				close(signalChan)
 				return
 			}
 		}
@@ -58,15 +67,15 @@ func main() {
 	
 	for {
 		select {
-		case alert := <-alertsChan:
+		case alertConfig := <-alertsConfigChan:
 			wg.Add(1)
-			go func(alert alerts.Alerts) {
+			go func(alertConfig *alerts.AlertConfig) {
 				defer wg.Done()
-				producer.SendAlert("alerts", &alert)
-			} (alert)
+				producer.SendAlert("alerts", alerts.NewAlert(alertConfig, NodeID, "demoSimulator"))
+			} (alertConfig)
 
 		case <-signalChan:
-			logger.Printf("Interrupted\n")
+			logger.Printf("Stopping Simulator %s\n", NodeID.String())
 			wg.Wait()
 			return
 		}

@@ -33,7 +33,7 @@ consumerLoop:
 	for {
 		select {
 		case alert := <-alertsChan:
-			logger.Printf("Received alert: %v\n", alert)
+			logger.Printf("Received alert: alrtID: %s, NodeID: %s, Description: %s, Severity: %s, Source: %s, CreatedAt: %s\n", alert.ID.String(), alert.NodeID.String(), alert.Description, alert.Severity, alert.Source, alert.CreatedAt)
 
 		case <-doneChan:
 			break consumerLoop
