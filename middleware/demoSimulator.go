@@ -6,7 +6,6 @@ import (
 	"asmr/store"
 	"context"
 	"fmt"
-	"github.com/IBM/sarama"
 	"github.com/google/uuid"
 	"log"
 	"os"
@@ -24,12 +23,15 @@ func main() {
 	redis_addr := os.Getenv("REDIS_ADDR")
 
 	if broker == "" {
-		logger.Println("KAFKA_BROKER not set, using default localhost:9092")
-		broker = "localhost:9092"
+		broker = "active-boar-11578-us1-kafka.upstash.io:9092"
+		logger.Println("KAFKA_BROKER not set, using default %s\n", broker)
 	}
 
 	brokers := []string{broker}
-	config := sarama.NewConfig()
+	// Create a new Sarama configuration
+	username := "test"
+	password := "test"
+	config := kafka.NewConfig(username, password)
 
 	producer, err := kafka.NewProducer(brokers, config, logger)
 	if err != nil {

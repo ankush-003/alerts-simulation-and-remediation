@@ -5,15 +5,26 @@ import (
 	"asmr/kafka"
 	"log"
 	"os"
-	"github.com/IBM/sarama"
 )
 
 func main() {
 	logger := log.New(os.Stdout, "kafka-consumer: ", log.LstdFlags)
-
-	brokers := []string{"localhost:9092"}
-	config := sarama.NewConfig()
-	config.Consumer.Offsets.Initial = sarama.OffsetNewest
+	
+	broker := os.Getenv("KAFKA_BROKER")
+	if broker == "" {
+		broker = "active-boar-11578-us1-kafka.upstash.io:9092"
+		logger.Println("KAFKA_BROKER not set, using default %s\n", broker)
+	}
+	brokers := []string{broker}
+	// username := os.Getenv("KAFKA_USERNAME")
+	// password := os.Getenv("KAFKA_PASSWORD")
+	// if username == "" || password == "" {
+	// 	logger.Fatalf("KAFKA_USERNAME or KAFKA_PASSWORD not set\n")
+	// }
+	
+	username := "test"
+	password := "test"
+	config := kafka.NewConfig(username, password) 
 
 	consumer, err := kafka.NewConsumer(brokers, config, logger)
 	if err != nil {
