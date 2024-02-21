@@ -11,9 +11,9 @@ import (
 func main() {
 
 	// loading .env file
-	err := godotenv.Load
-	if err != nil {
-		log.Fatalf("Error loading .env file: %s\n", err)
+	err_load := godotenv.Load()
+	if err_load != nil {
+		log.Fatalf("Error loading .env file: %v\n", err_load)
 	}
 
 	logger := log.New(os.Stdout, "kafka-consumer: ", log.LstdFlags)

@@ -18,9 +18,9 @@ import (
 func main() {
 	
 	// loading .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %s\n", err)
+	err_load := godotenv.Load()
+	if err_load != nil {
+		log.Fatalf("Error loading .env file: %s\n", err_load)
 	}
 
 	NodeID := uuid.New()
