@@ -5,25 +5,28 @@ import (
 	"asmr/kafka"
 	"log"
 	"os"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	// loading .env file
+	err := godotenv.Load
+	if err != nil {
+		log.Fatalf("Error loading .env file: %s\n", err)
+	}
+
 	logger := log.New(os.Stdout, "kafka-consumer: ", log.LstdFlags)
 	
 	broker := os.Getenv("KAFKA_BROKER")
 	if broker == "" {
-		broker = "active-boar-11578-us1-kafka.upstash.io:9092"
+		broker = "localhost:9092"
 		logger.Println("KAFKA_BROKER not set, using default %s\n", broker)
 	}
 	brokers := []string{broker}
-	// username := os.Getenv("KAFKA_USERNAME")
-	// password := os.Getenv("KAFKA_PASSWORD")
-	// if username == "" || password == "" {
-	// 	logger.Fatalf("KAFKA_USERNAME or KAFKA_PASSWORD not set\n")
-	// }
+	username := os.Getenv("KAFKA_USERNAME")
+	password := os.Getenv("KAFKA_PASSWORD")
 	
-	username := "test"
-	password := "test"
 	config := kafka.NewConfig(username, password) 
 
 	consumer, err := kafka.NewConsumer(brokers, config, logger)

@@ -8,10 +8,24 @@ import (
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	redis := store.NewRedisStore("localhost:6379")
+	// loading .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %s\n", err)
+	}
+	
+	redis_addr := os.Getenv("REDIS_ADDR")
+	if redis_addr == "" {
+		redis_addr = "localhost:6379"
+		log.Println("REDIS_ADDR not set, using default localhost:6379")
+	}
+
+	redis := store.NewRedisStore(redis_addr)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)

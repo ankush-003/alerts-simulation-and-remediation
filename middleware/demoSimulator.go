@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"os/signal"
@@ -15,6 +16,12 @@ import (
 )
 
 func main() {
+	
+	// loading .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %s\n", err)
+	}
 
 	NodeID := uuid.New()
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
@@ -23,14 +30,20 @@ func main() {
 	redis_addr := os.Getenv("REDIS_ADDR")
 
 	if broker == "" {
-		broker = "active-boar-11578-us1-kafka.upstash.io:9092"
+		broker = "localhost:9092"
 		logger.Println("KAFKA_BROKER not set, using default %s\n", broker)
 	}
 
 	brokers := []string{broker}
 	// Create a new Sarama configuration
-	username := "test"
-	password := "test"
+	username := os.Getenv("KAFKA_USERNAME")
+	password := os.Getenv("KAFKA_PASSWORD")
+
+	if username == "" || password == "" {
+		// logger.Fatalf("KAFKA_USERNAME or KAFKA_PASSWORD not set\n")
+		logger.Println("KAFKA_USERNAME or KAFKA_PASSWORD not set, using KAFKA locally")
+	}
+
 	config := kafka.NewConfig(username, password)
 
 	producer, err := kafka.NewProducer(brokers, config, logger)

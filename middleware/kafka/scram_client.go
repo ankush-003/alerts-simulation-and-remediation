@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"fmt"
 	"crypto/sha256"
 	"crypto/sha512"
 	"crypto/tls"
@@ -39,6 +40,12 @@ func (x *XDGSCRAMClient) Done() bool {
 
 func NewConfig(username, password string) *sarama.Config {
 	config := sarama.NewConfig()
+
+	if(username == "" || password == "") {
+		fmt.Println("KAFKA_USERNAME or KAFKA_PASSWORD not set")
+		return config
+	}
+
 	config.Consumer.Offsets.Initial = sarama.OffsetNewest
 	config.Net.TLS.Enable = true
 	config.Net.TLS.Config = &tls.Config{
