@@ -5,6 +5,7 @@ go 1.22.0
 require (
 	github.com/IBM/sarama v1.42.2
 	github.com/google/uuid v1.6.0
+	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.4.0
 	github.com/xdg-go/scram v1.1.2
 )
