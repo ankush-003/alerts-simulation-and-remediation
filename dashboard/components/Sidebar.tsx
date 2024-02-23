@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(true)
   return (
-    <div className="relative min-w-[80px] border-r px-3 pb-10 pt-24">
+    <div className="relative min-w-[80px] border-r px-3 pb-10 pt-24 bg-background text-foreground">
         <div className="absolute right-[-20px] top-8">
         <Button variant={"secondary"} className="rounded-full p-2">
             {isCollapsed ? (
@@ -42,16 +42,16 @@ export default function Sidebar() {
                 href: "/",
               },
               {
-                title: "test config",
+                title: "alert config",
                 icon: FlaskConical,
                 variant: "default",
-                href: "/test-config",
+                href: "/alert-config",
               },
               {
-                title: "metrics",
+                title: "logs",
                 icon: Box,
                 variant: "default",
-                href: "/metrics",
+                href: "/logs",
               },
               {
                 title: "about",

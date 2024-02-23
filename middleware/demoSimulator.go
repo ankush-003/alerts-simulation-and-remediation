@@ -7,30 +7,45 @@ import (
 	"asmr/store"
 	"context"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"time"
-
-	"github.com/IBM/sarama"
-	"github.com/google/uuid"
 )
 
 func main() {
+	
+	// loading .env file
+	err_load := godotenv.Load()
+	if err_load != nil {
+		log.Fatalf("Error loading .env file: %s\n", err_load)
+	}
 
 	NodeID := uuid.New()
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
 	broker := os.Getenv("KAFKA_BROKER")
+	redis_addr := os.Getenv("REDIS_ADDR")
 
 	if broker == "" {
-		logger.Println("KAFKA_BROKER not set, using default localhost:9092")
 		broker = "localhost:9092"
+		logger.Println("KAFKA_BROKER not set, using default %s\n", broker)
 	}
 
 	brokers := []string{broker}
-	config := sarama.NewConfig()
+	// Create a new Sarama configuration
+	username := os.Getenv("KAFKA_USERNAME")
+	password := os.Getenv("KAFKA_PASSWORD")
+
+	if username == "" || password == "" {
+		// logger.Fatalf("KAFKA_USERNAME or KAFKA_PASSWORD not set\n")
+		logger.Println("KAFKA_USERNAME or KAFKA_PASSWORD not set, using KAFKA locally")
+	}
+
+	config := kafka.NewConfig(username, password)
 
 	producer, err := kafka.NewProducer(brokers, config, logger)
 	if err != nil {
@@ -38,10 +53,16 @@ func main() {
 	}
 	defer producer.Close()
 
-	redis := store.NewRedisStore("localhost:6379")
+	if redis_addr == "" {
+		logger.Println("REDIS_ADDR not set, using default localhost:6379")
+		redis_addr = "localhost:6379"
+	}
+
+	redis := store.NewRedisStore(redis_addr)
 	defer redis.Close()
 
 	alertsConfigChan := make(chan *alerts.AlertConfig)
+
 
 	signalChan := make(chan os.Signal, 2)
 	signal.Notify(signalChan, os.Interrupt)
@@ -69,8 +90,10 @@ func main() {
 			}
 		}
 	}()
+	}()
 
 	var wg sync.WaitGroup
+
 
 	for {
 		select {
@@ -79,6 +102,7 @@ func main() {
 			go func(alertConfig *alerts.AlertConfig) {
 				defer wg.Done()
 				producer.SendAlert("alerts", alerts.NewAlert(alertConfig, NodeID, "demoSimulator"))
+			}(alertConfig)
 			}(alertConfig)
 
 		case <-signalChan:

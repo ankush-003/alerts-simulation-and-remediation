@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 	"github.com/IBM/sarama"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -24,7 +25,9 @@ func main() {
 
 	defer producer.Close()
 
-	alert := alerts.NewAlert("This is a test alert", "critical", "kafka-test-producer")
+	alertConf := alerts.NewAlertConfig("High CPU usage", "critical")
+	alert := alerts.NewAlert(alertConf, uuid.New(), "CPU")
+
 
 	// create a timer to send the alert every 5 seconds
 	ticker := time.NewTicker(5 * time.Second)

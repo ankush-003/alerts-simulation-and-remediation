@@ -1,0 +1,12 @@
+services:
+  simulator:
+    build: . 
+    environment:
+      - KAFKA_BROKER = active-boar-11578-us1-kafka.upstash.io:9092
+      - KAFKA_USERNAME = YWN0aXZlLWJvYXItMTE1NzgkSad0k7Y1TR2gDOgfvRl8R5Xs7vFQITViGMqTLl8
+      - KAFKA_PASSWORD = YTFmMTdhNDAtMWI3Mi00ZTcyLWE1MjItYzJlMjgzOTMxZjU3
+      - REDIS_ADDR=redis:6379
+    scale: 2
+
+  redis:
+    image: redis:alpine
