@@ -133,24 +133,34 @@ func (r *RedisStore) GetRandomAlertConfig(ctx context.Context) (alerts.AlertConf
 }
 
 func (r *RedisStore) GetAlertsByNodeID(ctx context.Context, nodeID string) ([]alerts.Alerts, error) {
-	alertKeys, err := r.Client.SMembers(ctx, fmt.Sprintf("node:%s:alerts", nodeID)).Result()
-	if err != nil {
-		return nil, fmt.Errorf("error getting alert keys: %s", err)
-	}
+    keys, err := r.Client.Keys(ctx, "*").Result() // Get all keys in the Redis database
+    if err != nil {
+        return nil, fmt.Errorf("error getting keys: %s", err)
+    }
 
-	alertsList := make([]alerts.Alerts, 0, len(alertKeys))
-	for _, key := range alertKeys {
-		data, err := r.Client.Get(ctx, key).Result()
-		if err != nil {
-			return nil, fmt.Errorf("error getting alert: %s", err)
-		}
+    var alertsList []alerts.Alerts
 
-		var alert alerts.Alerts
-		if err := json.Unmarshal([]byte(data), &alert); err != nil {
-			return nil, fmt.Errorf("error unmarshalling alert: %s", err)
-		}
-		alertsList = append(alertsList, alert)
-	}
+    for _, key := range keys {
+		
 
-	return alertsList, nil
+        data, err := r.Client.Get(ctx, key).Result()
+        if err != nil {
+            return nil, fmt.Errorf("error getting alert: %s", err)
+        }
+
+        var alert alerts.Alerts
+        if err := json.Unmarshal([]byte(data), &alert); err != nil {
+            return nil, fmt.Errorf("error unmarshalling alert: %s", err)
+        }
+		fmt.Println("data",data)
+
+        // Check if the alert's nodeID matches the specified nodeID
+        if alert.NodeID.String() == nodeID {
+            alertsList = append(alertsList, alert)
+        }
+		
+    }
+
+    return alertsList, nil
 }
+
