@@ -7,13 +7,14 @@ import (
 	"asmr/store"
 	"context"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -63,7 +64,6 @@ func main() {
 
 	alertsConfigChan := make(chan *alerts.AlertConfig)
 
-
 	signalChan := make(chan os.Signal, 2)
 	signal.Notify(signalChan, os.Interrupt)
 
@@ -90,10 +90,8 @@ func main() {
 			}
 		}
 	}()
-	}()
 
 	var wg sync.WaitGroup
-
 
 	for {
 		select {
@@ -102,7 +100,6 @@ func main() {
 			go func(alertConfig *alerts.AlertConfig) {
 				defer wg.Done()
 				producer.SendAlert("alerts", alerts.NewAlert(alertConfig, NodeID, "demoSimulator"))
-			}(alertConfig)
 			}(alertConfig)
 
 		case <-signalChan:
