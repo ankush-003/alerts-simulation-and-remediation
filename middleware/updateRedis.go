@@ -20,7 +20,12 @@ func main() {
 		log.Fatalf("error loading .env file: %s\n", err_load)
 	}
 
-	// redis_addr := os.Getenv("REDIS_ADDR")
+	redis_addr := os.Getenv("REDIS_ADDR")
+	if redis_addr == "" {
+		redis_addr = "localhost:6379"
+		log.Println("REDIS_ADDR not set, using default %s\n", redis_addr)
+	}
+
 	mongo_uri := os.Getenv("MONGO_URI")
 	if mongo_uri == "" {
 		mongo_uri = "mongodb://localhost:27017"
@@ -65,13 +70,15 @@ func main() {
 	}
 
 	// Update Redis with the alert configs
-	// redisStore := store.NewRedisStore(redis_addr)
-	// for _, alertConfig := range alertConfigs {
-	// 	err = redisStore.StoreAlertConfig(ctx, &alertConfig)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }
+	redisStore := store.NewRedisStore(redis_addr)
+	for _, alertConfig := range alertConfigs {
+		err = redisStore.StoreAlertConfig(ctx, &alertConfig)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	fmt.Println("Successfully populated Redis with alert configs")
 
 	for _, alertConfig := range alertConfigs {
 		fmt.Printf("Alert Config: %v\n", alertConfig)

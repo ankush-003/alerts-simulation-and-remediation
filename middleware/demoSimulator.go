@@ -26,6 +26,9 @@ func main() {
 	NodeID := uuid.New()
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
+	// config
+	simulator_period = 10 * time.Second
+
 	broker := os.Getenv("KAFKA_BROKER")
 	redis_addr := os.Getenv("REDIS_ADDR")
 
@@ -66,11 +69,12 @@ func main() {
 	signal.Notify(signalChan, os.Interrupt)
 
 	ctx := context.Background()
-
+	
+	// Creating Alerts
 	logger.Println("Creating alerts")
 
 	go func() {
-		ticker := time.NewTicker(2 * time.Second)
+		ticker := time.NewTicker(simulator_period)
 		for {
 			select {
 			case <-ticker.C:
