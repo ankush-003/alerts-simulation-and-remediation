@@ -27,7 +27,7 @@ func main() {
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
 	// config
-	simulator_period = 10 * time.Second
+	simulator_period := 10 * time.Second
 
 	broker := os.Getenv("KAFKA_BROKER")
 	redis_addr := os.Getenv("REDIS_ADDR")
