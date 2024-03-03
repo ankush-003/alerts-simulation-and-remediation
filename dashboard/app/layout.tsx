@@ -51,7 +51,9 @@ export default function RootLayout({
               </div>
             </div>
             <Separator />
-            {children}
+            <div className="mt-4 p-4">
+              {children}
+            </div>
           </div>
         </ThemeProvider>
       </body>

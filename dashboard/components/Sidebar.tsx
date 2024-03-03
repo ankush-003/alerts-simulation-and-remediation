@@ -18,7 +18,7 @@ export default function Sidebar() {
   return (
     <div className="relative min-w-[80px] border-r px-3 pb-10 pt-24 bg-background text-foreground">
         <div className="absolute right-[-20px] top-8">
-        <Button variant={"secondary"} className="rounded-full p-2">
+        <Button variant={"secondary"} className="rounded-full p-2 border-2 border-red-500">
             {isCollapsed ? (
                 <ChevronRight
                 className="h-6 w-6"
