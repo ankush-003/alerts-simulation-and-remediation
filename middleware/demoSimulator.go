@@ -104,7 +104,7 @@ func main() {
 
 		case <-signalChan:
 			logger.Printf("Stopping Simulator %s\n", NodeID.String())
-			fmt.Println(redis.GetAlertsByNodeID(ctx,NodeID.String()))
+			// fmt.Println(redis.GetAlertsByNodeID(ctx,NodeID.String()))
 			mailserver.SendEmail(redis.GetAlertsByNodeID(ctx, NodeID.String()))
 			wg.Wait()
 			return
