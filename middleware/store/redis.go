@@ -152,7 +152,7 @@ func (r *RedisStore) GetAlertsByNodeID(ctx context.Context, nodeID string) ([]al
         if err := json.Unmarshal([]byte(data), &alert); err != nil {
             return nil, fmt.Errorf("error unmarshalling alert: %s", err)
         }
-		fmt.Println("data",data)
+		// fmt.Println("data",data)
 
         // Check if the alert's nodeID matches the specified nodeID
         if alert.NodeID.String() == nodeID {
