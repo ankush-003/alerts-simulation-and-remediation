@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={cn(
-          "min-h-screen w-full bg-white text-black flex",
+          "min-h-screen w-full bg-white flex",
           inter.className,
           {
             "debug-screens": process.env.NODE_ENV === "development",
@@ -42,7 +42,8 @@ export default function RootLayout({
           <div className="p-8 w-full bg-background text-foreground">
             <div className="flex justify-between items-center mb-4">
               <a href="/">
-                <h1 className="scroll-m-20 text-3xl font-extrabold tracking-tight xl:text-4xl">
+                <h1 className="scroll-m-20 text-3xl font-extrabold tracking-tight xl:text-4xl text-transparent bg-gradient-to-r bg-clip-text from-red-500 via-orange-500 to-red-500
+            animate-text">
                   Alerts Simulation & Remediation
                 </h1>
               </a>

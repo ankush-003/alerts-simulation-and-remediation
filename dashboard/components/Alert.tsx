@@ -7,6 +7,20 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { cn } from "@/lib/utils";
+import { AlertCircle } from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+
 
 interface AlertProp {
     id: string;
@@ -19,7 +33,7 @@ interface AlertProp {
 
 function Alert({ id, nodeID, description, severity, source, createdAt }: AlertProp) {
     return (
-        <div>
+        <div className="hover:border-2 hover:border-red-500 rounded-lg">
             <Card>
                 <CardHeader>
                     <CardTitle
@@ -29,7 +43,12 @@ function Alert({ id, nodeID, description, severity, source, createdAt }: AlertPr
                             severity === "warning" && "text-white",
                             severity === "info" && "text-blue-500",
                         )}
-                    >{`Alert ${id}`}</CardTitle>
+                    >
+                        <div className="flex justify-between">
+                            <p>{`Alert ${id}`}</p>
+                            <AlertCircle className="h-4 w-4" />
+                        </div>
+                    </CardTitle>
                     <CardDescription>{`${description}`}</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -39,6 +58,24 @@ function Alert({ id, nodeID, description, severity, source, createdAt }: AlertPr
                 <CardFooter>
                     <p>{`createdAt : ${createdAt}`}</p>
                 </CardFooter>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="outline">Show Dialog</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete your
+                                account and remove your data from our servers.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction>Continue</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </Card>
         </div>
     )

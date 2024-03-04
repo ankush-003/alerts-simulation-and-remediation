@@ -53,7 +53,7 @@ export default function logs() {
         <Carousel>
           <CarouselContent>
             {fakeData.map((item) => (
-                <CarouselItem key={item.id}>
+                <CarouselItem key={item.id} className="md:basis-1/3 lg:basis-1/4">
                   <Alert key={item.id} {...item} />
                 </CarouselItem>
             ))}
