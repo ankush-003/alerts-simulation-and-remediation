@@ -3,10 +3,12 @@ package main
 import (
 	"asmr/alerts"
 	"asmr/kafka"
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	"io"
 	"log"
 	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -28,53 +30,48 @@ func main() {
 	password := os.Getenv("KAFKA_PASSWORD")
 
 	config := kafka.NewConfig(username, password)
-
+	alertsChan := make(chan alerts.Alerts)
+	doneChan := make(chan struct{})
 	consumer, err := kafka.NewConsumer(brokers, config, logger)
 	if err != nil {
 		logger.Fatalf("Error creating consumer: %s\n", err)
 	}
-
 	defer consumer.Close()
 
-	alertsChan := make(chan alerts.Alerts)
-	doneChan := make(chan struct{})
+	go consumer.ConsumeAlerts("alerts", alertsChan, doneChan)
 
 	router := gin.Default()
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "Welcome to the SSE server",
+			"message": "Welcome to the SSE server, My love",
 		})
 	})
 
 	router.GET("/stream", func(c *gin.Context) {
-		logger.Println("Consuming alerts !")
-
-		go consumer.ConsumeAlerts("alerts", alertsChan, doneChan)
-	consumerLoop:
-
-		for {
-			select {
-			case alert := <-alertsChan:
-				logger.Printf("Received alert: alrtID: %s, NodeID: %s, Description: %s, Severity: %s, Source: %s, CreatedAt: %s\n", alert.ID.String(), alert.NodeID.String(), alert.Description, alert.Severity, alert.Source, alert.CreatedAt)
-				c.SSEvent("alert", map[string]interface{} {
-					"alertID": alert.ID.String(),
-					"nodeID": alert.NodeID.String(),
-					"description": alert.Description,
-					"severity": alert.Severity,
-					"source": alert.Source,
-					"createdAt": alert.CreatedAt,
-				})
-
-				c.Writer.Flush()
-
-			case <-doneChan:
-				break consumerLoop
-			}
-		}
-
-		c.Writer.Flush()
+		streamer(c, alertsChan)
 	})
 
 	router.Run(":8080")
+}
+
+func streamer(c *gin.Context, alertsChan chan alerts.Alerts) {
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case alert := <-alertsChan:
+			c.SSEvent("alert", map[string]interface{}{
+				"alertID":     alert.ID.String(),
+				"nodeID":      alert.NodeID.String(),
+				"description": alert.Description,
+				"severity":    alert.Severity,
+				"source":      alert.Source,
+				"createdAt":   alert.CreatedAt,
+			})
+			return true
+		case <-c.Writer.CloseNotify():
+			return false
+		}
+	})
+
+	c.Writer.Flush()
 }
