@@ -6,7 +6,7 @@ services:
     networks:
       - test
     deploy:
-      replicas: 10  
+      replicas: 20  
 
   redis:
     image: redis:alpine
