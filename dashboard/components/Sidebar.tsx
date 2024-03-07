@@ -18,7 +18,7 @@ export default function Sidebar() {
   return (
     <div className="relative min-w-[80px] border-r px-3 pb-10 pt-24 bg-background text-foreground">
         <div className="absolute right-[-20px] top-8">
-        <Button variant={"secondary"} className="rounded-full p-2">
+        <Button variant={"secondary"} className="rounded-full p-2 hover:border-2 max-md:hidden hover:border-red-500">
             {isCollapsed ? (
                 <ChevronRight
                 className="h-6 w-6"
@@ -39,7 +39,7 @@ export default function Sidebar() {
                 title: "dashboard",
                 icon: Home,
                 variant: "default",
-                href: "/",
+                href: "/home",
               },
               {
                 title: "alert config",
