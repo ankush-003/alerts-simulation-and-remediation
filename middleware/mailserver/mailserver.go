@@ -10,18 +10,18 @@ import (
 
 
 
-func SendEmail(alertsnew []alerts.Alerts, Error error) error {
+func SendEmail(alert alerts.Alerts, Error error) error {
 
 	
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", "alertssim@gmail.com")
 	mailer.SetHeader("To", "alertssim@gmail.com")
 	mailer.SetHeader("Subject", "Alerts for Node")
+	// fmt.Println("In mailserver", alert)
 	body := "Alerts for Node:\n"
 	// fmt.Println(alertsnew)
-	for _, alert := range alertsnew {
-		body += fmt.Sprintf("ID: %s, NodeID: %s, Message: %s\n", alert.ID, alert.NodeID, alert.Description, alert.CreatedAt)
-	}
+	body += fmt.Sprintf("ID: %s \n, NodeID: %s\n, Message: %s\n Severity: %s\n Source:%s\n Time of Creation: %s\n", alert.ID, alert.NodeID, alert.Description, alert.Severity, alert.Source, alert.CreatedAt)
+	
 	// fmt.Println(body)
 	mailer.SetBody("text/plain", body)
 

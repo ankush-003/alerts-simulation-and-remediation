@@ -3,7 +3,6 @@ package main
 import (
 	"asmr/alerts"
 	"asmr/kafka"
-	"asmr/mailserver"
 	"asmr/store"
 	"context"
 	"fmt"
@@ -108,7 +107,6 @@ func main() {
 
 		case <-signalChan:
 			logger.Printf("Stopping Simulator %s\n", NodeID.String())
-			mailserver.SendEmail(redis.GetAlertsByNodeID(ctx, NodeID.String()))
 			wg.Wait()
 			return
 		}
