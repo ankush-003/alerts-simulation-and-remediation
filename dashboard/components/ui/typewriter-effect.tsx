@@ -49,7 +49,7 @@ export const TypewriterEffect = ({
       <motion.div ref={scope} className="inline">
         {wordsArray.map((word, idx) => {
           return (
-            <div key={`word-${idx}`} className="inline-block text-3xl">
+            <div key={`word-${idx}`} className="inline-block sm:text-5xl text-3xl">
               {word.text.map((char, index) => (
                 <motion.span
                   initial={{}}
