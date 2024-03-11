@@ -1,0 +1,4 @@
+.env file should contain 
+
+PORT=9000
+MONGODB_URL=mongodb://localhost:27017/go-auth
