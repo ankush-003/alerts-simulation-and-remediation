@@ -42,8 +42,38 @@ const fakeData = [
     source: "disk",
     createdAt: new Date().toDateString()
   },
-
-
+  {
+    id: "5",
+    nodeID: "1",
+    description: "Low Disk Space",
+    severity: "critical",
+    source: "disk",
+    createdAt: new Date().toDateString()
+  },
+  {
+    id: "6",
+    nodeID: "1",
+    description: "Low Disk Space",
+    severity: "critical",
+    source: "disk",
+    createdAt: new Date().toDateString()
+  },
+  {
+    id: "7",
+    nodeID: "1",
+    description: "Low Disk Space",
+    severity: "critical",
+    source: "disk",
+    createdAt: new Date().toDateString()
+  },
+  {
+    id: "8",
+    nodeID: "1",
+    description: "Low Disk Space",
+    severity: "critical",
+    source: "disk",
+    createdAt: new Date().toDateString()
+  },
 ]
 
 export default function logs() {
@@ -53,9 +83,9 @@ export default function logs() {
         <Carousel>
           <CarouselContent>
             {fakeData.map((item) => (
-                <CarouselItem key={item.id} className="md:basis-1/3 lg:basis-1/4">
-                  <Alert key={item.id} {...item} />
-                </CarouselItem>
+              <CarouselItem key={item.id} className="md:basis-1/3 lg:basis-1/4">
+                <Alert key={item.id} {...item} />
+              </CarouselItem>
             ))}
           </CarouselContent>
           <CarouselPrevious />

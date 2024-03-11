@@ -38,7 +38,7 @@ function Alert({ id, nodeID, description, severity, source, createdAt }: AlertPr
                 <CardHeader>
                     <CardTitle
                         className={cn(
-                            "text-sm font-medium",
+                            "text-xl font-medium",
                             severity === "critical" && "text-red-500",
                             severity === "warning" && "text-white",
                             severity === "info" && "text-blue-500",
@@ -46,36 +46,37 @@ function Alert({ id, nodeID, description, severity, source, createdAt }: AlertPr
                     >
                         <div className="flex justify-between">
                             <p>{`Alert ${id}`}</p>
-                            <AlertCircle className="h-4 w-4" />
+                            <AlertCircle className="h-10 w-10" />
                         </div>
                     </CardTitle>
-                    <CardDescription>{`${description}`}</CardDescription>
+                    <CardDescription className="text-lg">{`${description}`}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p>{`NodeID : ${nodeID}`}</p><br />
-                    <p>{`source : ${source}`}</p>
+                    <p>NodeID</p><br />
+                    <p>{nodeID}</p>
                 </CardContent>
-                <CardFooter>
-                    <p>{`createdAt : ${createdAt}`}</p>
+                <CardFooter className="grid">
+                    
+                    <div className="w-full">
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="outline">view details</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle><p>{`Alert ${id}`}</p> </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                    <p>{`createdAt : ${createdAt}`}</p>
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction>Resolve</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                 </CardFooter>
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="outline">Show Dialog</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your
-                                account and remove your data from our servers.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction>Continue</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
             </Card>
         </div>
     )
