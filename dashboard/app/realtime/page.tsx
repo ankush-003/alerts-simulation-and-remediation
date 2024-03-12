@@ -8,6 +8,7 @@ export default function Realtime() {
         const eventSource = new EventSource("/api/stream")
         eventSource.addEventListener("message", (event) => {
             const data = JSON.parse(event.data)
+            console.table(data)
         })
 
         return () => {

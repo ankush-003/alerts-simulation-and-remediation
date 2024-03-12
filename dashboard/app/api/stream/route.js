@@ -1,60 +1,75 @@
 export const dynamic = 'force-dynamic'
 
-import { Kafka } from "kafkajs"
-import { encode } from "punycode"
-import { json } from "stream/consumers"
-
-console.table(process.env)
+import { Kafka, logLevel } from "kafkajs"
+// import { encode } from "punycode"
+// import { json } from "stream/consumers"
 
 const kafka = new Kafka({
     brokers: [process.env.KAFKA_URL],
     ssl: true,
     sasl: {
-        mechanism: "scram-sha-512",
+        mechanism: "scram-sha-256",
         username: process.env.KAFKA_USERNAME,
         password: process.env.KAFKA_PASSWORD
-    }
+    },
+    logLevel: logLevel.INFO,
 })
 
-const c = kafka.consumer({ groupId: "dashboard" })
+// const consumer = kafka.consumer({ groupId: "dashboard-10" })
 
-async function consume(consumer, controller, encoder) {
-    console.log("Consuming messages")
-    await consumer.connect();
-    await consumer.subscribe({ topic: process.env.KAFKA_TOPIC, fromBeginning: false });
-    await consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            console.log("Received message", JSON.stringify(message));
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(message)}\n\n`));
-        }
-    })
-    // await consumer.disconnect();
-}
+// consumer.on("consumer.group_join", async () => {
+//     console.log("Consumer connected to kafka broker!");
+// });
+
+// // on disconnect from kafka broker
+// consumer.on("consumer.stop", () => {
+//     console.log("Consumer disconnected from kafka broker!");
+// });
+
+// await consumer.connect();
+// await consumer.subscribe({ topics: ["alerts"] });
+// await consumer.run({
+//     eachMessage: ({ topic, partition, message }) => {
+//         console.log("Received message", JSON.parse(message.value.toString()));
+//         messages.push(JSON.parse(message.value.toString()));
+//     }
+// })
 
 export async function GET() {
     const encoder = new TextEncoder();
-    const customReadable = new ReadableStream({
-        async start(controller) {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ message: "Connected" })}\n\n`));
-            try {
-                await consume(c, controller, encoder);
-            } catch (error) {
-                console.error("Error consuming messages", error);
+    let consumer;
+    try {
+        consumer = kafka.consumer({ groupId: "dashboard-10" });
+        await consumer.connect();
+        await consumer.subscribe({ topics: ["alerts"] });
+
+        const customReadable = new ReadableStream({
+            async start(controller) {
+                await consumer.run({
+                    eachMessage: ({ topic, partition, message }) => {
+                        console.log("Received message", JSON.parse(message.value.toString()));
+                        controller.enqueue(encoder.encode(`data: ${JSON.stringify(JSON.parse(message.value.toString()))}\n\n`));
+                    }
+                })
+            },
+            async cancel() {
+                await consumer.disconnect();
             }
-        },
-        cancel() {
-            // Handle cancellation if needed
-            console.log("Stream was cancelled");
+        });
+        return new Response(customReadable, {
+            headers: {
+                'Content-Type': 'text/event-stream',
+                Connection: 'keep-alive',
+                'Cache-Control': 'no-cache, no-transform',
+                'Content-Encoding': 'none'
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        if (consumer) {
+            await consumer.disconnect();
         }
-    });
+        return new Response("Internal Server Error", { status: 500 });
+    }
 
-    return new Response(customReadable, {
-        headers: {
-            'Content-Type': 'text/event-stream',
-            Connection: 'keep-alive',
-            'Cache-Control': 'no-cache, no-transform',
-            'Content-Encoding': 'none'
-        }
-    });
 }
-
