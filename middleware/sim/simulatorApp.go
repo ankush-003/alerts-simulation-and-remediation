@@ -5,6 +5,7 @@ import (
 	"asmr/kafka"
 	"asmr/store"
 	"context"
+	"math/rand"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -27,7 +28,7 @@ func main() {
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
 	// config
-	simulator_period := 10 * time.Second
+	time_limit := 60 // 1 minute
 
 	broker := os.Getenv("KAFKA_BROKER")
 	redis_addr := os.Getenv("REDIS_ADDR")
@@ -74,7 +75,8 @@ func main() {
 	logger.Println("Creating alerts")
 
 	go func() {
-		ticker := time.NewTicker(simulator_period)
+		interval := time.Duration(rand.Intn(time_limit)) * time.Second
+		ticker := time.NewTicker(interval)
 		for {
 			select {
 			case <-ticker.C:

@@ -44,11 +44,15 @@ func main() {
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "Welcome to the SSE server, My love",
+			"message": "Welcome to the SSE server!",
 		})
 	})
 
 	router.GET("/stream", func(c *gin.Context) {
+		// send message initially to avoid timeout
+		c.SSEvent("alert", map[string]interface{}{
+			"message": "Connected to the server",
+		})
 		streamer(c, alertsChan)
 	})
 
