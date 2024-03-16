@@ -3,7 +3,7 @@ import { z } from "zod"
 import { cn } from "@/lib/utils";
 import { parse, format, addDays, subMonths } from 'date-fns';
 
-const dateSchema = 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS'
+const dateSchema = 'yyyy-MM-dd HH:mm:ss'
 
 const alertSchema = z.object({
     id: z.string(),
@@ -43,7 +43,7 @@ export const columns: ColumnDef<Alert>[] = [
         accessorKey: "created_at",
         cell: ({ row }) => {
             const dateString:string = row.getValue("created_at")
-            const date = parse(dateString.split(" +m")[0], dateSchema, new Date())
+            const date = parse(dateString, dateSchema, new Date())
 
             return (
                 <span className="text-gray-500">

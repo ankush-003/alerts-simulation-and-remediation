@@ -41,7 +41,7 @@ export async function GET() {
     try {
         consumer = kafka.consumer({ groupId: "dashboard-10" });
         await consumer.connect();
-        await consumer.subscribe({ topics: ["alerts"] });
+        await consumer.subscribe({ topics: ["alerts"], fromBeginning: false });
 
         const customReadable = new ReadableStream({
             async start(controller) {
