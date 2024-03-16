@@ -1,6 +1,6 @@
 services:
   simulator:
-    build: . 
+    build: ./simulator
     depends_on:
       - redis
     networks:
