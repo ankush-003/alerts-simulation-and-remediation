@@ -27,7 +27,7 @@ func NewAlert(alertConfig *AlertConfig, NodeID uuid.UUID, source string) *Alerts
 		Description: alertConfig.Description,
 		Severity:    alertConfig.Severity,
 		Source:      source,
-		CreatedAt:   time.Now().String(),
+		CreatedAt:   time.Now().Format(time.DateTime),
 	}
 }
 
