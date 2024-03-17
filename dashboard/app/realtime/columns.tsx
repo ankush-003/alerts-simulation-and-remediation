@@ -13,6 +13,12 @@ const alertSchema = z.object({
     source: z.string(),
     created_at: z.string(),
     status: z.enum(["open", "ack"]),
+    runtime_metrics: z.object({
+        num_goroutine: z.number(),
+        allocated_mem_bytes: z.number(),
+        total_allocated_mem_bytes: z.number(),
+        sys_mem_bytes: z.number(),
+    }),
 })
 
 export type Alert = z.infer<typeof alertSchema>;
@@ -55,5 +61,21 @@ export const columns: ColumnDef<Alert>[] = [
     {
         header: "Status",
         accessorKey: "status",
+    },
+    {
+        header: "Num Goroutine",
+        accessorKey: "runtime_metrics.num_goroutine",
+    },
+    {
+        header: "Allocated Mem",
+        accessorKey: "runtime_metrics.allocated_mem_bytes",
+    },
+    {
+        header: "Total Allocated Mem",
+        accessorKey: "runtime_metrics.total_allocated_mem_bytes",
+    },
+    {
+        header: "Sys Mem",
+        accessorKey: "runtime_metrics.sys_mem_bytes",
     },
 ]

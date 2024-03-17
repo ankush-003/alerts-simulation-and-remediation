@@ -11,7 +11,6 @@ type RuntimeMetrics struct {
 	AllocatedMemBytes      uint64 `json:"allocated_mem_bytes"`
 	TotalAllocatedMemBytes uint64 `json:"total_allocated_mem_bytes"`
 	SysMemBytes            uint64 `json:"sys_mem_bytes"`
-	NumGoroutines          uint64 `json:"num_goroutines"`
 }
 
 func NewRuntimeMetrics() *RuntimeMetrics {
@@ -22,7 +21,6 @@ func NewRuntimeMetrics() *RuntimeMetrics {
 		AllocatedMemBytes:      memStats.Alloc,
 		TotalAllocatedMemBytes: memStats.TotalAlloc,
 		SysMemBytes:            memStats.Sys,
-		NumGoroutines:          uint64(runtime.NumGoroutine()),
 	}
 }
 
