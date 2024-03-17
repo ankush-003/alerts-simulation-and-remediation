@@ -1,12 +1,12 @@
 services:
   simulator:
-    build: ./simulator
+    build: .
     depends_on:
       - redis
     networks:
       - test
     deploy:
-      replicas: 10  
+      replicas: 2
 
   redis:
     image: redis:alpine
@@ -14,6 +14,19 @@ services:
       - "6379:6379"
     networks:
       - test
+
+  cadvisor:
+    image: 'google/cadvisor:latest'
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk:/dev/disk/:ro
+    ports:
+    - '8090:8080' 
+    privileged: true    
 
 networks:
   test:
