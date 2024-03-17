@@ -27,4 +27,4 @@ scrape_configs:
     scheme: http
     static_configs:
       - targets:
-        - 192.168.29.149:2112      
+        - 192.168.29.149:9100    
