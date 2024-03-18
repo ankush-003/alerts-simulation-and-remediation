@@ -4,11 +4,12 @@ services:
     container_name: prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
-    ports:
-      - 9090:9090
+    # ports:
+    #   - 9090:9090
     restart: unless-stopped
     volumes:
       - ./prometheus:/etc/prometheus
       - prom_data:/prometheus
+    network-mode: host  
 volumes:
   prom_data:
