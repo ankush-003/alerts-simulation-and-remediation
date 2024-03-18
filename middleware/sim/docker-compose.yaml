@@ -15,9 +15,9 @@ services:
     networks:
       - test
 
-  prometheus:
+  prometheus-sim:
     image: prom/prometheus
-    container_name: prometheus
+    container_name: prometheus-sim
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
     ports:
@@ -27,9 +27,9 @@ services:
       - ../prometheus/prometheus:/etc/prometheus
       - prom_data:/prometheus
 
-  grafana:
+  grafana-sim:
     image: grafana/grafana
-    container_name: grafana
+    container_name: grafana-sim
     restart: unless-stopped
     ports:
      - '3001:3000'

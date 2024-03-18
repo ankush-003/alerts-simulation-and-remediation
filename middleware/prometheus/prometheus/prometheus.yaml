@@ -18,7 +18,7 @@ scrape_configs:
     scheme: http
     static_configs:
       - targets:
-        - host.docker.internal:9090
+        - 192.168.29.149:9090
   - job_name: node
     honor_timestamps: true
     scrape_interval: 15s
@@ -27,4 +27,4 @@ scrape_configs:
     scheme: http
     static_configs:
       - targets:
-        - host.docker.internal:6969
+        - 192.168.29.149:6969
