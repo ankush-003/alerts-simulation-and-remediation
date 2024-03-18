@@ -1,0 +1,45 @@
+services:
+  simulator:
+    build: .
+    depends_on:
+      - redis
+    networks:
+      - test
+    deploy:
+      replicas: 2
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - test
+
+  prometheus-sim:
+    image: prom/prometheus
+    container_name: prometheus-sim
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ../prometheus/prometheus:/etc/prometheus
+      - prom_data:/prometheus
+
+  grafana-sim:
+    image: grafana/grafana
+    container_name: grafana-sim
+    restart: unless-stopped
+    ports:
+     - '3001:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+volumes:
+  grafana-storage: {}
+  prom_data:
+
+networks:
+  test:
+    name: test
