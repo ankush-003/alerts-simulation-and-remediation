@@ -10,6 +10,7 @@ services:
 
   redis:
     image: redis:alpine
+    container_name: redis
     ports:
       - "6379:6379"
     networks:
@@ -26,6 +27,8 @@ services:
     volumes:
       - ../prometheus/prometheus:/etc/prometheus
       - prom_data:/prometheus
+    networks:
+      - test  
 
   grafana-sim:
     image: grafana/grafana
@@ -35,6 +38,39 @@ services:
      - '3001:3000'
     volumes:
       - grafana-storage:/var/lib/grafana
+    networks:
+      - test  
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+    - 9000:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    # for centos, fedora
+    # - /cgroup:/cgroup:ro
+    privileged: true
+    depends_on:
+    - redis    
+    networks:
+      - test
+
+  # ngrok:
+  #   image: ngrok/ngrok:latest
+  #   restart: unless-stopped
+  #   command:
+  #     - "start"
+  #     - "--all"
+  #     - "--config"
+  #     - "/etc/ngrok.yml"
+  #   volumes:
+  #     - ../ngrok/ngrok.yml:/etc/ngrok.yml
+  #   ports:
+  #     - 4040:4040    
 
 volumes:
   grafana-storage: {}
