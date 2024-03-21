@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge';
 
 import { Kafka, logLevel } from "kafkajs"
 // import { encode } from "punycode"
