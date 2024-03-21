@@ -3,8 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"strconv"
 )
 
 type PromResponse struct {
@@ -18,39 +19,51 @@ type PromResponse struct {
 	} `json:"data"`
 }
 
-func main() {
-	url := "http://localhost:9090/api/v1/query?query=100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)"
+func fetchMetrics(url string) (float64, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		return -1, fmt.Errorf("error fetching metrics: %v", err)
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		return -1, fmt.Errorf("error reading response body: %v", err)
 	}
 
 	var promResp PromResponse
 	err = json.Unmarshal(body, &promResp)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		return -1, fmt.Errorf("error unmarshalling response body: %v", err)
 	}
 
 	if promResp.Status != "success" {
-		fmt.Println("Error: Prometheus API returned non-success status")
-		return
+		return -1, fmt.Errorf("prometheus API returned non-success status")
 	}
 
-	if len(promResp.Data.Result) == 0 {
-		fmt.Println("No results found")
-		return
+	valueTr, ok := promResp.Data.Result[0].Value[1].(string)
+	if !ok {
+		return -1, fmt.Errorf("unable to parse value")
 	}
 
-	// Assuming there is only one result
-	value := promResp.Data.Result[0].Value[1].(float64)
-	fmt.Printf("CPU Usage: %.2f%%\n", value)
+	usage,_ := strconv.ParseFloat(valueTr, 64)
+
+	return usage, nil
+}
+
+func main() {
+	url := "http://localhost:9090/api/v1/query?query=100%20-%20(avg(rate(node_cpu_seconds_total{mode%3D%22idle%22}[5m]))%20*%20100)"
+	url2 := "http://localhost:9090/api/v1/query?query=100%20-%20(node_memory_MemAvailable_bytes%20%2F%20node_memory_MemTotal_bytes%20*%20100)"
+
+	usage, err := fetchMetrics(url)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	fmt.Println("CPU Usage:", usage)
+
+	usage2, err := fetchMetrics(url2)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	fmt.Println("RAM Usage:", usage2)
 }
