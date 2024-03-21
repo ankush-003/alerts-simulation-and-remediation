@@ -9,10 +9,12 @@ services:
       replicas: 2
 
   redis:
-    image: redis:alpine
+    image: redis/redis-stack
     container_name: redis
+    command: redis-cli -u redis://default:ybaCdWLadAzqrb2qXO7QhKgjiDL3pXZ5@redis-16652.c212.ap-south-1-1.ec2.cloud.redislabs.com:16652
     ports:
       - "6379:6379"
+      - "8001:8001"
     networks:
       - test
 
