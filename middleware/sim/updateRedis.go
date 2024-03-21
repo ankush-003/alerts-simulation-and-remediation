@@ -70,7 +70,12 @@ func main() {
 	}
 
 	// Update Redis with the alert configs
-	redisStore := store.NewRedisStore(redis_addr)
+	redisStore, redisErr := store.NewRedisStore(ctx, redis_addr) 
+	if redisErr != nil {
+		fmt.Println("Error creating Redis store")
+		panic(redisErr)
+	}
+	
 	for _, alertConfig := range alertConfigs {
 		err = redisStore.StoreAlertConfig(ctx, &alertConfig)
 		if err != nil {

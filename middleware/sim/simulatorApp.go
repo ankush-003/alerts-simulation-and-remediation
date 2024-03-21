@@ -61,7 +61,14 @@ func main() {
 		redis_addr = "localhost:6379"
 	}
 
-	redis := store.NewRedisStore(redis_addr)
+	ctx := context.Background()
+
+	redis, redisErr := store.NewRedisStore(ctx, redis_addr) 
+
+	if redisErr != nil {
+		logger.Fatalf("Error creating redis store: %s\n", redisErr)
+	}
+	
 	defer redis.Close()
 
 	alertsConfigChan := make(chan *alerts.AlertConfig)
@@ -69,7 +76,6 @@ func main() {
 	signalChan := make(chan os.Signal, 2)
 	signal.Notify(signalChan, os.Interrupt)
 
-	ctx := context.Background()
 	
 	// Creating Alerts
 	logger.Println("Creating alerts")

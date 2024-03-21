@@ -12,12 +12,20 @@ type RedisStore struct {
 	Client *redis.Client
 }
 
-func NewRedisStore(addr string) *RedisStore {
-	return &RedisStore{
-		Client: redis.NewClient(&redis.Options{
-			Addr: addr,
-		}),
+func NewRedisStore(ctx context.Context, addr string) (*RedisStore, error) {
+
+	client := redis.NewClient(&redis.Options{
+		Addr: addr,
+	})
+
+	_, err := client.Ping(ctx).Result()
+	if err != nil {
+		return nil, fmt.Errorf("error connecting to redis: %s", err)
 	}
+	
+	return &RedisStore{
+		Client: client,
+	}, nil
 }
 
 func (r *RedisStore) Close() error {

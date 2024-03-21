@@ -25,9 +25,16 @@ type PromResponse struct {
 
 func fetchMetrics(url string) (float64, error) {
 	resp, err := http.Get(url)
+
+	
 	if err != nil {
 		return -1, fmt.Errorf("error fetching metrics: %v", err)
 	}
+	
+	if resp.StatusCode != http.StatusOK {
+		return -1, fmt.Errorf("prometheus API returned non-200 status")
+	}
+	
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
@@ -43,6 +50,10 @@ func fetchMetrics(url string) (float64, error) {
 
 	if promResp.Status != "success" {
 		return -1, fmt.Errorf("prometheus API returned non-success status")
+	}
+
+	if len(promResp.Data.Result) == 0 {
+		return 0, fmt.Errorf("no data returned")
 	}
 
 	valueTr, ok := promResp.Data.Result[0].Value[1].(string)
@@ -64,20 +75,20 @@ type RuntimeMetrics struct {
 func NewRuntimeMetrics() *RuntimeMetrics {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
-	// cpu_url := "http://prometheus-sim:9090/api/v1/query?query=100%20-%20(avg(rate(node_cpu_seconds_total{mode%3D%22idle%22}[5m]))%20*%20100)"
-	// ram_url := "http://prometheus-sim:9090/api/v1/query?query=100%20-%20(node_memory_MemAvailable_bytes%20%2F%20node_memory_MemTotal_bytes%20*%20100)"
-	// CpuUsage, err := fetchMetrics(cpu_url)
-	// if err != nil {
-	// 	fmt.Println("Error:", err)
-	// }
-	// RamUsage, err := fetchMetrics(ram_url)
-	// if err != nil {
-	// 	fmt.Println("Error:", err)
-	// }
+	cpu_url := "http://prometheus-sim:9090/api/v1/query?query=100%20-%20(avg(rate(node_cpu_seconds_total{mode%3D%22idle%22}[5m]))%20*%20100)"
+	ram_url := "http://prometheus-sim:9090/api/v1/query?query=100%20-%20(node_memory_MemAvailable_bytes%20%2F%20node_memory_MemTotal_bytes%20*%20100)"
+	CpuUsage, err := fetchMetrics(cpu_url)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	RamUsage, err := fetchMetrics(ram_url)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 	return &RuntimeMetrics{
 		NumGoroutine:        uint64(runtime.NumGoroutine()),
-		CpuUsage: 			 0,
-		RamUsage: 			 0,
+		CpuUsage: 			 CpuUsage,
+		RamUsage: 			 RamUsage,
 	}
 }
 
