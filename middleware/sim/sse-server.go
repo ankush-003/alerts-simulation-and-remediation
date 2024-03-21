@@ -70,6 +70,11 @@ func streamer(c *gin.Context, alertsChan chan alerts.Alerts) {
 				"severity":    alert.Severity,
 				"source":      alert.Source,
 				"createdAt":   alert.CreatedAt,
+				"runtime_metrics": map[string]interface{}{
+					"numGoroutine": alert.RuntimeMetrics.NumGoroutine,
+					"cpuUsage":     alert.RuntimeMetrics.CpuUsage,
+					"ramUsage":     alert.RuntimeMetrics.RamUsage,
+				},
 			})
 			return true
 		case <-c.Writer.CloseNotify():
