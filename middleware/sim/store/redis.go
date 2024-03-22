@@ -165,11 +165,13 @@ func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.Alerts) er
 }
 
 func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts.Alerts, doneChan <-chan struct{}, stream string, groupName string) {
-    status, err := r.Client.XGroupCreate(stream, groupName, "0").Result()
+    status, err := r.Client.XGroupCreate(ctx, stream, groupName, "0").Result()
     if err != nil {
         fmt.Printf("Error creating group: %s\n", err)
         return
     }
+
+	fmt.Printf("Created group: %s\n", status)
 
     for {
         select {
@@ -190,7 +192,7 @@ func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts
             for _, stream := range streamData {
                 for _, message := range stream.Messages {
                     var alert alerts.Alerts
-                    err := json.Unmarshal([]byte(message.Values["alert"]), &alert)
+                    err := json.Unmarshal([]byte(message.Values["alert"].(string)), &alert)
                     if err != nil {
                         fmt.Printf("Error unmarshaling alert: %s\n", err)
                         continue

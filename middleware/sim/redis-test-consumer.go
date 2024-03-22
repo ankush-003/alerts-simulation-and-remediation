@@ -2,7 +2,8 @@ package main
 
 import (
 	"asmr/alerts"
-	"asmr/kafka"
+	"context"
+	"asmr/store"
 	"log"
 	"os"
 	"github.com/joho/godotenv"
@@ -18,7 +19,8 @@ func main() {
 
 	logger := log.New(os.Stdout, "redis-consumer: ", log.LstdFlags)
 	
-	redis_addr := os.Getenv("REDIS_ADDR")
+	// redis_addr := os.Getenv("REDIS_ADDR")
+	redis_addr := ""
 
 	if redis_addr == "" {
 		logger.Println("REDIS_ADDR not set, using default localhost:6379")
