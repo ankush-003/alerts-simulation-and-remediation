@@ -1,60 +1,48 @@
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge';
+import { Console } from 'console';
+// export const runtime = 'edge';
 
-import { Kafka, logLevel } from "kafkajs"
-// import { encode } from "punycode"
-// import { json } from "stream/consumers"
+// import { createClient } from 'redis';
+import { Redis } from 'ioredis';
 
-const kafka = new Kafka({
-    brokers: [process.env.KAFKA_URL],
-    ssl: true,
-    sasl: {
-        mechanism: "scram-sha-256",
-        username: process.env.KAFKA_USERNAME,
-        password: process.env.KAFKA_PASSWORD
-    },
-    logLevel: logLevel.INFO,
-})
+const redisClient = new Redis(process.env.REDIS_URL);
 
-// const consumer = kafka.consumer({ groupId: "dashboard-10" })
-
-// consumer.on("consumer.group_join", async () => {
-//     console.log("Consumer connected to kafka broker!");
-// });
-
-// // on disconnect from kafka broker
-// consumer.on("consumer.stop", () => {
-//     console.log("Consumer disconnected from kafka broker!");
-// });
-
-// await consumer.connect();
-// await consumer.subscribe({ topics: ["alerts"] });
-// await consumer.run({
-//     eachMessage: ({ topic, partition, message }) => {
-//         console.log("Received message", JSON.parse(message.value.toString()));
-//         messages.push(JSON.parse(message.value.toString()));
-//     }
-// })
+redisClient.on('error', (err) => console.error('Redis Client Error', err));
+redisClient.on('connect', () => console.log('Connected to Redis'));
 
 export async function GET() {
-    const encoder = new TextEncoder();
+    const stream = 'alerts'; // Replace with your Redis Stream name
+    const groupName = 'dashboard-group';
     let consumer;
     try {
-        consumer = kafka.consumer({ groupId: "dashboard-10" });
-        await consumer.connect();
-        await consumer.subscribe({ topics: ["alerts"], fromBeginning: false });
-
+        // try {
+        //     await redisClient.xgroup('CREATE', stream, groupName, '$', 'MKSTREAM');
+        // } catch (error) {
+        //     console.error('Error creating group', error);
+        // }
         const customReadable = new ReadableStream({
             async start(controller) {
-                await consumer.run({
-                    eachMessage: ({ topic, partition, message }) => {
-                        console.log("Received message", JSON.parse(message.value.toString()));
-                        controller.enqueue(encoder.encode(`data: ${JSON.stringify(JSON.parse(message.value.toString()))}\n\n`));
+                while (true) {
+                    try {
+                        consumer = await redisClient.xreadgroup('GROUP', groupName, 'dashboard-consumer', 'STREAMS', stream, '>');
+                        if (consumer) {
+                            console.log('Received messages', consumer);
+                            const messages = consumer[0][1];
+                            for (const message of messages) {
+                                const [id, data] = message;
+                                controller.enqueue(`data: ${JSON.stringify(data)}\n\n`);
+                                await redisClient.xack(stream, groupName, id);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error consuming messages', error);
+                        break;
                     }
-                })
+                }
             },
             async cancel() {
-                await consumer.disconnect();
+                // await consumer.disconnect();
+                console.log('Stream closed');
             }
         });
         return new Response(customReadable, {
@@ -67,9 +55,9 @@ export async function GET() {
         });
     } catch (error) {
         console.error(error);
-        if (consumer) {
-            await consumer.disconnect();
-        }
+        // if (consumer) {
+        //     await consumer.disconnect();
+        // }
         return new Response("Internal Server Error", { status: 500 });
     }
 
