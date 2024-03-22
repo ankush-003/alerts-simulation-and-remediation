@@ -19,13 +19,13 @@ import (
 )
 
 type InputData struct {
-	ID          string    json:"id"
-	Name        string    json:"name"
-	Type        string    json:"type"
-	Description string    json:"desc"
-	Severity    string    json:"severity"
-	Origin      string    json:"origin"
-	CreatedAt   time.Time json:"createdAt"
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Type        string    `json:"type"`
+	Description string    `json:"desc"`
+	Severity    string    `json:"severity"`
+	Origin      string    `json:"origin"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
 type AlertContext struct {
@@ -52,7 +52,7 @@ func (id *InputData) DataKey() string {
 
 // Offer output object
 type OutputData struct {
-	Remedy string josn:"remedy"
+	Remedy string `json:"remedy"`
 }
 
 func (od *OutputData) DataKey() string {
@@ -95,17 +95,20 @@ func NewRuleEngineSvc() *RuleEngineSvc {
 }
 
 type Rule struct {
-	Name        string   json:"name" bson:"name"
-	Description string   json:"desc" bson:"desc"
-	Salience    int32    json:"salience" bson:"salience"
-	When        string   json:"when" bson:"when"
-	Then        []string json:"then" bson:"then"
+	Name        string   `json:"name" bson:"name"`
+	Description string   `json:"desc" bson:"desc"`
+	Salience    int32    `json:"salience" bson:"salience"`
+	When        string   `json:"when" bson:"when"`
+	Then        []string `json:"then" bson:"then"`
 }
 
 func buildRuleEngine() {
 	ruleBuilder := builder.NewRuleBuilder(&knowledgeLibrary)
+	//engine.NewGruleEngine.MaxCycle = 10000
 
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://pes1202102575:Shreya2003@cluster0.m1lej8m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
+	// Read rule from file and build rules
+	// ruleFile := pkg.NewFileResource("/home/abhayjo/Desktop/HPE_CTY/rule_engine/engine/rules.grl")
+	client, err := mongo.NewClient(options.Client().ApplyURI("<your connection uri>"))
 	if err != nil {
 		panic(err)
 	}
@@ -120,7 +123,7 @@ func buildRuleEngine() {
 	defer client.Disconnect(ctx)
 
 	db := client.Database("rules_sample1")
-	collection := db.Collection("grules_sample")
+	collection := db.Collection("grules_maxcycle")
 	curr, err := collection.Find(ctx, bson.M{}, options.Find().SetProjection(bson.D{{Key: "_id", Value: 0}}))
 	if err != nil {
 		panic(err)
@@ -174,14 +177,14 @@ func (svc *RuleEngineSvc) Execute(ruleConf RuleConfig) error {
 }
 
 type Alert struct {
-	ID          string    json:"id"
-	Name        string    json:"name"
-	Type        string    json:"type"
-	Description string    json:"desc"
-	Severity    string    json:"severity"
-	Origin      string    json:"origin"
-	CreatedAt   time.Time json:"createdAt"
-	Remedy      string    json:"remedy"
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Type        string    `json:"type"`
+	Description string    `json:"desc"`
+	Severity    string    `json:"severity"`
+	Origin      string    `json:"origin"`
+	CreatedAt   time.Time `json:"createdAt"`
+	Remedy      string    `json:"remedy"`
 }
 
 // can be moved to offer directory
@@ -219,28 +222,61 @@ func (svc OfferServiceClient) getRemedyForAlert(user Alert) string {
 	return ruleContext.AlertOutput.Remedy
 }
 
+func evaluateSeverity(memoryUsage float64, alertType string) string {
+	switch alertType {
+	case "Memory":
+		// Define thresholds for memory severity levels
+		criticalThreshold := 90.0
+		severeThreshold := 80.0
+
+		if memoryUsage > criticalThreshold {
+			return "Critical"
+		} else if memoryUsage > severeThreshold {
+			return "Severe"
+		} else {
+			return "Low"
+		}
+	case "Computer Generic":
+		// Define thresholds for file descriptor severity levels
+		criticalThreshold := 256.0
+		severeThreshold := 512.0
+
+		if memoryUsage < criticalThreshold {
+			return "Critical"
+		} else if memoryUsage < severeThreshold {
+			return "Warning"
+		} else {
+			return "Low"
+		}
+	default:
+		return "Low"
+	}
+}
+
 func main() {
 	ruleEngineSvc := NewRuleEngineSvc()
 	offerSvc := NewOfferService(ruleEngineSvc)
 
+	memoryUsage := 85.0
 	userA := Alert{
 		ID:          "1",
-		Name:        "Memory Alert",
+		Name:        "Memory settings",
 		Type:        "Memory",
 		Description: "Ram usage is above 80%",
-		Severity:    "Critical",
-		Origin:      "Computer FS",
+		Severity:    evaluateSeverity(memoryUsage, "Memory"),
+		Origin:      "Computer Memory",
 		CreatedAt:   time.Now(),
 	}
 
 	fmt.Println("Remedy for Alert A: ", offerSvc.getRemedyForAlert(userA))
 
+	fileDescriptors := 450.0
 	userB := Alert{
 		ID:          "2",
-		Name:        "Network Alert",
-		Type:        "Computer Filesystem",
-		Description: "Disk space is low, used > 75%",
-		Severity:    "Warning",
+		Name:        "File Descriptor Settings",
+		Type:        "Computer Generic",
+		Description: "Configured max number of file descriptors is too low (<256)",
+		Severity:    evaluateSeverity(fileDescriptors, "Computer Generic"),
 		Origin:      "Computer Filesystem",
 		CreatedAt:   time.Now(),
 	}
