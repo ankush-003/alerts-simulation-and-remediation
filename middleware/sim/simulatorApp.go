@@ -109,7 +109,13 @@ func main() {
 			wg.Add(1)
 			go func(alertConfig *alerts.AlertConfig) {
 				defer wg.Done()
-				producer.SendAlert("alerts", alerts.NewAlert(alertConfig, NodeID, "demoSimulator"))
+				newALert := alerts.NewAlert(alertConfig, NodeID, "demoSimulator")
+				producer.SendAlert("alerts", newALert)
+				err := redis.PublishAlerts(ctx, newALert)
+				if err != nil {
+					logger.Printf("Error publishing alert: %s\n", err)
+				}
+				// logger.Printf("Alert sent: %s\n", newALert)
 			}(alertConfig)
 
 		case <-signalChan:

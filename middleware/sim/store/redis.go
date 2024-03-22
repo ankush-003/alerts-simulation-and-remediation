@@ -139,3 +139,66 @@ func (r *RedisStore) GetRandomAlertConfig(ctx context.Context) (alerts.AlertConf
 
 	return alertConfig, nil
 }
+
+func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.Alerts) error {
+	alertBytes, err := json.Marshal(alert)
+    if err != nil {
+        return err
+    }
+
+    // Create a Redis Streams entry with the alert data
+    entry := &redis.XAddArgs{
+        Stream: "alerts",
+        Values: map[string]interface{}{
+            "alert": alertBytes,
+        },
+    }
+
+    // Publish the entry to the Redis Stream
+    result, err := r.Client.XAdd(ctx, entry).Result()
+    if err != nil {
+        return err
+    }
+
+    fmt.Printf("Published alert to Redis Stream: %s\n", result)
+    return nil
+}
+
+func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts.Alerts, doneChan <-chan struct{}, stream string, groupName string) {
+    status, err := r.Client.XGroupCreate(stream, groupName, "0").Result()
+    if err != nil {
+        fmt.Printf("Error creating group: %s\n", err)
+        return
+    }
+
+    for {
+        select {
+        case <-doneChan:
+            return
+        default:
+            streamData, err := r.Client.XReadGroup(ctx, &redis.XReadGroupArgs{
+                Streams: []string{stream, ">"},
+                Group:   groupName,
+                Count:   1,
+                NoAck:   true,
+            }).Result()
+            if err != nil {
+                fmt.Printf("Error reading from stream: %s\n", err)
+                continue
+            }
+
+            for _, stream := range streamData {
+                for _, message := range stream.Messages {
+                    var alert alerts.Alerts
+                    err := json.Unmarshal([]byte(message.Values["alert"]), &alert)
+                    if err != nil {
+                        fmt.Printf("Error unmarshaling alert: %s\n", err)
+                        continue
+                    }
+
+                    alertsChan <- alert
+                }
+            }
+        }
+    }
+}
