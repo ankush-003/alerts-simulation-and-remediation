@@ -14,7 +14,7 @@ type RedisStore struct {
 
 func NewRedisStore(ctx context.Context, addr string) (*RedisStore, error) {
 
-	opt, _ := redis.ParseURL("redis://default:5abec074749b47caa3d51a88af5c5f31@us1-grand-grubworm-37503.upstash.io:37503")	
+	opt, _ := redis.ParseURL(addr)	
 
 	client := redis.NewClient(opt)
 
