@@ -19,8 +19,7 @@ func main() {
 
 	logger := log.New(os.Stdout, "redis-consumer: ", log.LstdFlags)
 	
-	// redis_addr := os.Getenv("REDIS_ADDR")
-	redis_addr := ""
+	redis_addr := os.Getenv("REDIS_ADDR")
 
 	if redis_addr == "" {
 		logger.Println("REDIS_ADDR not set, using default localhost:6379")
@@ -45,7 +44,7 @@ func main() {
 	stream := "alerts"
     groupName := "alerts-group"
 
-	redis.ConsumeAlerts(ctx, alertsChan, doneChan, stream, groupName)
+	go redis.ConsumeAlerts(ctx, alertsChan, doneChan, stream, groupName)
 
 	consumerLoop:
 		for {

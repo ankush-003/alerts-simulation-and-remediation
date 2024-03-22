@@ -14,9 +14,9 @@ type RedisStore struct {
 
 func NewRedisStore(ctx context.Context, addr string) (*RedisStore, error) {
 
-	client := redis.NewClient(&redis.Options{
-		Addr: addr,
-	})
+	opt, _ := redis.ParseURL("redis://default:5abec074749b47caa3d51a88af5c5f31@us1-grand-grubworm-37503.upstash.io:37503")	
+
+	client := redis.NewClient(opt)
 
 	_, err := client.Ping(ctx).Result()
 	if err != nil {
@@ -41,7 +41,8 @@ func (r *RedisStore) StoreAlert(ctx context.Context, alert *alerts.Alerts) error
 
 	txn := r.Client.TxPipeline()
 
-	txn.Set(ctx, key, string(data), 0)
+	// txn.Set(ctx, key, string(data), 0)
+	txn.SetNX(ctx, key, string(data), 0)
 
 	if _, err := txn.Exec(ctx); err != nil {
 		txn.Discard()
@@ -164,14 +165,15 @@ func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.Alerts) er
     return nil
 }
 
-func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts.Alerts, doneChan <-chan struct{}, stream string, groupName string) {
+func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts.Alerts, doneChan chan struct{}, stream string, groupName string) {
     status, err := r.Client.XGroupCreate(ctx, stream, groupName, "0").Result()
     if err != nil {
         fmt.Printf("Error creating group: %s\n", err)
-        return
+		// close(doneChan)
+        // return
+    } else {
+        fmt.Printf("Group created: %s\n", status)
     }
-
-	fmt.Printf("Created group: %s\n", status)
 
     for {
         select {
