@@ -81,7 +81,8 @@ func main() {
 	logger.Println("Creating alerts")
 
 	go func() {
-		interval := time.Duration(rand.Intn(time_limit)) * time.Second
+		// set lower limit of 1min and upper of 1min + time_limit
+		interval := time.Duration(rand.Intn(time_limit) + 1) * time.Minute
 		ticker := time.NewTicker(interval)
 		for {
 			select {
