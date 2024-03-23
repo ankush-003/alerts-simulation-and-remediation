@@ -27,9 +27,8 @@ const alertSchema = z.object({
     status: z.enum(["open", "ack"]),
     runtime_metrics: z.object({
         num_goroutine: z.number(),
-        allocated_mem_bytes: z.number(),
-        total_allocated_mem_bytes: z.number(),
-        sys_mem_bytes: z.number(),
+        cpu_usage: z.number(),
+        ram_usage: z.number(),
     }),
 })
 
@@ -76,6 +75,7 @@ export const columns: ColumnDef<Alert>[] = [
     },
     {
         header: "Details",
+        accessorKey: "runtime_metrics",
         cell: ({ row }) => {
             const dateString: string = row.getValue("created_at")
             const date = parse(dateString, dateSchema, new Date())
