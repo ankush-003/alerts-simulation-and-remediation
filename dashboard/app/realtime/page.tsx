@@ -14,6 +14,11 @@ export default function Realtime() {
         eventSource.addEventListener("message", (event) => {
             const data = JSON.parse(event.data)
             console.table(data)
+            if(data.hasOwnProperty("message")) {
+                console.log("Connection established")
+                return
+            }
+
             data.status = "open"
             setData((prevData) => [data, ...prevData])
         })

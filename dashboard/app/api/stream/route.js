@@ -13,7 +13,7 @@ redisClient.on('connect', () => console.log('Connected to Redis'));
 export async function GET() {
     const stream = 'alerts'; // Replace with your Redis Stream name
     const groupName = 'dashboard-group';
-    let consumer;
+    // let consumer;
     try {
         // try {
         //     await redisClient.xgroup('CREATE', stream, groupName, '$', 'MKSTREAM');
@@ -22,21 +22,35 @@ export async function GET() {
         // }
         const customReadable = new ReadableStream({
             async start(controller) {
+                controller.enqueue(`data: ${JSON.stringify({ message: 'Connected' })}\n\n`)
+                let lastId = null;
                 while (true) {
                     try {
-                        consumer = await redisClient.xreadgroup('GROUP', groupName, 'dashboard-consumer', 'STREAMS', stream, '>');
-                        if (consumer) {
-                            console.log('Received messages', consumer);
-                            const messages = consumer[0][1];
-                            for (const message of messages) {
-                                const [id, data] = message;
-                                controller.enqueue(`data: ${JSON.stringify(data)}\n\n`);
-                                await redisClient.xack(stream, groupName, id);
-                            }
+                        // consumer = await redisClient.xreadgroup('GROUP', groupName, 'dashboard-consumer', 'STREAMS', stream, '>');
+                        // if (consumer) {
+                        //     console.log('Received messages', consumer);
+                        //     const messages = consumer[0][1];
+                        //     for (const message of messages) {
+                        //         const [id, data] = message;
+                        //         controller.enqueue(`data: ${JSON.stringify(data)}\n\n`);
+                        //         await redisClient.xack(stream, groupName, id);
+                        //     }
+                        // }
+                        const messages = await redisClient.xread('BLOCK', 0, 'STREAMS', stream, lastId || '$');
+                        // console.log('Received messages', messages);
+                        if (messages && messages.length > 0) {
+                            const [streamName, messageEntries] = messages[0];
+                            console.log('Received messages', messageEntries);
+                            messageEntries.forEach(([id, fields]) => {
+                                console.log('Processing message', id, fields);
+                                const alert = JSON.parse(fields[1]);
+                                controller.enqueue(`data: ${JSON.stringify(alert)}\n\n`);
+                                lastId = id; // Update the last processed ID
+                            });
                         }
                     } catch (error) {
                         console.error('Error consuming messages', error);
-                        break;
+                        controller.enqueue(`data: ${JSON.stringify({ message: 'Error consuming messages' })}\n\n`);
                     }
                 }
             },

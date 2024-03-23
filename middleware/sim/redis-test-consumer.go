@@ -19,7 +19,7 @@ func main() {
 
 	logger := log.New(os.Stdout, "redis-consumer: ", log.LstdFlags)
 	
-	redis_addr := os.Getenv("REDIS_ADDR")
+	redis_addr := "redis://default:ybaCdWLadAzqrb2qXO7QhKgjiDL3pXZ5@redis-16652.c212.ap-south-1-1.ec2.cloud.redislabs.com:16652"
 
 	if redis_addr == "" {
 		logger.Println("REDIS_ADDR not set, using default localhost:6379")
@@ -42,9 +42,10 @@ func main() {
 	logger.Println("Consuming alerts !")
 
 	stream := "alerts"
-    groupName := "alerts-group"
+    // groupName := "alerts-group"
 
-	go redis.ConsumeAlerts(ctx, alertsChan, doneChan, stream, groupName)
+	// go redis.ConsumeAlertsGroup(ctx, alertsChan, doneChan, stream, groupName)
+	go redis.ConsumeAlerts(ctx, alertsChan, doneChan, stream)
 
 	consumerLoop:
 		for {

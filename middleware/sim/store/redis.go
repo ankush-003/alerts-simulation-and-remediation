@@ -165,7 +165,7 @@ func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.Alerts) er
     return nil
 }
 
-func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts.Alerts, doneChan chan struct{}, stream string, groupName string) {
+func (r *RedisStore) ConsumeAlertsGroup(ctx context.Context, alertsChan chan<- alerts.Alerts, doneChan chan struct{}, stream string, groupName string) {
     status, err := r.Client.XGroupCreate(ctx, stream, groupName, "0").Result()
     if err != nil {
         fmt.Printf("Error creating group: %s\n", err)
@@ -201,6 +201,40 @@ func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts
                     }
 
                     alertsChan <- alert
+                }
+            }
+        }
+    }
+}
+
+func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts.Alerts, doneChan chan struct{}, stream string) {
+    lastID := "$"
+    for {
+        select {
+        case <-doneChan:
+            return
+        default:
+            streamData, err := r.Client.XRead(ctx, &redis.XReadArgs{
+                Streams: []string{stream, lastID},
+                Count:   1,
+                Block:   0,
+            }).Result()
+            if err != nil {
+                fmt.Printf("Error reading from stream: %s\n", err)
+                continue
+            }
+
+            for _, stream := range streamData {
+                for _, message := range stream.Messages {
+                    var alert alerts.Alerts
+                    err := json.Unmarshal([]byte(message.Values["alert"].(string)), &alert)
+                    if err != nil {
+                        fmt.Printf("Error unmarshaling alert: %s\n", err)
+                        continue
+                    }
+
+                    alertsChan <- alert
+                    lastID = message.ID
                 }
             }
         }

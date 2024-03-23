@@ -75,6 +75,7 @@ export const columns: ColumnDef<Alert>[] = [
     },
     {
         header: "Details",
+        accessorKey: "runtime_metrics",
         cell: ({ row }) => {
             const dateString: string = row.getValue("created_at")
             const date = parse(dateString, dateSchema, new Date())
