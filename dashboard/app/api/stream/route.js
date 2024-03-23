@@ -1,6 +1,5 @@
-// export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic'
 import { Console } from 'console';
-export const runtime = 'edge';
 
 // import { createClient } from 'redis';
 import { Redis } from 'ioredis';
