@@ -1,0 +1,50 @@
+[
+    {
+        "name":"Rule1",
+        "desc":"Memory Limit check Critical",
+        "salience": 10,
+        "when": 
+            "AlertInput.Handled != true && AlertInput.Category == \"Memory\" && MemInput.Usage > 90",
+        "then": [
+            "AlertOutput.Remedy = \"Stop some processes\"",
+            "AlertOutput.Severity = \"Critical\"",
+            "AlertInput.Handled = true"
+        ]
+    },
+    {
+        "name":"Rule2",
+        "desc":"Memory Limit check Severe",
+        "salience": 9,
+        "when": 
+            "AlertInput.Handled != true && AlertInput.Category == \"Memory\" && MemInput.Usage > 75",
+        "then": [
+            "AlertOutput.Remedy = \"Monitor high RAM usage processes\"",
+            "AlertOutput.Severity = \"Severe\"",
+            "AlertInput.Handled = true"
+        ]
+    },
+    {
+        "name":"Rule3",
+        "desc":"Memory Limit check Warning",
+        "salience": 4,
+        "when": 
+            "AlertInput.Handled != true && AlertInput.Category == \"Memory\" && MemInput.Usage > 50",
+        "then": [
+            "AlertOutput.Remedy = \"Monitor RAM usage processes\"",
+            "AlertOutput.Severity = \"Warning\"",
+            "AlertInput.Handled = true"
+        ]
+    },
+    {
+        "name":"Rule4",
+        "desc":"Memory Limit check Warning",
+        "salience": 0,
+        "when": 
+            "AlertInput.Handled != true && AlertInput.Category == \"Memory\" && MemInput.Usage < 50",
+        "then": [
+            "AlertOutput.Remedy = \"No Alert\"",
+            "AlertOutput.Severity = \"Safe\"",
+            "AlertInput.Handled = true"
+        ]
+    }
+]
