@@ -102,6 +102,10 @@ const Page = () => {
       });
       const data = await response.json();
       console.log(data);
+      if (response.ok) {
+        // Signup successful, navigate to /home
+        window.location.href = "/home";
+      }
     } catch (error) {
       console.error('Error:', error);
     }
