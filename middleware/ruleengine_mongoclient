@@ -107,7 +107,6 @@ func buildRuleEngine() {
 	//engine.NewGruleEngine.MaxCycle = 10000
 
 	// Read rule from file and build rules
-	// ruleFile := pkg.NewFileResource("/home/abhayjo/Desktop/HPE_CTY/rule_engine/engine/rules.grl")
 	client, err := mongo.NewClient(options.Client().ApplyURI("<your connection uri>"))
 	if err != nil {
 		panic(err)
