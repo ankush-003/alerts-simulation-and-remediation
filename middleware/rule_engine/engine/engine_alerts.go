@@ -36,7 +36,7 @@ func (id *InputData) DataKey() string {
 
 // Offer output object
 type OutputData struct {
-	Remedy string `josn:"remedy"`
+	Remedy string `json:"remedy"`
 }
 
 func (od *OutputData) DataKey() string {

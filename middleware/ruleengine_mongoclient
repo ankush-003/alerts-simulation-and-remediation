@@ -1,0 +1,284 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+
+	//"rule_engine_demo/mongo"
+	"context"
+
+	"github.com/hyperjumptech/grule-rule-engine/ast"
+	"github.com/hyperjumptech/grule-rule-engine/builder"
+	"github.com/hyperjumptech/grule-rule-engine/engine"
+	"github.com/hyperjumptech/grule-rule-engine/logger"
+	"github.com/hyperjumptech/grule-rule-engine/pkg"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+type InputData struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Type        string    `json:"type"`
+	Description string    `json:"desc"`
+	Severity    string    `json:"severity"`
+	Origin      string    `json:"origin"`
+	CreatedAt   time.Time `json:"createdAt"`
+}
+
+type AlertContext struct {
+	AlertInput  *InputData
+	AlertOutput *OutputData
+}
+
+func (ac *AlertContext) RuleName() string {
+	return "Alerts"
+}
+
+func (ac *AlertContext) RuleInput() RuleInput {
+	return ac.AlertInput
+}
+
+func (ac *AlertContext) RuleOutput() RuleOutput {
+	return ac.AlertOutput
+}
+
+// User data attributes
+func (id *InputData) DataKey() string {
+	return "InputData"
+}
+
+// Offer output object
+type OutputData struct {
+	Remedy string `json:"remedy"`
+}
+
+func (od *OutputData) DataKey() string {
+	return "OutputData"
+}
+
+func NewAlertContext() *AlertContext {
+	return &AlertContext{
+		AlertInput:  &InputData{},
+		AlertOutput: &OutputData{},
+	}
+}
+
+var knowledgeLibrary = *ast.NewKnowledgeLibrary()
+
+// Rule input object
+type RuleInput interface {
+	DataKey() string
+}
+
+// Rule output object
+type RuleOutput interface {
+	DataKey() string
+}
+
+// configs associated with each rule
+type RuleConfig interface {
+	RuleName() string
+	RuleInput() RuleInput
+	RuleOutput() RuleOutput
+}
+
+type RuleEngineSvc struct {
+}
+
+func NewRuleEngineSvc() *RuleEngineSvc {
+	// you could add your cloud provider here instead of keeping rule file in your code.
+	buildRuleEngine()
+	return &RuleEngineSvc{}
+}
+
+type Rule struct {
+	Name        string   `json:"name" bson:"name"`
+	Description string   `json:"desc" bson:"desc"`
+	Salience    int32    `json:"salience" bson:"salience"`
+	When        string   `json:"when" bson:"when"`
+	Then        []string `json:"then" bson:"then"`
+}
+
+func buildRuleEngine() {
+	ruleBuilder := builder.NewRuleBuilder(&knowledgeLibrary)
+	//engine.NewGruleEngine.MaxCycle = 10000
+
+	// Read rule from file and build rules
+	client, err := mongo.NewClient(options.Client().ApplyURI("<your connection uri>"))
+	if err != nil {
+		panic(err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+
+	err = client.Connect(ctx)
+	if err != nil {
+		panic(err)
+	}
+	defer client.Disconnect(ctx)
+
+	db := client.Database("rules_sample1")
+	collection := db.Collection("grules_maxcycle")
+	curr, err := collection.Find(ctx, bson.M{}, options.Find().SetProjection(bson.D{{Key: "_id", Value: 0}}))
+	if err != nil {
+		panic(err)
+	}
+	var results []bson.M
+	curr.All(ctx, &results)
+	rules, err := json.Marshal(results)
+	if err != nil {
+		panic(err)
+	}
+
+	ruleset, _ := pkg.ParseJSONRuleset(rules)
+	fmt.Println(ruleset)
+	ruleFile := pkg.NewBytesResource([]byte(ruleset))
+	err = ruleBuilder.BuildRuleFromResource("Rules", "0.0.1", ruleFile)
+
+	if err != nil {
+		fmt.Println("Error: ", err)
+		panic(err)
+	}
+
+}
+
+func (svc *RuleEngineSvc) Execute(ruleConf RuleConfig) error {
+	// get KnowledgeBase instance to execute particular rule
+	knowledgeBase, _ := knowledgeLibrary.NewKnowledgeBaseInstance("Rules", "0.0.1")
+
+	dataCtx := ast.NewDataContext()
+	// add input data context
+	err := dataCtx.Add(ruleConf.RuleInput().DataKey(), ruleConf.RuleInput())
+	if err != nil {
+		return err
+	}
+
+	// add output data context
+	err = dataCtx.Add(ruleConf.RuleOutput().DataKey(), ruleConf.RuleOutput())
+	if err != nil {
+		return err
+	}
+
+	// create rule engine and execute on provided data and knowledge base
+	ruleEngine := engine.NewGruleEngine()
+	err = ruleEngine.Execute(dataCtx, knowledgeBase)
+
+	ruleEngine.MaxCycle = 40000
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type Alert struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Type        string    `json:"type"`
+	Description string    `json:"desc"`
+	Severity    string    `json:"severity"`
+	Origin      string    `json:"origin"`
+	CreatedAt   time.Time `json:"createdAt"`
+	Remedy      string    `json:"remedy"`
+}
+
+// can be moved to offer directory
+type OfferService interface {
+	getRemedyForAlert(user Alert) string
+}
+
+type OfferServiceClient struct {
+	ruleEngineSvc *RuleEngineSvc
+}
+
+func NewOfferService(ruleEngineSvc *RuleEngineSvc) OfferService {
+	return &OfferServiceClient{
+		ruleEngineSvc: ruleEngineSvc,
+	}
+}
+
+func (svc OfferServiceClient) getRemedyForAlert(user Alert) string {
+	ruleContext := NewAlertContext()
+	ruleContext.AlertInput = &InputData{
+		ID:          user.ID,
+		Name:        user.Name,
+		Type:        user.Type,
+		Description: user.Description,
+		Severity:    user.Severity,
+		Origin:      user.Origin,
+		CreatedAt:   user.CreatedAt,
+	}
+
+	err := svc.ruleEngineSvc.Execute(ruleContext)
+	if err != nil {
+		logger.Log.Error("get user offer rule engine failed", err)
+	}
+
+	return ruleContext.AlertOutput.Remedy
+}
+
+func evaluateSeverity(memoryUsage float64, alertType string) string {
+	switch alertType {
+	case "Memory":
+		// Define thresholds for memory severity levels
+		criticalThreshold := 90.0
+		severeThreshold := 80.0
+
+		if memoryUsage > criticalThreshold {
+			return "Critical"
+		} else if memoryUsage > severeThreshold {
+			return "Severe"
+		} else {
+			return "Low"
+		}
+	case "Computer Generic":
+		// Define thresholds for file descriptor severity levels
+		criticalThreshold := 256.0
+		severeThreshold := 512.0
+
+		if memoryUsage < criticalThreshold {
+			return "Critical"
+		} else if memoryUsage < severeThreshold {
+			return "Warning"
+		} else {
+			return "Low"
+		}
+	default:
+		return "Low"
+	}
+}
+
+func main() {
+	ruleEngineSvc := NewRuleEngineSvc()
+	offerSvc := NewOfferService(ruleEngineSvc)
+
+	memoryUsage := 85.0
+	userA := Alert{
+		ID:          "1",
+		Name:        "Memory settings",
+		Type:        "Memory",
+		Description: "Ram usage is above 80%",
+		Severity:    evaluateSeverity(memoryUsage, "Memory"),
+		Origin:      "Computer Memory",
+		CreatedAt:   time.Now(),
+	}
+
+	fmt.Println("Remedy for Alert A: ", offerSvc.getRemedyForAlert(userA))
+
+	fileDescriptors := 450.0
+	userB := Alert{
+		ID:          "2",
+		Name:        "File Descriptor Settings",
+		Type:        "Computer Generic",
+		Description: "Configured max number of file descriptors is too low (<256)",
+		Severity:    evaluateSeverity(fileDescriptors, "Computer Generic"),
+		Origin:      "Computer Filesystem",
+		CreatedAt:   time.Now(),
+	}
+
+	fmt.Println("Remedy for Alert B: ", offerSvc.getRemedyForAlert(userB))
+}

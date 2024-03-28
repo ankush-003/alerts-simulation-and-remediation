@@ -44,15 +44,19 @@ func main() {
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "Welcome to the SSE server, My love",
+			"message": "Welcome to the SSE server!",
 		})
 	})
 
 	router.GET("/stream", func(c *gin.Context) {
+		// send message initially to avoid timeout
+		c.SSEvent("alert", map[string]interface{}{
+			"message": "Connected to the server",
+		})
 		streamer(c, alertsChan)
 	})
 
-	router.Run(":8080")
+	router.Run(":8090")
 }
 
 func streamer(c *gin.Context, alertsChan chan alerts.Alerts) {
@@ -66,6 +70,11 @@ func streamer(c *gin.Context, alertsChan chan alerts.Alerts) {
 				"severity":    alert.Severity,
 				"source":      alert.Source,
 				"createdAt":   alert.CreatedAt,
+				"runtimeMetrics": map[string]interface{}{
+					"numGoroutine": alert.RuntimeMetrics.NumGoroutine,
+					"cpuUsage":     alert.RuntimeMetrics.CpuUsage,
+					"ramUsage":     alert.RuntimeMetrics.RamUsage,
+				},
 			})
 			return true
 		case <-c.Writer.CloseNotify():

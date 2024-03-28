@@ -1,0 +1,15 @@
+rule Rule1 "Memory Limit check Critical" salience 10 {
+    when
+        InputData.Type == "Memory" && InputData.Severity == "Critical"
+    then
+        OutputData.Remedy = "Stop all processes";
+        InputData.Severity = "Handled";
+}
+
+rule Rule2 "Memory Limit check Severe" salience 9 {
+    when 
+        InputData.Type == "Memory" && InputData.Severity == "Severe"
+    then
+        OutputData.Remedy = "Stop some processes";
+        InputData.Severity = "Handled";
+}
