@@ -1,15 +1,16 @@
 package main
 
 import (
-	"asmr/alerts"
-	"asmr/kafka"
 	"log"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/IBM/sarama"
-	"github.com/google/uuid"
+	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
+	// "github.com/google/uuid"
 )
 
 func main() {
@@ -26,9 +27,17 @@ func main() {
 
 	defer producer.Close()
 
-	alertConf := alerts.NewAlertConfig("High CPU usage", "critical")
-	alert := alerts.NewAlert(alertConf, uuid.New(), "CPU")
-
+	// alertConf := alerts.NewAlertConfig("High CPU usage", "critical")
+	// alert := alerts.NewAlert(alertConf, uuid.New(), "CPU")
+	alert := rule_engine.AlertInput{
+		ID:        "ID1",
+		Category:  "Memory",
+		Source:    "Hardware",
+		Origin:    "NodeA",
+		Params:    &rule_engine.Memory{Usage: 76, PageFaults: 30, SwapUsge: 2},
+		CreatedAt: time.Now(),
+		Handled:   false,
+	}
 	// create a timer to send the alert every 5 seconds
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -39,7 +48,7 @@ func main() {
 	for {
 		select {
 		case <-ticker.C:
-			if err := producer.SendAlert("alerts", alert); err != nil {
+			if err := producer.SendAlert("alerts", &alert); err != nil {
 				logger.Printf("Error sending alert: %s\n", err)
 			}
 			logger.Printf("Sent alert: %v\n", alert)
