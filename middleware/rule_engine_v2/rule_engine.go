@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	rule_engine "rule_engine/engine"
 	"sync"
 	"time"
+
+	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/rule_engine@rule_engine"
 )
 
 type AlertContext struct {
