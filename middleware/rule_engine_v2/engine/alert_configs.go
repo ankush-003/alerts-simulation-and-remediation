@@ -6,13 +6,13 @@ import "time"
 // Holds all the input to rule engine parameters
 
 type AlertInput struct {
-	ID        string
-	Category  string
-	Source    string
-	Origin    string
-	Params    ParamInput
-	CreatedAt time.Time
-	Handled   bool
+	ID        string     `json:"id"`
+	Category  string     `json:"category"`
+	Source    string     `json:"source"`
+	Origin    string     `json:"origin"`
+	Params    ParamInput `json:"params"`
+	CreatedAt time.Time  `json:"createdAt"`
+	Handled   bool       `json:"handled"`
 }
 
 func (alert *AlertInput) DataKey() string {
@@ -34,9 +34,9 @@ func (alert *AlertOutput) DataKey() string {
 // Paging activity (page faults/second)
 
 type Memory struct {
-	Usage      uint
-	PageFaults uint
-	SwapUsge   uint
+	Usage      uint `json:"usage"`
+	PageFaults uint `json:"pageFaults"`
+	SwapUsage  uint `json:"swapUsage"`
 }
 
 func (mem *Memory) DataKey() string {
@@ -50,8 +50,8 @@ func (mem *Memory) DataKey() string {
 // Context switches per second
 
 type CPU struct {
-	Utilization uint
-	Temperature uint
+	Utilization uint `json:"utilization"`
+	Temperature uint `json:"temperature"`
 }
 
 func (cpu *CPU) DataKey() string {
@@ -64,9 +64,9 @@ func (cpu *CPU) DataKey() string {
 // Throughput (MB/s)
 
 type Disk struct {
-	Usage       uint
-	IOPs        uint
-	ThroughtPut uint
+	Usage       uint `json:"usage"`
+	IOPs        uint `json:"iops"`
+	ThroughtPut uint `json:"throughPut"`
 }
 
 // Network:
@@ -75,9 +75,9 @@ type Disk struct {
 // Latency (ms)
 
 type Network struct {
-	Traffic    uint
-	PacketLoss uint
-	Latency    uint
+	Traffic    uint `json:"traffic"`
+	PacketLoss uint `json:"packetLoss"`
+	Latency    uint `json:"latency"`
 }
 
 // Power:
@@ -86,9 +86,9 @@ type Network struct {
 // Remaining runtime on battery (minutes) (laptops)
 
 type Power struct {
-	BatteryLevel uint
-	Consumption  uint
-	Efficiency   uint
+	BatteryLevel uint `json:"batteryLevel"`
+	Consumption  uint `json:"consumption"`
+	Efficiency   uint `json:"efficiency"`
 }
 
 // Applications:
@@ -97,14 +97,14 @@ type Power struct {
 // Max Memory usage by all Processes
 
 type Applications struct {
-	Processes   uint
-	MaxCPUusage uint
-	MaxMemUsage uint
+	Processes   uint `json:"processes"`
+	MaxCPUusage uint `json:"maxCPUusage"`
+	MaxMemUsage uint `json:"maxMemUsage"`
 }
 
 type Security struct {
-	LoginAttempts  uint
-	FailedLogins   uint
-	SuspectedFiles uint
-	IDSEvents      uint
+	LoginAttempts  uint `json:"loginAttempts"`
+	FailedLogins   uint `json:"failedLogins"`
+	SuspectedFiles uint `json:"suspectedFiles"`
+	IDSEvents      uint `json:"idsEvents"`
 }
