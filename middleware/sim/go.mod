@@ -1,4 +1,4 @@
-module github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/asmr
+module github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim
 
 go 1.22.0
 
