@@ -1,4 +1,4 @@
-module github.com/ankush-003/alerts-simulation-and-remediation/tree/rule_engine/middleware/rule_engine_v2
+module github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2
 
 go 1.22.1
 
