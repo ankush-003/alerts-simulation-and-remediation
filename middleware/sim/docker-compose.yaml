@@ -19,30 +19,30 @@ services:
   #   networks:
   #     - test
 
-  # prometheus-sim:
-  #   image: prom/prometheus
-  #   container_name: prometheus-sim
-  #   command:
-  #     - '--config.file=/etc/prometheus/prometheus.yaml'
-  #   ports:
-  #     - 9090:9090
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ../prometheus/prometheus:/etc/prometheus
-  #     - prom_data:/prometheus
-  #   networks:
-  #     - test  
+  prometheus-sim:
+    image: prom/prometheus
+    container_name: prometheus-sim
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ../prometheus/prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    networks:
+      - test  
 
-  # grafana-sim:
-  #   image: grafana/grafana
-  #   container_name: grafana-sim
-  #   restart: unless-stopped
-  #   ports:
-  #    - '3001:3000'
-  #   volumes:
-  #     - grafana-storage:/var/lib/grafana
-  #   networks:
-  #     - test  
+  grafana-sim:
+    image: grafana/grafana
+    container_name: grafana-sim
+    restart: unless-stopped
+    ports:
+     - '3001:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    networks:
+      - test  
 
   # cadvisor:
   #   image: gcr.io/cadvisor/cadvisor:latest
@@ -93,9 +93,9 @@ services:
   #   networks:
   #     - test  
 
-# volumes:
-#   grafana-storage: {}
-#   prom_data:
+volumes:
+  grafana-storage: {}
+  prom_data:
 
 networks:
   test:
