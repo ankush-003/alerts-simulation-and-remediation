@@ -1,11 +1,13 @@
 package store
 
 import (
+	"asmr/alerts"
 	"context"
 	"encoding/json"
-	"asmr/alerts"
-	"github.com/redis/go-redis/v9"
 	"fmt"
+	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type RedisStore struct {
@@ -15,6 +17,8 @@ type RedisStore struct {
 func NewRedisStore(ctx context.Context, addr string) (*RedisStore, error) {
 
 	opt, _ := redis.ParseURL(addr)	
+	// add dial timeout
+	opt.DialTimeout = 10 * time.Second
 
 	client := redis.NewClient(opt)
 
