@@ -1,13 +1,14 @@
 package kafka
 
 import (
-	"asmr/alerts"
 	"encoding/json"
 	"fmt"
-	"github.com/IBM/sarama"
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/IBM/sarama"
+	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 )
 
 type Producer struct {
@@ -34,7 +35,7 @@ func (p *Producer) Close() {
 	}
 }
 
-func (p *Producer) SendAlert(topic string, alert *alerts.Alerts) error {
+func (p *Producer) SendAlert(topic string, alert *rule_engine.AlertInput) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
 

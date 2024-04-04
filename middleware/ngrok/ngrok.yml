@@ -1,0 +1,7 @@
+version: "2"
+authtoken: 2dJ4h5IrX3GGGvtoUyznlVufm3a_3USGCKPGLQWfaz9cmimFg
+tunnels:
+  first:
+    addr: localhost:6969
+    proto: http
+    domain: capital-adder-mistakenly.ngrok-free.app

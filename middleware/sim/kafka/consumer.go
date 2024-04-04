@@ -1,13 +1,15 @@
 package kafka
 
 import (
-	"asmr/alerts"
+	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
+
 	"encoding/json"
 	"fmt"
-	"github.com/IBM/sarama"
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/IBM/sarama"
 )
 
 type Consumer struct {
@@ -34,7 +36,7 @@ func (c *Consumer) Close() {
 	}
 }
 
-func (c *Consumer) ConsumeAlerts(topic string, alertsChan chan alerts.Alerts, doneChan chan struct{}) {
+func (c *Consumer) ConsumeAlerts(topic string, alertsChan chan rule_engine.AlertInput, doneChan chan struct{}) {
 	partitionConsumer, err := c.Consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
 
 	if err != nil {
@@ -57,7 +59,7 @@ consumerLoop:
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			var alert alerts.Alerts
+			var alert rule_engine.AlertInput
 			err := json.Unmarshal(msg.Value, &alert)
 			if err != nil {
 				c.Logger.Printf("Error unmarshalling alert: %s\n", err)
