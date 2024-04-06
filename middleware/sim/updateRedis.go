@@ -4,6 +4,7 @@ import (
 	"asmr/alerts"
 	"asmr/store"
 	"context"
+
 	// "encoding/json"
 	"fmt"
 	"log"
@@ -70,12 +71,7 @@ func main() {
 	}
 
 	// Update Redis with the alert configs
-	redisStore, redisErr := store.NewRedisStore(ctx, redis_addr) 
-	if redisErr != nil {
-		fmt.Println("Error creating Redis store")
-		panic(redisErr)
-	}
-	
+	redisStore := store.NewRedisStore(redis_addr)
 	for _, alertConfig := range alertConfigs {
 		err = redisStore.StoreAlertConfig(ctx, &alertConfig)
 		if err != nil {

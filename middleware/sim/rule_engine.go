@@ -7,10 +7,12 @@ import (
 	"sync"
 	"time"
 
-	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
+	"asmr/kafka"
+	"asmr/rule_engine"
+
 	"github.com/joho/godotenv"
 )
+
 
 type AlertContext struct {
 	AlertInput  *rule_engine.AlertInput

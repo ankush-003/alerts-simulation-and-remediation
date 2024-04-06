@@ -3,6 +3,7 @@ package main
 import (
 	"asmr/alerts"
 	"asmr/kafka"
+	"asmr/rule_engine"
 	"asmr/store"
 	"context"
 	"fmt"
@@ -18,6 +19,7 @@ import (
 )
 
 func main() {
+	
 	// loading .env file
 	err_load := godotenv.Load()
 	if err_load != nil {
@@ -28,7 +30,7 @@ func main() {
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
 	// config
-	time_limit := 10 // 2 min
+	time_limit := 60 // 1 minute
 
 	broker := os.Getenv("KAFKA_BROKER")
 	redis_addr := os.Getenv("REDIS_ADDR")
@@ -61,14 +63,7 @@ func main() {
 		redis_addr = "localhost:6379"
 	}
 
-	ctx := context.Background()
-
-	redis, redisErr := store.NewRedisStore(ctx, redis_addr)
-
-	if redisErr != nil {
-		logger.Fatalf("Error creating redis store: %s\n", redisErr)
-	}
-
+	redis := store.NewRedisStore(redis_addr)
 	defer redis.Close()
 
 	alertsConfigChan := make(chan *alerts.AlertConfig)
@@ -76,17 +71,19 @@ func main() {
 	signalChan := make(chan os.Signal, 2)
 	signal.Notify(signalChan, os.Interrupt)
 
+	ctx := context.Background()
+	
 	// Creating Alerts
 	logger.Println("Creating alerts")
 
 	go func() {
-		// set lower limit of 1min and upper of 1min + time_limit
-		interval := time.Duration(rand.Intn(time_limit)+1) * time.Minute
+		interval := time.Duration(rand.Intn(time_limit)) * time.Second
 		ticker := time.NewTicker(interval)
 		for {
 			select {
 			case <-ticker.C:
 				alertConfig, err := redis.GetRandomAlertConfig(ctx)
+
 				if err != nil {
 					logger.Printf("Error getting random alert: %s\n", err)
 					continue
@@ -108,14 +105,32 @@ func main() {
 		case alertConfig := <-alertsConfigChan:
 			wg.Add(1)
 			go func(alertConfig *alerts.AlertConfig) {
+				// fmt.Println(alertConfig.ID)
 				defer wg.Done()
-				newALert := alerts.NewAlert(alertConfig, NodeID, "demoSimulator")
-				producer.SendAlert("alerts", newALert)
-				err := redis.PublishAlerts(ctx, newALert)
-				if err != nil {
-					logger.Printf("Error publishing alert: %s\n", err)
+
+				
+
+				
+				
+				
+
+
+				testInput:= rule_engine.AlertInput{
+					"alert-1",
+					"Memory",
+					"router",
+					"datacenter",
+					rule_engine.Memory{
+						Usage:      1024,
+						PageFaults: 10,
+						SwapUsage:  512,
+					},
+					time.Now(),
+					false,
 				}
-				logger.Printf("Alert sent: %s\n", newALert)
+				
+
+				producer.SendAlert("alerts", testInput)
 			}(alertConfig)
 
 		case <-signalChan:

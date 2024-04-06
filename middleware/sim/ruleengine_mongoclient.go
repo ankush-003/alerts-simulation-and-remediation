@@ -2,14 +2,13 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"net/smtp"
 	"sync"
 	"time"
 
 	//"rule_engine_demo/mongo"
+	"asmr/mailserver"
 
 	"github.com/hyperjumptech/grule-rule-engine/ast"
 	"github.com/hyperjumptech/grule-rule-engine/builder"
@@ -165,7 +164,7 @@ func NewRuleEngineSvc() *RuleEngineSvc {
 func buildRuleEngine() {
 	ruleBuilder := builder.NewRuleBuilder(&knowledgeLibrary)
 
-	client, err := mongo.NewClient(options.Client().ApplyURI("<your_uri>"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		panic(err)
 	}
@@ -253,105 +252,9 @@ func NewAlert(alertInput *AlertInput, ruleEngineSvc *RuleEngineSvc) {
 	fmt.Println("Alert -> ", alertInput)
 	fmt.Println("Severity -> ", alertContext.AlertOutput.Severity)
 	fmt.Println("Remedy -> ", alertContext.AlertOutput.Remedy)
-	// mailer := gomail.NewMessage()
-	// mailer.SetHeader("From", "alertssim@gmail.com")
-	// mailer.SetHeader("To", "alertssim@gmail.com")
-	// mailer.SetHeader("Subject", "Alerts for Node")
-	// // fmt.Println("In mailserver", alert)
-	// body := "Alerts for Node:\n"
-	// // fmt.Println(alertsnew)
-	// body += fmt.Sprintf("Severity: %s\nRemedy: %s\n", alertContext.AlertOutput.Severity, alertContext.AlertOutput.Remedy)
-	// //body := fmt.Sprintf("Severity: %s\nRemedy: %s\n", alertContext.AlertOutput.Severity, alertContext.AlertOutput.Remedy)
-	// // Set email body
-	// mailer.SetBody("text/plain", body)
 
-	// // // SMTP server settings
-	// dialer := gomail.NewDialer("smtp.gmail.com", 587, os.Getenv("MAIL_ADDR"), os.Getenv("APP_PWD"))
-
-	// err := dialer.DialAndSend(mailer)
-	// fmt.Println(err)
-
-	// if err != nil {
-	// 	fmt.Println("Email sending failed!")
-	// }
-	// fmt.Println("Email sent successfully!")
-	senderEmail := "alertssim@gmail.com"
-	senderPassword := "alertssim123"
-
-	// Recipient email address
-	recipientEmail := "alertssim@gmail.com"
-
-	// SMTP server configuration
-	smtpHost := "smtp.gmail.com"
-	smtpPort := "587"
-
-	// Content of the email
-	aI := alertInput
-	S := alertContext.AlertOutput.Severity
-	R := alertContext.AlertOutput.Remedy
-
-	// Compose the email body
-	emailBody := fmt.Sprintf("Alert -> %s\nSeverity -> %s\nRemedy -> %s", aI, S, R)
-
-	// Message content
-	subject := "Alert Notification"
-
-	// Compose the full email
-	emailMessage := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s", senderEmail, recipientEmail, subject, emailBody)
-
-	// Authenticate with the SMTP server
-	auth := smtp.PlainAuth("", senderEmail, senderPassword, smtpHost)
-
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true, // Example setting for testing, change as required
-		ServerName:         smtpHost,
-	}
-
-	// Connect to the SMTP server
-	smtpConn, err := smtp.Dial(fmt.Sprintf("%s:%s", smtpHost, smtpPort))
-	if err != nil {
-		fmt.Println("Error connecting to the SMTP server:", err)
-		return
-	}
-	defer smtpConn.Close()
-
-	// Start TLS encryption
-	if err := smtpConn.StartTLS(tlsConfig); err != nil {
-		fmt.Println("Error starting TLS:", err)
-		return
-	}
-
-	// Authenticate
-	if err := smtpConn.Auth(auth); err != nil {
-		fmt.Println("Error authenticating:", err)
-		return
-	}
-
-	// Set sender and recipient
-	if err := smtpConn.Mail(senderEmail); err != nil {
-		fmt.Println("Error setting sender:", err)
-		return
-	}
-	if err := smtpConn.Rcpt(recipientEmail); err != nil {
-		fmt.Println("Error setting recipient:", err)
-		return
-	}
-
-	// Send email
-	dataWriter, err := smtpConn.Data()
-	if err != nil {
-		fmt.Println("Error preparing email data:", err)
-		return
-	}
-	defer dataWriter.Close()
-
-	_, err = dataWriter.Write([]byte(emailMessage))
-	if err != nil {
-		fmt.Println("Error writing email data:", err)
-		return
-	}
-
-	fmt.Println("Email sent successfully!")
+	mailserver.SendEmail(alertInput.ID, alertInput.Category, alertInput.CreatedAt, alertInput.Handled, alertInput.Source, alertInput.Origin, alertContext.AlertOutput.Severity, alertContext.AlertOutput.Remedy, nil)
+	
 }
 
 var wg sync.WaitGroup
@@ -364,7 +267,7 @@ func main() {
 		Category:  "Memory",
 		Source:    "Hardware",
 		Origin:    "NodeA",
-		Params:    &Memory{Usage: 98, PageFaults: 30, SwapUsge: 2},
+		Params:    &Memory{Usage: 10, PageFaults: 30, SwapUsge: 2},
 		CreatedAt: time.Now(),
 		Handled:   false,
 	}

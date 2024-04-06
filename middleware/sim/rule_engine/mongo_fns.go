@@ -1,4 +1,4 @@
-package mongo
+package rule_engine
 
 import (
 	"context"

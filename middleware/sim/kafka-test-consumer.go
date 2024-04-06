@@ -1,12 +1,11 @@
 package main
 
 import (
-	"asmr/alerts"
 	"asmr/kafka"
-	"asmr/mailserver"
 	"log"
 	"os"
 
+	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"github.com/joho/godotenv"
 )
 
@@ -38,7 +37,7 @@ func main() {
 
 	defer consumer.Close()
 
-	alertsChan := make(chan alerts.Alerts)
+	alertsChan := make(chan rule_engine.AlertInput)
 	doneChan := make(chan struct{})
 
 	logger.Println("Consuming alerts !")
@@ -51,7 +50,7 @@ consumerLoop:
 		case alert := <-alertsChan:
 			// fmt.Println(alert)
 			logger.Printf("Received alert: alrtID: %s, NodeID: %s, Description: %s, Severity: %s, Source: %s, CreatedAt: %s\n", alert.ID.String(), alert.NodeID.String(), alert.Description, alert.Severity, alert.Source, alert.CreatedAt)
-			mailserver.SendEmail(alert, nil)
+			// mailserver.SendEmail(alert, nil)
 		case <-doneChan:
 			break consumerLoop
 		}

@@ -10,7 +10,7 @@ type AlertInput struct {
 	Category  string     `json:"category"`
 	Source    string     `json:"source"`
 	Origin    string     `json:"origin"`
-	Params    ParamInput `json:"params"`
+	// Params    ParamInput `json:"params"`
 	CreatedAt time.Time  `json:"createdAt"`
 	Handled   bool       `json:"handled"`
 }
