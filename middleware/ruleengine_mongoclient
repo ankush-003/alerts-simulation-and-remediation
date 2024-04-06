@@ -165,7 +165,7 @@ func NewRuleEngineSvc() *RuleEngineSvc {
 func buildRuleEngine() {
 	ruleBuilder := builder.NewRuleBuilder(&knowledgeLibrary)
 
-	client, err := mongo.NewClient(options.Client().ApplyURI("<your_uri>"))
+	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://pes1202102575:Shreya2003@cluster0.m1lej8m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"))
 	if err != nil {
 		panic(err)
 	}
@@ -253,30 +253,9 @@ func NewAlert(alertInput *AlertInput, ruleEngineSvc *RuleEngineSvc) {
 	fmt.Println("Alert -> ", alertInput)
 	fmt.Println("Severity -> ", alertContext.AlertOutput.Severity)
 	fmt.Println("Remedy -> ", alertContext.AlertOutput.Remedy)
-	// mailer := gomail.NewMessage()
-	// mailer.SetHeader("From", "alertssim@gmail.com")
-	// mailer.SetHeader("To", "alertssim@gmail.com")
-	// mailer.SetHeader("Subject", "Alerts for Node")
-	// // fmt.Println("In mailserver", alert)
-	// body := "Alerts for Node:\n"
-	// // fmt.Println(alertsnew)
-	// body += fmt.Sprintf("Severity: %s\nRemedy: %s\n", alertContext.AlertOutput.Severity, alertContext.AlertOutput.Remedy)
-	// //body := fmt.Sprintf("Severity: %s\nRemedy: %s\n", alertContext.AlertOutput.Severity, alertContext.AlertOutput.Remedy)
-	// // Set email body
-	// mailer.SetBody("text/plain", body)
-
-	// // // SMTP server settings
-	// dialer := gomail.NewDialer("smtp.gmail.com", 587, os.Getenv("MAIL_ADDR"), os.Getenv("APP_PWD"))
-
-	// err := dialer.DialAndSend(mailer)
-	// fmt.Println(err)
-
-	// if err != nil {
-	// 	fmt.Println("Email sending failed!")
-	// }
-	// fmt.Println("Email sent successfully!")
+	
 	senderEmail := "alertssim@gmail.com"
-	senderPassword := "alertssim123"
+	senderPassword := "bhcmqtqvhsadiada"
 
 	// Recipient email address
 	recipientEmail := "alertssim@gmail.com"
