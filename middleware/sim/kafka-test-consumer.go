@@ -5,6 +5,7 @@ import (
 	"asmr/kafka"
 	"log"
 	"os"
+
 	"github.com/joho/godotenv"
 )
 
@@ -17,7 +18,7 @@ func main() {
 	}
 
 	logger := log.New(os.Stdout, "kafka-consumer: ", log.LstdFlags)
-	
+
 	broker := os.Getenv("KAFKA_BROKER")
 	if broker == "" {
 		broker = "localhost:9092"
@@ -26,8 +27,8 @@ func main() {
 	brokers := []string{broker}
 	username := os.Getenv("KAFKA_USERNAME")
 	password := os.Getenv("KAFKA_PASSWORD")
-	
-	config := kafka.NewConfig(username, password) 
+
+	config := kafka.NewConfig(username, password)
 
 	consumer, err := kafka.NewConsumer(brokers, config, logger)
 	if err != nil {

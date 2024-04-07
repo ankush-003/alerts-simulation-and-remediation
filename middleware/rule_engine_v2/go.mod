@@ -5,15 +5,15 @@ replace github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_
 go 1.22.1
 
 require (
-	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240401042334-cef28be02f9d
+	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240401113245-e3fff9af67ba
 	github.com/hyperjumptech/grule-rule-engine v1.15.0
 	go.mongodb.org/mongo-driver v1.14.0
 )
 
 require (
-	github.com/IBM/sarama v1.42.2 // indirect
+	github.com/IBM/sarama v1.43.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/eapache/go-resiliency v1.5.0 // indirect
+	github.com/eapache/go-resiliency v1.6.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
