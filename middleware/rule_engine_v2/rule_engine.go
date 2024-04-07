@@ -43,7 +43,6 @@ func NewAlert(alertInput *rule_engine.AlertInput, ruleEngineSvc *rule_engine.Rul
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Here")
 	// Methods after parsing the alert
 	fmt.Println("Alert -> ", alertInput)
 	fmt.Println("Severity -> ", alertContext.AlertOutput.Severity)
@@ -57,6 +56,7 @@ func NewAlert(alertInput *rule_engine.AlertInput, ruleEngineSvc *rule_engine.Rul
 var wg sync.WaitGroup
 
 func main() {
+
 	ruleEngineSvc := rule_engine.NewRuleEngineSvc()
 
 	alertA := rule_engine.AlertInput{
@@ -86,10 +86,11 @@ func main() {
 	go NewAlert(&alertB, ruleEngineSvc)
 
 	wg.Wait()
+	kafka_consumer(ruleEngineSvc)
 
 }
 
-func kafka_consumer() {
+func kafka_consumer(ruleEngineSvc *rule_engine.RuleEngineSvc) {
 
 	// loading .env file
 	err_load := godotenv.Load()
@@ -102,7 +103,7 @@ func kafka_consumer() {
 	broker := os.Getenv("KAFKA_BROKER")
 	if broker == "" {
 		broker = "localhost:9092"
-		logger.Println("KAFKA_BROKER not set, using default %s\n", broker)
+		logger.Println("KAFKA_BROKER not set, using default ", broker)
 	}
 	brokers := []string{broker}
 	username := os.Getenv("KAFKA_USERNAME")
@@ -123,16 +124,24 @@ func kafka_consumer() {
 	logger.Println("Consuming alerts !")
 
 	go consumer.ConsumeAlerts("alerts", alertsChan, doneChan)
-consumerLoop:
 
+consumerLoop:
 	for {
 		select {
 		case alert := <-alertsChan:
-			logger.Printf("Received alert: alrtID: %s, NodeID: %s, Description: %s, Severity: %s, Source: %s, CreatedAt: %s\t", alert.ID.String(), alert.NodeID.String(), alert.Description, alert.Severity, alert.Source, alert.CreatedAt)
-			logger.Printf("RuntimeMetrics: NumGoroutine: %d, CpuUsage: %f, RamUsage: %f\n\n", alert.RuntimeMetrics.NumGoroutine, alert.RuntimeMetrics.CpuUsage, alert.RuntimeMetrics.RamUsage)
-
+			printStruct(alert)
+			wg.Add(1)
+			NewAlert(&alert, ruleEngineSvc)
 		case <-doneChan:
 			break consumerLoop
 		}
 	}
+}
+
+func printStruct(alert rule_engine.AlertInput) {
+	fmt.Println("ID: ", alert.ID)
+	fmt.Println("Category: ", alert.Category)
+	fmt.Println("Origin: ", alert.Origin)
+	fmt.Println("Source: ", alert.Source)
+	fmt.Println("Params: ", alert.Params)
 }

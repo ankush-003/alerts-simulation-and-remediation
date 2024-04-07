@@ -59,14 +59,42 @@ consumerLoop:
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			var alert rule_engine.AlertInput
-			err := json.Unmarshal(msg.Value, &alert)
+			var data map[string]interface{}
+			err := json.Unmarshal(msg.Value, &data)
 			if err != nil {
 				c.Logger.Printf("Error unmarshalling alert: %s\n", err)
 				continue
 			}
-			// c.Logger.Printf("Consumed alert: %v\n", alert)
-			alertsChan <- alert
+			fmt.Println(data)
+			paramsData := data["Params"].(map[string]interface{})
+			paramsType := data["Category"].(string)
+
+			var parsedAlert rule_engine.AlertInput
+			parsedAlert.Category = data["Category"].(string)
+			parsedAlert.ID = data["ID"].(string)
+			parsedAlert.Source = data["Source"].(string)
+			parsedAlert.Handled = data["Handled"].(bool)
+			switch paramsType {
+			case "Memory":
+				var memory rule_engine.Memory
+				paramsBytes, err := json.Marshal(paramsData) // Convert map to JSON bytes
+				if err != nil {
+					c.Logger.Printf("Error unmarshalling alert: %s\n", err)
+					continue
+				}
+				err = json.Unmarshal(paramsBytes, &memory)
+				if err != nil {
+					c.Logger.Printf("Error unmarshalling alert: %s\n", err)
+					continue
+				}
+				parsedAlert.Params = &memory
+			case "CPU":
+			default:
+				c.Logger.Printf("Error unmarshalling alert: %s\n", err)
+			}
+			// err = json.Unmarshal(msg.Value, &alert)
+			// c.Logger.Printf("Consumed alert: %v\n", parsedAlert)
+			alertsChan <- parsedAlert
 		case <-signals:
 			c.Logger.Printf("Interrupted\n")
 			break consumerLoop
