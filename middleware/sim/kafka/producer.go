@@ -7,8 +7,9 @@ import (
 	"os"
 	"os/signal"
 
+	"asmr/rule_engine"
+
 	"github.com/IBM/sarama"
-	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 )
 
 type Producer struct {

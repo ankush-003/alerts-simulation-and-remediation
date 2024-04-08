@@ -1,10 +1,12 @@
-package rule_engine
+package mongo
 
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -41,13 +43,19 @@ func Close(client *mongo.Client, ctx context.Context,
 }
 
 func GetRules() ([]byte, error) {
-	client, ctx, cancelFunc, err := Connect("mongodb://127.0.0.1:27017")
+
+	err := godotenv.Load()
+	if err != nil {
+		return nil, err
+	}
+	MONGO_URI := os.Getenv("MONGO_URI")
+	client, ctx, cancelFunc, err := Connect(MONGO_URI)
 	if err != nil {
 		panic(err)
 	}
 	defer Close(client, ctx, cancelFunc)
 
-	db := client.Database("hpe_cty")
+	db := client.Database("AlertSimAndRemediation")
 	collection := db.Collection("Rules")
 	curr, err := collection.Find(ctx, bson.M{}, options.Find().SetProjection(bson.D{{Key: "_id", Value: 0}}))
 	if err != nil {

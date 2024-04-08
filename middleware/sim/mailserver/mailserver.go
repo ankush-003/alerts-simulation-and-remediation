@@ -1,7 +1,9 @@
 package mailserver
 
 import (
+	"asmr/rule_engine"
 	"fmt"
+	"os"
 	"time"
 
 	gomail "gopkg.in/mail.v2"
@@ -9,7 +11,7 @@ import (
 
 
 
-func SendEmail(ID string, Category string, CreatedAt time.Time, Handled bool, Source string, Origin string, Severity string, Remedy string, err error) error {
+func SendEmail(ID string, Category string, CreatedAt time.Time, Handled bool, Source string, Origin string, Params rule_engine.ParamInput, Severity string, Remedy string, err error) error {
 
 	
 	mailer := gomail.NewMessage()
@@ -18,7 +20,7 @@ func SendEmail(ID string, Category string, CreatedAt time.Time, Handled bool, So
 	mailer.SetHeader("Subject", "Alerts for Node")
 	// fmt.Println("In mailserver", alert)
 	body := "Alerts for Node:\n"
-	// fmt.Println(alertsnew)
+	// fmt.Println(Severity, Remedy)
 	// fmt.Println(ID, Category, CreatedAt, Handled, Source, Origin, Severity, Remedy)
 	body += fmt.Sprintf(
 		"%s: %d, %s: %s, %s: %s, %s: %t, %s: %s, %s: %s, %s: %s, %s: %s",
@@ -28,6 +30,7 @@ func SendEmail(ID string, Category string, CreatedAt time.Time, Handled bool, So
 		"Handled", Handled,
 		"Source", Source,
 		"Origin", Origin,
+		"Params", Params,
 		"Severity", Severity,
 		"Remedy", Remedy,
 	)	
@@ -35,8 +38,8 @@ func SendEmail(ID string, Category string, CreatedAt time.Time, Handled bool, So
 	mailer.SetBody("text/plain", body)
 
 	// // SMTP server settings
-	dialer := gomail.NewDialer("smtp.gmail.com",587, "alertssim@gmail.com", "")
-	fmt.Println(dialer)
+	dialer := gomail.NewDialer("smtp.gmail.com",587, "alertssim@gmail.com", os.Getenv("APP_PWD"))
+	// fmt.Println(dialer)
 
 	err = dialer.DialAndSend(mailer)
 	fmt.Println(err)

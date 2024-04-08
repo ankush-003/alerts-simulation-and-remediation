@@ -5,7 +5,8 @@ import (
 	"log"
 	"os"
 
-	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
+	"asmr/rule_engine"
+
 	"github.com/joho/godotenv"
 )
 

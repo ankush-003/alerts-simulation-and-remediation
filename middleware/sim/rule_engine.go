@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"asmr/kafka"
+	"asmr/mailserver"
 	"asmr/rule_engine"
 
 	"github.com/joho/godotenv"
 )
-
 
 type AlertContext struct {
 	AlertInput  *rule_engine.AlertInput
@@ -45,11 +45,12 @@ func NewAlert(alertInput *rule_engine.AlertInput, ruleEngineSvc *rule_engine.Rul
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Here")
 	// Methods after parsing the alert
-	fmt.Println("Alert -> ", alertInput)
-	fmt.Println("Severity -> ", alertContext.AlertOutput.Severity)
+	printStruct(*alertInput)
+	fmt.Println("Severity -> here", alertContext.AlertOutput.Severity)
 	fmt.Println("Remedy -> ", alertContext.AlertOutput.Remedy)
+	mailserver.SendEmail(alertInput.ID, alertInput.Category, alertInput.CreatedAt, alertInput.Handled, alertInput.Source,alertInput.Origin, alertInput.Params,alertContext.AlertOutput.Severity, alertContext.AlertOutput.Remedy, nil)
+
 	// Find the user associated with alertContext.AlertInput.source Node
 	// Call Rest server notification handler
 	// Call mail server
@@ -59,6 +60,7 @@ func NewAlert(alertInput *rule_engine.AlertInput, ruleEngineSvc *rule_engine.Rul
 var wg sync.WaitGroup
 
 func main() {
+
 	ruleEngineSvc := rule_engine.NewRuleEngineSvc()
 
 	alertA := rule_engine.AlertInput{
@@ -83,16 +85,18 @@ func main() {
 
 	wg.Add(1)
 	wg.Add(1)
+	wg.Add(1)
 
 	go NewAlert(&alertA, ruleEngineSvc)
 	go NewAlert(&alertB, ruleEngineSvc)
+	go kafka_consumer(ruleEngineSvc)
 
 	wg.Wait()
 
 }
 
-func kafka_consumer() {
-
+func kafka_consumer(ruleEngineSvc *rule_engine.RuleEngineSvc) {
+	defer wg.Done()
 	// loading .env file
 	err_load := godotenv.Load()
 	if err_load != nil {
@@ -104,7 +108,7 @@ func kafka_consumer() {
 	broker := os.Getenv("KAFKA_BROKER")
 	if broker == "" {
 		broker = "localhost:9092"
-		logger.Println("KAFKA_BROKER not set, using default %s\n", broker)
+		logger.Println("KAFKA_BROKER not set, using default ", broker)
 	}
 	brokers := []string{broker}
 	username := os.Getenv("KAFKA_USERNAME")
@@ -125,16 +129,26 @@ func kafka_consumer() {
 	logger.Println("Consuming alerts !")
 
 	go consumer.ConsumeAlerts("alerts", alertsChan, doneChan)
-consumerLoop:
 
+consumerLoop:
 	for {
 		select {
 		case alert := <-alertsChan:
-			logger.Printf("Received alert: alrtID: %s, NodeID: %s, Description: %s, Severity: %s, Source: %s, CreatedAt: %s\t", alert.ID.String(), alert.NodeID.String(), alert.Description, alert.Severity, alert.Source, alert.CreatedAt)
-			logger.Printf("RuntimeMetrics: NumGoroutine: %d, CpuUsage: %f, RamUsage: %f\n\n", alert.RuntimeMetrics.NumGoroutine, alert.RuntimeMetrics.CpuUsage, alert.RuntimeMetrics.RamUsage)
+			printStruct(alert)
+
+			wg.Add(1)
+			NewAlert(&alert, ruleEngineSvc)
 
 		case <-doneChan:
 			break consumerLoop
 		}
 	}
+}
+
+func printStruct(alert rule_engine.AlertInput) {
+	fmt.Println("ID: ", alert.ID)
+	fmt.Println("Category: ", alert.Category)
+	fmt.Println("Origin: ", alert.Origin)
+	fmt.Println("Source: ", alert.Source)
+	fmt.Println("Params: ", alert.Params)
 }

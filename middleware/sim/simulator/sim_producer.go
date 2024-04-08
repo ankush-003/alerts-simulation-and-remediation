@@ -6,10 +6,10 @@ import (
 	"os/signal"
 	"time"
 
+	"asmr/kafka"
+	"asmr/rule_engine"
+
 	"github.com/IBM/sarama"
-	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
-	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 	// "github.com/google/uuid"
 )
 
@@ -34,7 +34,7 @@ func main() {
 		Category:  "Memory",
 		Source:    "Hardware",
 		Origin:    "NodeA",
-		Params:    &rule_engine.Memory{Usage: 76, PageFaults: 30, SwapUsge: 2},
+		Params:    &rule_engine.Memory{Usage: 100, PageFaults: 30, SwapUsage: 2},
 		CreatedAt: time.Now(),
 		Handled:   false,
 	}

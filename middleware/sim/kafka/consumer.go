@@ -1,13 +1,12 @@
 package kafka
 
 import (
-	"encoding/json"
+	"asmr/rule_engine"
+
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
-
-	"asmr/rule_engine"
 
 	"github.com/IBM/sarama"
 )
@@ -59,14 +58,13 @@ consumerLoop:
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			var alert rule_engine.AlertInput
-			err := json.Unmarshal(msg.Value, &alert)
-			if err != nil {
-				c.Logger.Printf("Error unmarshalling alert: %s\n", err)
-				continue
+			var parsedAlert rule_engine.AlertInput
+			if err := parsedAlert.Unmarshal(msg.Value); err != nil {
+				c.Logger.Println("ERR: ", err)
 			}
-			// c.Logger.Printf("Consumed alert: %v\n", alert)
-			alertsChan <- alert
+			// err = json.Unmarshal(msg.Value, &alert)
+			// c.Logger.Printf("Consumed alert: %v\n", parsedAlert)
+			alertsChan <- parsedAlert
 		case <-signals:
 			c.Logger.Printf("Interrupted\n")
 			break consumerLoop
