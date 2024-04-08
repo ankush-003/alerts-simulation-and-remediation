@@ -3,7 +3,6 @@ package kafka
 import (
 	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -59,39 +58,8 @@ consumerLoop:
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			var data map[string]interface{}
-			err := json.Unmarshal(msg.Value, &data)
-			if err != nil {
-				c.Logger.Printf("Error unmarshalling alert: %s\n", err)
-				continue
-			}
-			fmt.Println(data)
-			paramsData := data["params"].(map[string]interface{})
-			paramsType := data["category"].(string)
-
 			var parsedAlert rule_engine.AlertInput
-			parsedAlert.Category = data["category"].(string)
-			parsedAlert.ID = data["id"].(string)
-			parsedAlert.Source = data["source"].(string)
-			parsedAlert.Handled = data["handled"].(bool)
-			switch paramsType {
-			case "Memory":
-				var memory rule_engine.Memory
-				paramsBytes, err := json.Marshal(paramsData) // Convert map to JSON bytes
-				if err != nil {
-					c.Logger.Printf("Error unmarshalling alert: %s\n", err)
-					continue
-				}
-				err = json.Unmarshal(paramsBytes, &memory)
-				if err != nil {
-					c.Logger.Printf("Error unmarshalling alert: %s\n", err)
-					continue
-				}
-				parsedAlert.Params = &memory
-			case "CPU":
-			default:
-				c.Logger.Printf("Error unmarshalling alert: %s\n", err)
-			}
+			parsedAlert.Unmarshal(msg.Value)
 			// err = json.Unmarshal(msg.Value, &alert)
 			// c.Logger.Printf("Consumed alert: %v\n", parsedAlert)
 			alertsChan <- parsedAlert
