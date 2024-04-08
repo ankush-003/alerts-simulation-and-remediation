@@ -34,7 +34,7 @@ func main() {
 		Category:  "Memory",
 		Source:    "Hardware",
 		Origin:    "NodeA",
-		Params:    &rule_engine.Memory{Usage: 76, PageFaults: 30, SwapUsge: 2},
+		Params:    &rule_engine.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
 		CreatedAt: time.Now(),
 		Handled:   false,
 	}

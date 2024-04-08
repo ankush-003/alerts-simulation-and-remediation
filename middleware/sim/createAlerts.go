@@ -1,7 +1,7 @@
 package main
 
 import (
-	"asmr/alerts"
+	"/asmr/alerts"
 	"asmr/store"
 	"context"
 	"fmt"

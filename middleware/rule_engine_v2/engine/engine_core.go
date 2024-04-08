@@ -2,8 +2,9 @@ package rule_engine
 
 import (
 	"fmt"
-	"os"
+	// "os"
 
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
 	"github.com/hyperjumptech/grule-rule-engine/ast"
 	"github.com/hyperjumptech/grule-rule-engine/builder"
 	"github.com/hyperjumptech/grule-rule-engine/engine"
@@ -24,8 +25,7 @@ type RuleOutput interface {
 
 type ParamInput interface {
 	DataKey() string
-} 
-
+}
 
 // configs associated with each input
 type RuleConfig interface {
@@ -57,21 +57,21 @@ func buildRuleEngine() {
 	// ruleFile := pkg.NewFileResource("/home/abhayjo/Desktop/HPE_CTY/rule_engine/engine/rules.grl")
 
 	// Read rules from JSON file
-	rules, _ := os.Open("/home/abhayjo/Desktop/HPE_CTY/middleware/rule_engine_v2/engine/rules.json")
-	ruleResource := pkg.NewReaderResource(rules)
-	ruleFile, _ := pkg.NewJSONResourceFromResource(ruleResource)
-	err := ruleBuilder.BuildRuleFromResource("Rules", "0.0.1", ruleFile)
+	// rules, _ := os.Open("/home/abhayjo/Desktop/HPE_CTY/middleware/rule_engine_v2/engine/rules.json")
+	// ruleResource := pkg.NewReaderResource(rules)
+	// ruleFile, _ := pkg.NewJSONResourceFromResource(ruleResource)
+	// err := ruleBuilder.BuildRuleFromResource("Rules", "0.0.1", ruleFile)
 
-	// // Read rules from MongoDB
-	// rules, err := mongo.GetRules()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	// Read rules from MongoDB
+	rules, err := mongo.GetRules()
+	if err != nil {
+		panic(err)
+	}
 
-	// ruleset, _ := pkg.ParseJSONRuleset(rules)
+	ruleset, _ := pkg.ParseJSONRuleset(rules)
 	// fmt.Println(ruleset)
-	// ruleFile := pkg.NewBytesResource([]byte(ruleset))
-	// err = ruleBuilder.BuildRuleFromResource("Rules", "0.0.1", ruleFile)
+	ruleFile := pkg.NewBytesResource([]byte(ruleset))
+	err = ruleBuilder.BuildRuleFromResource("Rules", "0.0.1", ruleFile)
 
 	if err != nil {
 		fmt.Println("Error: ", err)

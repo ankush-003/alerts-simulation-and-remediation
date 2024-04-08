@@ -44,7 +44,7 @@ func NewAlert(alertInput *rule_engine.AlertInput, ruleEngineSvc *rule_engine.Rul
 		panic(err)
 	}
 	// Methods after parsing the alert
-	fmt.Println("Alert -> ", alertInput)
+	printStruct(*alertInput)
 	fmt.Println("Severity -> ", alertContext.AlertOutput.Severity)
 	fmt.Println("Remedy -> ", alertContext.AlertOutput.Remedy)
 	// Find the user associated with alertContext.AlertInput.source Node
@@ -81,17 +81,18 @@ func main() {
 
 	wg.Add(1)
 	wg.Add(1)
+	wg.Add(1)
 
 	go NewAlert(&alertA, ruleEngineSvc)
 	go NewAlert(&alertB, ruleEngineSvc)
+	go kafka_consumer(ruleEngineSvc)
 
 	wg.Wait()
-	kafka_consumer(ruleEngineSvc)
 
 }
 
 func kafka_consumer(ruleEngineSvc *rule_engine.RuleEngineSvc) {
-
+	defer wg.Done()
 	// loading .env file
 	err_load := godotenv.Load()
 	if err_load != nil {

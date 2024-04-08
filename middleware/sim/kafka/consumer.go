@@ -66,14 +66,14 @@ consumerLoop:
 				continue
 			}
 			fmt.Println(data)
-			paramsData := data["Params"].(map[string]interface{})
-			paramsType := data["Category"].(string)
+			paramsData := data["params"].(map[string]interface{})
+			paramsType := data["category"].(string)
 
 			var parsedAlert rule_engine.AlertInput
-			parsedAlert.Category = data["Category"].(string)
-			parsedAlert.ID = data["ID"].(string)
-			parsedAlert.Source = data["Source"].(string)
-			parsedAlert.Handled = data["Handled"].(bool)
+			parsedAlert.Category = data["category"].(string)
+			parsedAlert.ID = data["id"].(string)
+			parsedAlert.Source = data["source"].(string)
+			parsedAlert.Handled = data["handled"].(bool)
 			switch paramsType {
 			case "Memory":
 				var memory rule_engine.Memory
