@@ -59,7 +59,9 @@ consumerLoop:
 		select {
 		case msg := <-partitionConsumer.Messages():
 			var parsedAlert rule_engine.AlertInput
-			parsedAlert.Unmarshal(msg.Value)
+			if err := parsedAlert.Unmarshal(msg.Value); err != nil {
+				c.Logger.Println("ERR: ", err)
+			}
 			// err = json.Unmarshal(msg.Value, &alert)
 			// c.Logger.Printf("Consumed alert: %v\n", parsedAlert)
 			alertsChan <- parsedAlert

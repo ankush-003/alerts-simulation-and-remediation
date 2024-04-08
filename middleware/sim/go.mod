@@ -6,7 +6,7 @@ go 1.22.1
 
 require (
 	github.com/IBM/sarama v1.43.1
-	github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2 v0.0.0-20240407180307-354102d6df5f
+	github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2 v0.0.0-20240408093123-f203865585fc
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1

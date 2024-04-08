@@ -5,7 +5,7 @@ replace github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_
 go 1.22.1
 
 require (
-	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240407180307-354102d6df5f
+	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240408093123-f203865585fc
 	github.com/hyperjumptech/grule-rule-engine v1.15.0
 	go.mongodb.org/mongo-driver v1.14.0
 )

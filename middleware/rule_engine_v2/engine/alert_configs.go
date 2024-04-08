@@ -3,8 +3,6 @@ package rule_engine
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"reflect"
 	"time"
 )
 
@@ -38,47 +36,47 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 	alert.Source = data["source"].(string)
 	alert.Handled = data["handled"].(bool)
 	alert.Origin = data["origin"].(string)
-	alert.CreatedAt = data["createdAt"].(time.Time)
+	alert.CreatedAt, _ = time.Parse(time.RFC3339, data["createdAt"].(string))
 	switch paramsType {
 	case "Memory":
 		var memory Memory
-		if err := unmarshalParam(memory, paramsData); err != nil {
+		if err := memory.Unmarshal(paramsData); err != nil {
 			return err
 		}
 		alert.Params = &memory
 	case "CPU":
 		var cpu CPU
-		if err := unmarshalParam(cpu, paramsData); err != nil {
+		if err := cpu.Unmarshal(paramsData); err != nil {
 			return err
 		}
 		alert.Params = &cpu
 	case "Disk":
 		var disk Disk
-		if err := unmarshalParam(disk, paramsData); err != nil {
+		if err := disk.Unmarshal(paramsData); err != nil {
 			return err
 		}
 		alert.Params = &disk
 	case "Network":
 		var network Network
-		if err := unmarshalParam(network, paramsData); err != nil {
+		if err := network.Unmarshal(paramsData); err != nil {
 			return err
 		}
 		alert.Params = &network
 	case "Power":
 		var power Power
-		if err := unmarshalParam(power, paramsData); err != nil {
+		if err := power.Unmarshal(paramsData); err != nil {
 			return err
 		}
 		alert.Params = &power
 	case "Applications":
 		var apps Applications
-		if err := unmarshalParam(apps, paramsData); err != nil {
+		if err := apps.Unmarshal(paramsData); err != nil {
 			return err
 		}
 		alert.Params = &apps
 	case "Security":
 		var security Security
-		if err := unmarshalParam(security, paramsData); err != nil {
+		if err := security.Unmarshal(paramsData); err != nil {
 			return err
 		}
 		alert.Params = &security
@@ -198,28 +196,63 @@ func (sec *Security) DataKey() string {
 	return "SecInput"
 }
 
-func unmarshalParam(ptr interface{}, paramsData map[string]interface{}) error {
-	structType := reflect.TypeOf(ptr).Elem()
-	fmt.Println(structType)
-	paramsField, found := structType.FieldByName("Params")
-	if !found {
-		return errors.New("struct has no field named Params")
+func (mem *Memory) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData) // Convert map to JSON bytes
+	if err != nil {
+		return err
 	}
-	fmt.Println(paramsField.Name)
-	expectedType := paramsField.Type.Elem()
+	return json.Unmarshal(paramsBytes, mem)
 
-	paramsValue := reflect.New(expectedType).Interface()
+}
 
+func (cpu *CPU) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData) // Convert map to JSON bytes
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(paramsBytes, cpu)
+}
+
+func (disk *Disk) Unmarshal(paramsData map[string]interface{}) error {
 	paramsBytes, err := json.Marshal(paramsData)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(paramsBytes, paramsValue)
+	return json.Unmarshal(paramsBytes, disk)
+}
+
+// Network Unmarshal
+func (network *Network) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData)
 	if err != nil {
 		return err
 	}
+	return json.Unmarshal(paramsBytes, network)
+}
 
-	// Set the value of the Params field in the original struct
-	reflect.ValueOf(ptr).Elem().FieldByName("Params").Set(reflect.ValueOf(paramsValue))
-	return nil
+// Power Unmarshal
+func (power *Power) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(paramsBytes, power)
+}
+
+// Applications Unmarshal
+func (applications *Applications) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(paramsBytes, applications)
+}
+
+// Security Unmarshal
+func (security *Security) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(paramsBytes, security)
 }
