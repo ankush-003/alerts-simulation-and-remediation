@@ -3,12 +3,13 @@ package main
 import (
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 
-	"asmr/store"
 	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 
 	"github.com/joho/godotenv"
 )
@@ -26,7 +27,7 @@ func main() {
 		log.Println("REDIS_ADDR not set, using default localhost:6379")
 	}
 
-	redis := store.NewRedisStore(redis_addr)
+	redis, _ := store.NewRedisStore(redis_addr)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)

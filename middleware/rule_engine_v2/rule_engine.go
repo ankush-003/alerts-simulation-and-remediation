@@ -8,6 +8,7 @@ import (
 	"time"
 
 	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 	"github.com/joho/godotenv"
 )
@@ -30,7 +31,7 @@ func (alertContext *AlertContext) ParamInput() rule_engine.ParamInput {
 	return *alertContext.AlertParam
 }
 
-func NewAlert(alertInput *rule_engine.AlertInput, ruleEngineSvc *rule_engine.RuleEngineSvc) {
+func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngineSvc) {
 	defer wg.Done()
 
 	alertContext := AlertContext{
@@ -59,22 +60,22 @@ func main() {
 
 	ruleEngineSvc := rule_engine.NewRuleEngineSvc()
 
-	alertA := rule_engine.AlertInput{
+	alertA := alerts.AlertInput{
 		ID:        "ID1",
 		Category:  "Memory",
 		Source:    "Hardware",
 		Origin:    "NodeA",
-		Params:    &rule_engine.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
+		Params:    &alerts.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
 		CreatedAt: time.Now(),
 		Handled:   false,
 	}
 
-	alertB := rule_engine.AlertInput{
+	alertB := alerts.AlertInput{
 		ID:        "ID2",
 		Category:  "CPU",
 		Source:    "Hardware",
 		Origin:    "NodeA",
-		Params:    &rule_engine.CPU{Utilization: 40, Temperature: 65},
+		Params:    &alerts.CPU{Utilization: 40, Temperature: 65},
 		CreatedAt: time.Now(),
 		Handled:   false,
 	}
@@ -119,7 +120,7 @@ func kafka_consumer(ruleEngineSvc *rule_engine.RuleEngineSvc) {
 
 	defer consumer.Close()
 
-	alertsChan := make(chan rule_engine.AlertInput)
+	alertsChan := make(chan alerts.AlertInput)
 	doneChan := make(chan struct{})
 
 	logger.Println("Consuming alerts !")
@@ -139,7 +140,7 @@ consumerLoop:
 	}
 }
 
-func printStruct(alert rule_engine.AlertInput) {
+func printStruct(alert alerts.AlertInput) {
 	fmt.Println("ID: ", alert.ID)
 	fmt.Println("Category: ", alert.Category)
 	fmt.Println("Origin: ", alert.Origin)
