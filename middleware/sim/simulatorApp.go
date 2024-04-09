@@ -4,7 +4,6 @@ import (
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 
-	"asmr/store"
 	"context"
 	"fmt"
 	"log"
@@ -13,6 +12,8 @@ import (
 	"os/signal"
 	"sync"
 	"time"
+
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"

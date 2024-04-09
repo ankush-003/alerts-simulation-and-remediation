@@ -3,10 +3,11 @@ package main
 import (
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 
-	"asmr/store"
 	"context"
 	"log"
 	"os"
+
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 
 	"github.com/joho/godotenv"
 )
