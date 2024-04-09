@@ -14,9 +14,9 @@ import (
 )
 
 type AlertContext struct {
-	AlertInput  *rule_engine.AlertInput
-	AlertOutput *rule_engine.AlertOutput
-	AlertParam  *rule_engine.ParamInput
+	AlertInput  *alerts.AlertInput
+	AlertOutput *alerts.AlertOutput
+	AlertParam  *alerts.ParamInput
 }
 
 func (alertContext *AlertContext) RuleInput() rule_engine.RuleInput {
@@ -36,7 +36,7 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 
 	alertContext := AlertContext{
 		alertInput,
-		&rule_engine.AlertOutput{Remedy: "Too be decided soon...", Severity: "NIL"},
+		&alerts.AlertOutput{Remedy: "Too be decided soon...", Severity: "NIL"},
 		&alertInput.Params,
 	}
 
@@ -48,6 +48,7 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 	printStruct(*alertInput)
 	fmt.Println("Severity -> ", alertContext.AlertOutput.Severity)
 	fmt.Println("Remedy -> ", alertContext.AlertOutput.Remedy)
+	
 	// Find the user associated with alertContext.AlertInput.source Node
 	// Call Rest server notification handler
 	// Call mail server
