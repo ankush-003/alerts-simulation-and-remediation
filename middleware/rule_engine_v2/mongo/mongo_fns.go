@@ -43,7 +43,6 @@ func Close(client *mongo.Client, ctx context.Context,
 }
 
 func GetRules() ([]byte, error) {
-
 	err := godotenv.Load()
 	if err != nil {
 		return nil, err
