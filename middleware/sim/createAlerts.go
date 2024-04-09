@@ -1,7 +1,8 @@
 package main
 
 import (
-	"/asmr/alerts"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+
 	"asmr/store"
 	"context"
 	"fmt"
@@ -18,7 +19,7 @@ func main() {
 	if err_load != nil {
 		log.Fatalf("Error loading .env file: %s\n", err_load)
 	}
-	
+
 	redis_addr := os.Getenv("REDIS_ADDR")
 	if redis_addr == "" {
 		redis_addr = "localhost:6379"

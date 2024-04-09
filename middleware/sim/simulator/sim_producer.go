@@ -8,8 +8,9 @@ import (
 
 	"github.com/IBM/sarama"
 	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
-	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
+	// rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	// "github.com/google/uuid"
 )
 
@@ -29,12 +30,12 @@ func main() {
 
 	// alertConf := alerts.NewAlertConfig("High CPU usage", "critical")
 	// alert := alerts.NewAlert(alertConf, uuid.New(), "CPU")
-	alert := rule_engine.AlertInput{
+	alert := alerts.AlertInput{
 		ID:        "ID1",
 		Category:  "Memory",
 		Source:    "Hardware",
 		Origin:    "NodeA",
-		Params:    &rule_engine.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
+		Params:    &alerts.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
 		CreatedAt: time.Now(),
 		Handled:   false,
 	}

@@ -1,12 +1,13 @@
 package kafka
 
 import (
-	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
-
+	// rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 
 	"github.com/IBM/sarama"
 )
@@ -35,7 +36,7 @@ func (c *Consumer) Close() {
 	}
 }
 
-func (c *Consumer) ConsumeAlerts(topic string, alertsChan chan rule_engine.AlertInput, doneChan chan struct{}) {
+func (c *Consumer) ConsumeAlerts(topic string, alertsChan chan alerts.AlertInput, doneChan chan struct{}) {
 	partitionConsumer, err := c.Consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
 
 	if err != nil {
@@ -58,7 +59,7 @@ consumerLoop:
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			var parsedAlert rule_engine.AlertInput
+			var parsedAlert alerts.AlertInput
 			if err := parsedAlert.Unmarshal(msg.Value); err != nil {
 				c.Logger.Println("ERR: ", err)
 			}

@@ -1,9 +1,12 @@
 package main
 
 import (
-	"asmr/alerts"
-	"asmr/store"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+
 	"context"
+
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
+
 	// "encoding/json"
 	"fmt"
 	"log"
@@ -48,7 +51,7 @@ func main() {
 		panic(err)
 	}
 
-	if(len(alertConfigs) == 0) {
+	if len(alertConfigs) == 0 {
 		log.Println("No alert configs found")
 		log.Println("Creating alert configs")
 		// Create predefined alert configs
@@ -70,12 +73,12 @@ func main() {
 	}
 
 	// Update Redis with the alert configs
-	redisStore, redisErr := store.NewRedisStore(ctx, redis_addr) 
+	redisStore, redisErr := store.NewRedisStore(ctx, redis_addr)
 	if redisErr != nil {
 		fmt.Println("Error creating Redis store")
 		panic(redisErr)
 	}
-	
+
 	for _, alertConfig := range alertConfigs {
 		err = redisStore.StoreAlertConfig(ctx, &alertConfig)
 		if err != nil {
@@ -88,7 +91,6 @@ func main() {
 	for _, alertConfig := range alertConfigs {
 		fmt.Printf("Alert Config: %v\n", alertConfig)
 	}
-
 
 	if err != nil {
 		panic(err)

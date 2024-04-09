@@ -1,10 +1,12 @@
 package store
 
 import (
-	"asmr/alerts"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+
 	"context"
 	// "encoding/json"
 	"fmt"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -12,7 +14,7 @@ import (
 
 type MongoStore struct {
 	Client *mongo.Client
-	Coll *mongo.Collection
+	Coll   *mongo.Collection
 }
 
 func NewMongoStore(ctx context.Context, uri, db, coll string) (*MongoStore, error) {
@@ -59,6 +61,6 @@ func (s *MongoStore) InsertAlertConfigs(ctx context.Context, alertConfigs []aler
 			return fmt.Errorf("could not insert alert config: %v", err)
 		}
 	}
-	
+
 	return nil
 }

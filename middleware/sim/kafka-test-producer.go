@@ -1,12 +1,14 @@
 package main
 
 import (
-	"asmr/alerts"
-	"asmr/kafka"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
+
 	"log"
 	"os"
 	"os/signal"
 	"time"
+
 	"github.com/IBM/sarama"
 	"github.com/google/uuid"
 )
@@ -27,7 +29,6 @@ func main() {
 
 	alertConf := alerts.NewAlertConfig("High CPU usage", "critical")
 	alert := alerts.NewAlert(alertConf, uuid.New(), "CPU")
-
 
 	// create a timer to send the alert every 5 seconds
 	ticker := time.NewTicker(5 * time.Second)

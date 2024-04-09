@@ -1,8 +1,9 @@
 package main
 
 import (
-	"asmr/alerts"
-	"asmr/kafka"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
+
 	"io"
 	"log"
 	"os"

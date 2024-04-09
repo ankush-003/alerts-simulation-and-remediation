@@ -8,7 +8,8 @@ import (
 	"os/signal"
 
 	"github.com/IBM/sarama"
-	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
+	// rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 )
 
 type Producer struct {
@@ -35,7 +36,7 @@ func (p *Producer) Close() {
 	}
 }
 
-func (p *Producer) SendAlert(topic string, alert *rule_engine.AlertInput) error {
+func (p *Producer) SendAlert(topic string, alert *alerts.AlertInput) error {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt)
 
