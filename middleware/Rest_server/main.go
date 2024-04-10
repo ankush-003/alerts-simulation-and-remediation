@@ -27,6 +27,7 @@ func main(){
 
 	routes.AuthRoutes(router)
 	routes.UserRoutes(router)
+	routes.PostRemedy(router)
 	
 	//routes.AlertConfigRoutes(router)
 
@@ -34,9 +35,9 @@ func main(){
 		c.JSON(200, gin.H{"success":"Access granted for home"})
 	})
 
-	router.GET("/alert-config", func(c *gin.Context){
+	/*router.GET("/alertConfig", func(c *gin.Context){
 		c.JSON(200, gin.H{"success":"Access granted for alert-config"})
-	})
+	})*/
 
 	router.Run(":" + port)
 }	

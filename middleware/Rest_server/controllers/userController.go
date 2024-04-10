@@ -10,6 +10,7 @@ import(
 "github.com/gin-gonic/gin"
 "github.com/go-playground/validator/v10"
 helper "Rest_server/helpers"
+middleware "Rest_server/middleware"
 "Rest_server/models"
 "Rest_server/database"
 "golang.org/x/crypto/bcrypt"
@@ -20,6 +21,8 @@ helper "Rest_server/helpers"
 )
 
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
+var alertCollection *mongo.Collection = database.OpenCollection(database.Client, "alerts")
+
 var validate = validator.New()
 
 func HashPassword(password string) string{
@@ -202,3 +205,145 @@ func GetUser() gin.HandlerFunc{
 		c.JSON(http.StatusOK, user)
 	}
 }
+
+/*func AlertCon() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var alertConfig models.AlertConfig
+
+		if err := c.ShouldBindJSON(&alertConfig); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		filter := bson.M{"id": alertConfig.ID}
+		var existingAlert models.AlertConfig
+		err := alertCollection.FindOne(context.Background(), filter).Decode(&existingAlert)
+		if err == nil {
+			update := bson.M{"$set": bson.M{
+				"description": alertConfig.Description,
+				"severity":    alertConfig.Severity,
+			}}
+			_, err := alertCollection.UpdateOne(context.Background(), filter, update)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update alert"})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "Alert updated successfully", "alertConfig": alertConfig})
+		} else if err == mongo.ErrNoDocuments {
+			_, err := alertCollection.InsertOne(context.Background(), alertConfig)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"message": "Alert inserted successfully", "alertConfig": alertConfig})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to query database"})
+		}
+	}
+}*/
+
+func PostRem() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var alert models.Alerts
+		//var alertOutput models.AlertOutput
+
+		// Bind alert and alertOutput from the request
+		if err := c.ShouldBindJSON(&alert); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		/*if err := c.ShouldBindJSON(&alertOutput); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}*/
+
+		// Get the user ID from the context or request headers
+		userIDHandler := middleware.GetUserIdContext()
+		userIDHandler(c)
+		userID := c.GetString("uid")
+		//fmt.Print("userid=", userID)
+		if userID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "user ID not found"})
+			return
+		}
+
+		
+		// Check for duplicate alert
+        if isDuplicate, err := checkForDuplicateAlert(alert); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check for duplicate alert"})
+            return
+        } else if isDuplicate {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Duplicate alert found"})
+            return
+        }
+        
+
+		// Insert the alert into the alerts collection
+		result, err := alertCollection.InsertOne(context.Background(), alert)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
+			return
+		}
+
+		// Add the alert ID to the user's Alerts array field
+
+		/*res, err := userCollection.update(
+   		{ _id: ObjectId(userID) }, // Query to find the document
+   		{ $push: { Alerts: { $each: [alert.ID] } } } // Update operation
+		)*/
+
+		alertIDString := alert.ID.String()
+
+		// Define the filter to match the userID
+		filter := bson.M{"user_id": userID}
+
+		// Define the update operation to push alertIDString into the Alert array
+		update := bson.M{"$push": bson.M{"Alert": alertIDString}}
+
+		// Perform the update operation
+		res, err := userCollection.UpdateOne(context.Background(), filter, update)
+		if err != nil {
+    		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user document"})
+    		return
+		}
+
+		// Use res for error checking or logging if needed
+		if res.ModifiedCount == 0 {
+    		// Log a message indicating that no documents were modified
+    		log.Println("No documents were modified during the update operation")
+		} else {
+    		// Log a message indicating the number of documents modified
+    		log.Printf("%d document(s) were modified during the update operation\n", res.ModifiedCount)
+		}
+
+		// Return a success response with the inserted alert
+		c.JSON(http.StatusOK, gin.H{"message": "Alert inserted successfully", "alertID": result.InsertedID})
+	}
+}
+
+func checkForDuplicateAlert(alert models.Alerts) (bool, error) {
+    // Query the MongoDB collection to check for duplicates
+    // Exclude _id field from the filter
+    filter := bson.M{
+        "id":          alert.ID,
+        "nodeid":      alert.NodeID,
+        "description": alert.Description,
+        "severity":    alert.Severity,
+        "source":      alert.Source,
+        "createdat":   alert.CreatedAt,
+        // Add other fields as needed
+    }
+
+    // Count the number of documents that match the filter
+    count, err := alertCollection.CountDocuments(context.Background(), filter)
+    if err != nil {
+        // Return error if there's any issue with the database query
+        return false, err
+    }
+
+    // If count is greater than 0, a duplicate alert exists
+    return count > 0, nil
+}
+
+
+

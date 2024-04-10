@@ -7,7 +7,8 @@ import {
     Github,
     Box,
     ChevronRight,
-    ChevronLeft
+    ChevronLeft,
+    PlugZap
   } from "lucide-react"
 import { Nav } from '@/components/Nav'
 import { Button } from '@/components/ui/button'
@@ -46,6 +47,12 @@ export default function Sidebar() {
                 icon: FlaskConical,
                 variant: "default",
                 href: "/alert-config",
+              },
+              {
+                title: "realtime alerts",
+                icon: PlugZap,
+                variant: "default",
+                href: "/realtime",
               },
               {
                 title: "logs",
