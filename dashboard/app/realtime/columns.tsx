@@ -19,13 +19,14 @@ const dateSchema = 'yyyy-MM-dd HH:mm:ss'
 
 const alertSchema = z.object({
     id: z.string(),
-    node_id: z.string(),
-    description: z.string(),
-    severity: z.string(),
+    origin: z.string(),
+    category: z.string(),
+    // severity: z.string(),
     source: z.string(),
-    created_at: z.string(),
+    createdAt: z.string(),
+    handled: z.boolean(),
     status: z.enum(["open", "ack"]),
-    runtime_metrics: z.object({
+    params: z.object({
         num_goroutine: z.number(),
         cpu_usage: z.number(),
         ram_usage: z.number(),
@@ -41,25 +42,25 @@ export const columns: ColumnDef<Alert>[] = [
     },
     {
         header: "Node Id",
-        accessorKey: "node_id",
+        accessorKey: "origin",
     },
     {
-        header: "Description",
-        accessorKey: "description",
+        header: "Category",
+        accessorKey: "category",
     },
-    {
-        header: "Severity",
-        accessorKey: "severity",
-    },
+    // {
+    //     header: "Severity",
+    //     accessorKey: "severity",
+    // },
     {
         header: "Source",
         accessorKey: "source",
     },
     {
         header: "Created At",
-        accessorKey: "created_at",
+        accessorKey: "createdAt",
         cell: ({ row }) => {
-            const dateString: string = row.getValue("created_at")
+            const dateString: string = row.getValue("createdAt")
             const date = parse(dateString, dateSchema, new Date())
 
             return (
@@ -75,11 +76,11 @@ export const columns: ColumnDef<Alert>[] = [
     },
     {
         header: "Details",
-        accessorKey: "runtime_metrics",
+        accessorKey: "params",
         cell: ({ row }) => {
-            const dateString: string = row.getValue("created_at")
+            const dateString: string = row.getValue("createdAt")
             const date = parse(dateString, dateSchema, new Date())
-            const runtime_metrics: Alert["runtime_metrics"] = row.getValue("runtime_metrics")
+            const runtime_metrics: Alert["params"] = row.getValue("params")
             console.log(runtime_metrics)
 
             return (
@@ -94,7 +95,7 @@ export const columns: ColumnDef<Alert>[] = [
                             <AlertDialogTitle>Are you sure you want to acknowledge this alert?</AlertDialogTitle>
                             <AlertDialogDescription>
                                 Alert ID: {row.getValue("id")}
-                                Description : {row.getValue("description")}
+                                Category : {row.getValue("category")}
                             
                                 {/* Node Runtime Metrics:
                                 <ul>
