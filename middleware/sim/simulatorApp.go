@@ -26,7 +26,9 @@ func main() {
 		log.Fatalf("Error loading .env file: %s\n", err_load)
 	}
 
+	// new uuid from env
 	NodeID := uuid.New()
+	StaticId := os.Getenv("ID")
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
 	// config
@@ -111,7 +113,7 @@ func main() {
 			wg.Add(1)
 			go func(alertConfig *alerts.AlertConfig) {
 				defer wg.Done()
-				newALert := alerts.NewAlert(alertConfig, NodeID, "demoSimulator")
+				newALert := alerts.NewAlertInput(alertConfig, StaticId, "CPU")
 				producer.SendAlert("alerts", newALert)
 				err := redis.PublishAlerts(ctx, newALert)
 				if err != nil {

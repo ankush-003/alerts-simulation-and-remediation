@@ -1,12 +1,21 @@
 services:
-  simulator:
+  simulator1:
     build: .
     # depends_on:
     #   - redis
     networks:
       - test
-    deploy:
-      replicas: 2
+    # deploy:
+    #   replicas: 2
+    environment:
+      - ID=1
+
+  simulator2:
+    build: .
+    networks:
+      - test
+    environment:
+      - ID=2      
 
   # redis:
   #   image: redis/redis-stack
@@ -92,6 +101,8 @@ services:
   #     - 6969:9100
   #   networks:
   #     - test  
+
+
 
 volumes:
   grafana-storage: {}

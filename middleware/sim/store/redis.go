@@ -145,7 +145,7 @@ func (r *RedisStore) GetRandomAlertConfig(ctx context.Context) (alerts.AlertConf
 	return alertConfig, nil
 }
 
-func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.Alerts) error {
+func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.AlertInput) error {
 	alertBytes, err := json.Marshal(alert)
 	if err != nil {
 		return err

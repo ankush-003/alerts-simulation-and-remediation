@@ -26,8 +26,8 @@ func main() {
 		redis_addr = "localhost:6379"
 		log.Println("REDIS_ADDR not set, using default localhost:6379")
 	}
-
-	redis, _ := store.NewRedisStore(redis_addr)
+	ctx := context.Background()
+	redis, _ := store.NewRedisStore(ctx, redis_addr)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
@@ -36,7 +36,6 @@ func main() {
 	descriptions := []string{"High CPU usage", "Low disk space", "Network down", "Service unavailable"}
 	severities := []string{"critical", "warning", "info"}
 
-	ctx := context.Background()
 	// push predefined alert configs to redis
 	for _, desc := range descriptions {
 		for _, sev := range severities {

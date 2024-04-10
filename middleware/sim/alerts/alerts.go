@@ -26,15 +26,14 @@ type PromResponse struct {
 func fetchMetrics(url string) (float64, error) {
 	resp, err := http.Get(url)
 
-	
 	if err != nil {
 		return -1, fmt.Errorf("error fetching metrics: %v", err)
 	}
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return -1, fmt.Errorf("prometheus API returned non-200 status")
 	}
-	
+
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
@@ -61,15 +60,27 @@ func fetchMetrics(url string) (float64, error) {
 		return -1, fmt.Errorf("unable to parse value")
 	}
 
-	usage,_ := strconv.ParseFloat(valueTr, 64)
+	usage, _ := strconv.ParseFloat(valueTr, 64)
 
 	return usage, nil
 }
 
 type RuntimeMetrics struct {
-	NumGoroutine           uint64 `json:"num_goroutine"`
-	CpuUsage               float64 `json:"cpu_usage"`
-	RamUsage               float64 `json:"ram_usage"`
+	NumGoroutine uint64  `json:"num_goroutine"`
+	CpuUsage     float64 `json:"cpu_usage"`
+	RamUsage     float64 `json:"ram_usage"`
+}
+
+func (*RuntimeMetrics) DataKey() string {
+	return "RuntimeMetrics"
+}
+
+func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(paramsBytes, rt)
 }
 
 func NewRuntimeMetrics() *RuntimeMetrics {
@@ -86,12 +97,26 @@ func NewRuntimeMetrics() *RuntimeMetrics {
 		fmt.Println("Error:", err)
 	}
 	return &RuntimeMetrics{
-		NumGoroutine:        uint64(runtime.NumGoroutine()),
-		CpuUsage: 			 CpuUsage,
-		RamUsage: 			 RamUsage,
+		NumGoroutine: uint64(runtime.NumGoroutine()),
+		CpuUsage:     CpuUsage,
+		RamUsage:     RamUsage,
 	}
 }
 
+func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *AlertInput {
+	return &AlertInput{
+		// ID:        uuid.New().String(),
+		ID:        NodeID,
+		Category:  alertConfig.Description,
+		Source:    source,
+		Origin:    NodeID,
+		Params:    NewRuntimeMetrics(),
+		CreatedAt: time.Now(),
+		Handled:   false,
+	}
+}
+
+// older version alert
 type Alerts struct {
 	ID             uuid.UUID       `json:"id"`
 	NodeID         uuid.UUID       `json:"node_id"`
@@ -110,12 +135,12 @@ type AlertConfig struct {
 
 func NewAlert(alertConfig *AlertConfig, NodeID uuid.UUID, source string) *Alerts {
 	return &Alerts{
-		ID:          uuid.New(),
-		NodeID:      NodeID,
-		Description: alertConfig.Description,
-		Severity:    alertConfig.Severity,
-		Source:      source,
-		CreatedAt:   time.Now().Format(time.DateTime),
+		ID:             uuid.New(),
+		NodeID:         NodeID,
+		Description:    alertConfig.Description,
+		Severity:       alertConfig.Severity,
+		Source:         source,
+		CreatedAt:      time.Now().Format(time.DateTime),
 		RuntimeMetrics: NewRuntimeMetrics(),
 	}
 }
