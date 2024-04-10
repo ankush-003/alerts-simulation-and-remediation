@@ -1,17 +1,18 @@
 package main
 
 import (
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
-
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"os/signal"
 	"sync"
 	"time"
+
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
+
+	//"math/rand"
 
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 
@@ -32,7 +33,7 @@ func main() {
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
 
 	// config
-	time_limit := 10 // 2 min
+	// time_limit := 10 // 2 min
 
 	broker := os.Getenv("KAFKA_BROKER")
 	redis_addr := os.Getenv("REDIS_ADDR")
@@ -85,8 +86,8 @@ func main() {
 
 	go func() {
 		// set lower limit of 1min and upper of 1min + time_limit
-		interval := time.Duration(rand.Intn(time_limit)+1) * time.Minute
-		ticker := time.NewTicker(interval)
+		// interval := time.Duration(rand.Intn(time_limit)+1) * time.Minute
+		ticker := time.NewTicker(30 * time.Second)
 		for {
 			select {
 			case <-ticker.C:
@@ -95,6 +96,7 @@ func main() {
 					logger.Printf("Error getting random alert: %s\n", err)
 					continue
 				}
+				logger.Printf("Creating alert: %s\n", alertConfig)
 				alertsConfigChan <- &alertConfig
 
 			case <-signalChan:
@@ -114,6 +116,7 @@ func main() {
 			go func(alertConfig *alerts.AlertConfig) {
 				defer wg.Done()
 				newALert := alerts.NewAlertInput(alertConfig, StaticId, "CPU")
+				logger.Printf("Sending alert: %s\n", newALert)
 				producer.SendAlert("alerts", newALert)
 				err := redis.PublishAlerts(ctx, newALert)
 				if err != nil {
