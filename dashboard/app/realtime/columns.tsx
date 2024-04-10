@@ -94,7 +94,7 @@ export const columns: ColumnDef<Alert>[] = [
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you sure you want to acknowledge this alert?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        <p className="text-center">
+                                        {/* <p className="text-center">
                                             Alert ID: {row.getValue("id")}
                                         </p>
                                         <p className="text-center">
@@ -110,7 +110,52 @@ export const columns: ColumnDef<Alert>[] = [
                                             </ul>
                                         </p>
 
-                                        Created At: {format(date, "yyyy-MM-dd HH:mm:ss")}
+                                        Created At: {format(date, "yyyy-MM-dd HH:mm:ss")} */}
+                                        <div className="grid border rounded-lg gap-2 p-4 m-2">
+                                            <div className="grid grid-cols-2 items-center gap-4">
+                                                <div className="font-bold">Alert ID:</div>
+                                                <Button variant="outline">
+                                                    {row.getValue("id")}
+                                                </Button>
+                                            </div>
+                                            <div className="grid grid-cols-2 items-center gap-4">
+                                                <div className="font-bold">Category:</div>
+                                                <Button variant="outline">
+                                                    {row.getValue("category")}
+                                                </Button>
+                                            </div>
+                                            <div className="flex flex-col items-center gap-4">
+                                                <div className="font-bold">Node Runtime Metrics:</div>
+                                                <div className="grid">
+                                                    <ul className="grid gap-2">
+                                                        <li className="grid grid-cols-2 items-center gap-4">
+                                                            <div className="font-bold">Number of Goroutines:</div>
+                                                            <Button variant="outline" > 
+                                                                {runtime_metrics.num_goroutine}
+                                                            </Button>
+                                                        </li>
+                                                        <li className="grid grid-cols-2 items-center gap-4">
+                                                            <div className="font-bold">CPU Usage:</div>
+                                                            <Button variant="outline">
+                                                                {runtime_metrics.cpu_usage}
+                                                            </Button>
+                                                        </li>
+                                                        <li className="grid grid-cols-2 gap-4 items-center">
+                                                            <div className="font-bold">RAM Usage:</div>
+                                                            <Button variant="outline">
+                                                                {runtime_metrics.ram_usage}
+                                                            </Button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 items-center gap-4">
+                                                <div className="font-bold">Created At:</div>
+                                                <Button variant="outline">
+                                                    {format(date, "yyyy-MM-dd HH:mm:ss")}
+                                                </Button>
+                                            </div>
+                                        </div>
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
