@@ -111,7 +111,7 @@ func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *Aler
 		Source:    source,
 		Origin:    NodeID,
 		Params:    NewRuntimeMetrics(),
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().Format(time.DateTime),
 		Handled:   false,
 	}
 }

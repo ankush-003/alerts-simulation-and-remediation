@@ -3,7 +3,7 @@ package alerts
 import (
 	"encoding/json"
 	"errors"
-	"time"
+	// "time"
 )
 
 // Implements RuleInput interface
@@ -19,7 +19,7 @@ type AlertInput struct {
 	Source    string     `json:"source"`
 	Origin    string     `json:"origin"`
 	Params    ParamInput `json:"params"`
-	CreatedAt time.Time  `json:"createdAt"`
+	CreatedAt string  `json:"createdAt"`
 	Handled   bool       `json:"handled"`
 }
 
@@ -40,7 +40,8 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 	alert.Source = data["source"].(string)
 	alert.Handled = data["handled"].(bool)
 	alert.Origin = data["origin"].(string)
-	alert.CreatedAt, _ = time.Parse(time.RFC3339, data["createdAt"].(string))
+	// alert.CreatedAt, _ = time.Parse(time.RFC3339, data["createdAt"].(string))
+	alert.CreatedAt = data["createdAt"].(string)
 	switch paramsType {
 	case "Memory":
 		var memory Memory
