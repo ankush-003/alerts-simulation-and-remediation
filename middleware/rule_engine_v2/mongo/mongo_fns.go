@@ -42,6 +42,28 @@ func Close(client *mongo.Client, ctx context.Context,
 	}()
 }
 
+func FindUser(node string) (string, error) {
+	MONGO_URI := os.Getenv("MONGO_URI")
+	client, ctx, cancelFunc, err := Connect(MONGO_URI)
+	if err != nil {
+		panic(err)
+	}
+	defer Close(client, ctx, cancelFunc)
+	db := client.Database("AlertSimAndRemediation")
+	collection := db.Collection("Nodes")
+	var data bson.M
+	err = collection.FindOne(ctx, bson.M{"node": node}).Decode(&data)
+	if err != nil {
+		return "", err
+	}
+	err = db.Collection("Users").FindOne(ctx, bson.M{"user": data["user"]}).Decode(&data)
+	if err != nil {
+		return "", err
+	}
+	return data["email"].(string), nil
+
+}
+
 func GetRules() ([]byte, error) {
 	err := godotenv.Load()
 	if err != nil {

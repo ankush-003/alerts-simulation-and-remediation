@@ -8,6 +8,8 @@ import (
 	"time"
 
 	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mailserver"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 	"github.com/joho/godotenv"
@@ -48,10 +50,18 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 	printStruct(*alertInput)
 	fmt.Println("Severity -> ", alertContext.AlertOutput.Severity)
 	fmt.Println("Remedy -> ", alertContext.AlertOutput.Remedy)
-	
+
 	// Find the user associated with alertContext.AlertInput.source Node
-	// Call Rest server notification handler
+	email, err := mongo.FindUser(alertInput.Origin)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Email", email)
 	// Call mail server
+	if err = mailserver.SendEmail(*alertInput, *alertContext.AlertOutput, email); err != nil {
+		fmt.Println(err)
+	}
+	// Call Rest server notification handler
 
 }
 
@@ -65,7 +75,7 @@ func main() {
 		ID:        "ID1",
 		Category:  "Memory",
 		Source:    "Hardware",
-		Origin:    "NodeA",
+		Origin:    "NodeB",
 		Params:    &alerts.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
 		CreatedAt: time.Now(),
 		Handled:   false,

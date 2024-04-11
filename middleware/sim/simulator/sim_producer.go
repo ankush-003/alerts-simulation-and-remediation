@@ -6,22 +6,23 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/joho/godotenv"
-
+	"github.com/IBM/sarama"
 	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	// rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
+	"github.com/joho/godotenv"
 	// "github.com/google/uuid"
 )
 
 func main() {
-	err_env := godotenv.Load()
-	if err_env != nil {
-		log.Fatalf("Error loading .env file")
+
+	err_load := godotenv.Load()
+	if err_load != nil {
+		log.Fatalf("Error loading .env file: %v\n", err_load)
 	}
 
-	logger := log.New(os.Stdout, "sim-producer: ", log.LstdFlags)
+	logger := log.New(os.Stdout, "kafka-producer: ", log.LstdFlags)
 
 	broker := os.Getenv("KAFKA_BROKER")
 	if broker == "" {
