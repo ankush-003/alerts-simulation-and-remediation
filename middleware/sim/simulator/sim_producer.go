@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/IBM/sarama"
 	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	// rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
