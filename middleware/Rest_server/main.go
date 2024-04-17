@@ -25,8 +25,8 @@ func main(){
 
 	//router.Static("/", "./dashboard")
 
-	routes.AuthRoutes(router)
-	routes.UserRoutes(router)
+	// routes.AuthRoutes(router)
+	// routes.UserRoutes(router)
 	routes.PostRemedy(router)
 	
 	//routes.AlertConfigRoutes(router)

@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -56,13 +60,52 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Email", email)
+
 	// Call mail server
 	if err = mailserver.SendEmail(*alertInput, *alertContext.AlertOutput, email); err != nil {
 		fmt.Println(err)
 	}
-	// Call Rest server notification handler
 
+	// Call Rest server notification handler
+	notifyRestServer(&alertContext)
+}
+
+func notifyRestServer(alertContext *AlertContext) {
+	jsonData := map[string]interface{}{
+		"ID":        alertContext.AlertInput.ID,
+		"Category":  alertContext.AlertInput.Category,
+		"Source":    alertContext.AlertInput.Source,
+		"Origin":    alertContext.AlertInput.Origin,
+		"CreatedAt": alertContext.AlertInput.CreatedAt,
+		"Severity":  alertContext.AlertOutput.Severity,
+		"Remedy":    alertContext.AlertOutput.Remedy,
+	}
+
+	jsonBytes, err := json.Marshal(jsonData)
+	if err != nil {
+		panic(err)
+	}
+
+	req, err := http.NewRequest("POST", "http://0.0.0.0:8000/postRemedy", bytes.NewBuffer(jsonBytes))
+
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	// Convert the response body to a string and print it
+	fmt.Println("Response Body:", string(body))
 }
 
 var wg sync.WaitGroup
@@ -81,23 +124,23 @@ func main() {
 		Handled:   false,
 	}
 
-	alertB := alerts.AlertInput{
-		ID:        "ID2",
-		Category:  "CPU",
-		Source:    "Hardware",
-		Origin:    "NodeA",
-		Params:    &alerts.CPU{Utilization: 40, Temperature: 65},
-		CreatedAt: time.Now(),
-		Handled:   false,
-	}
+	// alertB := alerts.AlertInput{
+	// 	ID:        "ID2",
+	// 	Category:  "CPU",
+	// 	Source:    "Hardware",
+	// 	Origin:    "NodeA",
+	// 	Params:    &alerts.CPU{Utilization: 40, Temperature: 65},
+	// 	CreatedAt: time.Now(),
+	// 	Handled:   false,
+	// }
 
-	wg.Add(1)
-	wg.Add(1)
+	// wg.Add(1)
+	// wg.Add(1)
 	wg.Add(1)
 
 	go NewAlert(&alertA, ruleEngineSvc)
-	go NewAlert(&alertB, ruleEngineSvc)
-	go kafka_consumer(ruleEngineSvc)
+	// go NewAlert(&alertB, ruleEngineSvc)
+	// go kafka_consumer(ruleEngineSvc)
 
 	wg.Wait()
 

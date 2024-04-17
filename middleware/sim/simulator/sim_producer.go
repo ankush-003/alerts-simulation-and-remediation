@@ -26,7 +26,7 @@ func main() {
 	broker := os.Getenv("KAFKA_BROKER")
 	if broker == "" {
 		broker = "localhost:9092"
-		logger.Println("KAFKA_BROKER not set, using default %s\n", broker)
+		logger.Println("KAFKA_BROKER not set, using default ", broker)
 	}
 	brokers := []string{broker}
 	username := os.Getenv("KAFKA_USERNAME")
