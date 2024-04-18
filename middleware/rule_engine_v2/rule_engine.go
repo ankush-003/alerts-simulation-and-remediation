@@ -48,6 +48,8 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 		&alertInput.Params,
 	}
 
+	printStruct(*alertInput)
+
 	err := ruleEngineSvc.Execute(&alertContext)
 	if err != nil {
 		panic(err)
@@ -60,7 +62,8 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 	// Find the user associated with alertContext.AlertInput.source Node
 	email, err := mongo.FindUser(alertInput.Origin)
 	if err != nil {
-		panic(err)
+		// panic(err)
+		fmt.Println("Error in finding user")
 	}
 
 	// Call mail server

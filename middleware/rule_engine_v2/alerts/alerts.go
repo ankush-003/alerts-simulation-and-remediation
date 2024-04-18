@@ -65,6 +65,24 @@ func fetchMetrics(url string) (float64, error) {
 	return usage, nil
 }
 
+type RuntimeMetrics struct {
+	NumGoroutine uint64  `json:"num_goroutine"`
+	CpuUsage     float64 `json:"cpu_usage"`
+	RamUsage     float64 `json:"ram_usage"`
+}
+
+func (*RuntimeMetrics) DataKey() string {
+	return "RuntimeMetrics"
+}
+
+func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(paramsBytes, rt)
+}
+
 func NewRuntimeMetrics() *RuntimeMetrics {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)

@@ -85,6 +85,12 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 			return err
 		}
 		alert.Params = &security
+	case "RuntimeMetrics":
+		var rt RuntimeMetrics
+		if err := rt.Unmarshal(paramsData); err != nil {
+			return err
+		}
+		alert.Params = &rt 
 	default:
 		return errors.New("WRONG PARAM INPUT TYPE")
 	}
@@ -260,4 +266,22 @@ func (security *Security) Unmarshal(paramsData map[string]interface{}) error {
 		return err
 	}
 	return json.Unmarshal(paramsBytes, security)
+}
+
+type RuntimeMetrics struct {
+	NumGoroutine uint64  `json:"num_goroutine"`
+	CpuUsage     float64 `json:"cpu_usage"`
+	RamUsage     float64 `json:"ram_usage"`
+}
+
+func (*RuntimeMetrics) DataKey() string {
+	return "RuntimeMetrics"
+}
+
+func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(paramsBytes, rt)
 }
