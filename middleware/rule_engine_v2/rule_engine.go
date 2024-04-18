@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
+	// "time"
 
 	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mailserver"
@@ -114,15 +114,15 @@ func main() {
 
 	ruleEngineSvc := rule_engine.NewRuleEngineSvc()
 
-	alertA := alerts.AlertInput{
-		ID:        "ID1",
-		Category:  "Memory",
-		Source:    "Hardware",
-		Origin:    "NodeB",
-		Params:    &alerts.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
-		CreatedAt: time.Now(),
-		Handled:   false,
-	}
+	// alertA := alerts.AlertInput{
+	// 	ID:        "ID1",
+	// 	Category:  "Memory",
+	// 	Source:    "Hardware",
+	// 	Origin:    "NodeB",
+	// 	Params:    &alerts.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
+	// 	CreatedAt: time.Now(),
+	// 	Handled:   false,
+	// }
 
 	// alertB := alerts.AlertInput{
 	// 	ID:        "ID2",
@@ -138,9 +138,9 @@ func main() {
 	// wg.Add(1)
 	wg.Add(1)
 
-	go NewAlert(&alertA, ruleEngineSvc)
+	// go NewAlert(&alertA, ruleEngineSvc)
 	// go NewAlert(&alertB, ruleEngineSvc)
-	// go kafka_consumer(ruleEngineSvc)
+	go kafka_consumer(ruleEngineSvc)
 
 	wg.Wait()
 
