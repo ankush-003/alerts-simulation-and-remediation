@@ -3,7 +3,6 @@ package routes
 import (
 	controller "Rest_server/controllers"
 	"context"
-
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 	"github.com/gin-gonic/gin"
 )

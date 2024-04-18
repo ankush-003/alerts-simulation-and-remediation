@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 
 	"context"
 	"log"
@@ -63,7 +63,23 @@ func main() {
 
 	dataChan := make(chan map[string]interface{})
 	doneChan := make(chan struct{})
-	stream := "alerts"
+	stream := "userAlerts"
 
 	go redis.ConsumeData(ctx, stream, dataChan, doneChan)
+
+consumerLoop:
+	for {
+		select {
+		case data := <-dataChan:
+			printData(data)
+		case <-doneChan:
+			break consumerLoop
+		}
+	}
+}
+
+func printData(data map[string]interface{}) {
+	for key, value := range data {
+		log.Printf("%s: %v\n", key, value.(string))
+	}
 }

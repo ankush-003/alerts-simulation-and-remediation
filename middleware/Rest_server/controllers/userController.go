@@ -15,7 +15,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -294,6 +294,12 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 		result, err := alertCollection.InsertOne(context.Background(), alertMap)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
+			return
+		}
+
+		// publish the alert to the Redis stream
+		if err := redisClient.PublishData(ctx, alertMap, "userAlerts"); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish alert to Redis stream"})
 			return
 		}
 
