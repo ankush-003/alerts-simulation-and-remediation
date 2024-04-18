@@ -107,11 +107,12 @@ func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *Aler
 	return &AlertInput{
 		// ID:        uuid.New().String(),
 		ID:        NodeID,
-		Category:  alertConfig.Description,
+		// Category:  alertConfig.Description,
+		Category: "RuntimeMetrics",
 		Source:    source,
 		Origin:    NodeID,
 		Params:    NewRuntimeMetrics(),
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().Format(time.DateTime),
 		Handled:   false,
 	}
 }

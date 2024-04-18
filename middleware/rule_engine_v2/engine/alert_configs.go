@@ -3,7 +3,7 @@ package rule_engine
 import (
 	"encoding/json"
 	"errors"
-	"time"
+	// "time"
 )
 
 // Implements RuleInput interface
@@ -15,7 +15,7 @@ type AlertInput struct {
 	Source    string     `json:"source"`
 	Origin    string     `json:"origin"`
 	Params    ParamInput `json:"params"`
-	CreatedAt time.Time  `json:"createdAt"`
+	CreatedAt string     `json:"createdAt"`
 	Handled   bool       `json:"handled"`
 }
 
@@ -36,7 +36,7 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 	alert.Source = data["source"].(string)
 	alert.Handled = data["handled"].(bool)
 	alert.Origin = data["origin"].(string)
-	alert.CreatedAt, _ = time.Parse(time.RFC3339, data["createdAt"].(string))
+	alert.CreatedAt, _ = data["createdAt"].(string)
 	switch paramsType {
 	case "Memory":
 		var memory Memory
@@ -80,6 +80,12 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 			return err
 		}
 		alert.Params = &security
+	case "RuntimeMetrics":
+		var runtimeMetrics RuntimeMetrics
+		if err := runtimeMetrics.Unmarshal(paramsData); err != nil {
+			return err
+		}
+		alert.Params = &runtimeMetrics
 	default:
 		return errors.New("WRONG PARAM INPUT TYPE")
 	}
@@ -166,6 +172,24 @@ type Security struct {
 	FailedLogins   uint `json:"failedLogins"`
 	SuspectedFiles uint `json:"suspectedFiles"`
 	IDSEvents      uint `json:"idsEvents"`
+}
+
+type RuntimeMetrics struct {
+	NumGoroutine uint64  `json:"num_goroutine"`
+	CpuUsage     float64 `json:"cpu_usage"`
+	RamUsage     float64 `json:"ram_usage"`
+}
+
+func (*RuntimeMetrics) DataKey() string {
+	return "RuntimeMetrics"
+}
+
+func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(paramsBytes, rt)
 }
 
 func (cpu *CPU) DataKey() string {
