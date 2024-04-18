@@ -103,7 +103,10 @@ func notifyRestServer(alertContext *AlertContext) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error in Connecting to Rest Server")
+		return
+		// panic(err)
+
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
