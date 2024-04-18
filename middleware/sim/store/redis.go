@@ -145,6 +145,23 @@ func (r *RedisStore) GetRandomAlertConfig(ctx context.Context) (alerts.AlertConf
 	return alertConfig, nil
 }
 
+
+// Redis Stream functions
+func (r *RedisStore) PublishData(ctx context.Context, data map[string]interface{}, stream string) error {
+	entry := &redis.XAddArgs{
+		Stream: stream,
+		Values: data,
+	}
+
+	result, err := r.Client.XAdd(ctx, entry).Result()
+	if err != nil {
+		return fmt.Errorf("error publishing data to Redis Stream: %s", err)
+	}
+
+	fmt.Printf("Published data to Redis Stream: %s\n", result)
+	return nil	
+}
+
 func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.AlertInput) error {
 	alertBytes, err := json.Marshal(alert)
 	if err != nil {
@@ -269,7 +286,33 @@ func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts
 	}
 }
 
-// PublishAlertInputs publishes alert inputs to a Redis Stream
+func (r *RedisStore) consumeData(ctx context.Context, stream string, dataChan chan<- map[string]interface{}, doneChan chan struct{}) {
+	lastID := "$"
+	for {
+		select {
+		case <-doneChan:
+			return
+		default:
+			streamData, err := r.Client.XRead(ctx, &redis.XReadArgs{
+				Streams: []string{stream, lastID},
+				Count:   1,
+				Block:   0,
+			}).Result()
+			if err != nil {
+				fmt.Printf("Error reading from stream: %s\n", err)
+				continue
+			}
+
+			for _, stream := range streamData {
+				for _, message := range stream.Messages {
+					dataChan <- message.Values
+					lastID = message.ID
+				}
+			}
+		}
+	}
+}
+
 func (r *RedisStore) ConsumeAlertInputs(ctx context.Context, alertsChan chan<- alerts.AlertInput, doneChan chan struct{}, stream string) {
 	lastID := "$"
 	for {
