@@ -11,6 +11,8 @@ import (
 	"sync"
 	// "time"
 
+	// "time"
+
 	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mailserver"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
@@ -89,7 +91,9 @@ func notifyRestServer(alertContext *AlertContext) {
 	req, err := http.NewRequest("POST", "http://0.0.0.0:8000/postRemedy", bytes.NewBuffer(jsonBytes))
 
 	if err != nil {
-		panic(err)
+		// panic(err)
+		fmt.Println("Error in creating request")
+		return
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -120,7 +124,7 @@ func main() {
 	// 	Source:    "Hardware",
 	// 	Origin:    "NodeB",
 	// 	Params:    &alerts.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
-	// 	CreatedAt: time.Now(),
+	// 	CreatedAt: time.Now().Format(time.DateTime),
 	// 	Handled:   false,
 	// }
 
