@@ -169,6 +169,30 @@ func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.AlertInput
 	return nil
 }
 
+func (r *RedisStore) PublishAlertInputs(ctx context.Context, alert *alerts.AlertInput, stream string) error {
+	alertBytes, err := json.Marshal(alert)
+	if err != nil {
+		return err
+	}
+
+	// Create a Redis Streams entry with the alert data
+	entry := &redis.XAddArgs{
+		Stream: stream,
+		Values: map[string]interface{}{
+			"alert": alertBytes,
+		},
+	}
+
+	// Publish the entry to the Redis Stream
+	result, err := r.Client.XAdd(ctx, entry).Result()
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Published alert input to Redis Stream: %s\n", result)
+	return nil
+}
+
 func (r *RedisStore) ConsumeAlertsGroup(ctx context.Context, alertsChan chan<- alerts.Alerts, doneChan chan struct{}, stream string, groupName string) {
 	status, err := r.Client.XGroupCreate(ctx, stream, groupName, "0").Result()
 	if err != nil {
@@ -231,6 +255,41 @@ func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts
 			for _, stream := range streamData {
 				for _, message := range stream.Messages {
 					var alert alerts.Alerts
+					err := json.Unmarshal([]byte(message.Values["alert"].(string)), &alert)
+					if err != nil {
+						fmt.Printf("Error unmarshaling alert: %s\n", err)
+						continue
+					}
+
+					alertsChan <- alert
+					lastID = message.ID
+				}
+			}
+		}
+	}
+}
+
+// PublishAlertInputs publishes alert inputs to a Redis Stream
+func (r *RedisStore) ConsumeAlertInputs(ctx context.Context, alertsChan chan<- alerts.AlertInput, doneChan chan struct{}, stream string) {
+	lastID := "$"
+	for {
+		select {
+		case <-doneChan:
+			return
+		default:
+			streamData, err := r.Client.XRead(ctx, &redis.XReadArgs{
+				Streams: []string{stream, lastID},
+				Count:   1,
+				Block:   0,
+			}).Result()
+			if err != nil {
+				fmt.Printf("Error reading from stream: %s\n", err)
+				continue
+			}
+
+			for _, stream := range streamData {
+				for _, message := range stream.Messages {
+					var alert alerts.AlertInput
 					err := json.Unmarshal([]byte(message.Values["alert"].(string)), &alert)
 					if err != nil {
 						fmt.Printf("Error unmarshaling alert: %s\n", err)
