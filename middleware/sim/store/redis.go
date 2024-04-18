@@ -286,7 +286,7 @@ func (r *RedisStore) ConsumeAlerts(ctx context.Context, alertsChan chan<- alerts
 	}
 }
 
-func (r *RedisStore) consumeData(ctx context.Context, stream string, dataChan chan<- map[string]interface{}, doneChan chan struct{}) {
+func (r *RedisStore) ConsumeData(ctx context.Context, stream string, dataChan chan<- map[string]interface{}, doneChan chan struct{}) {
 	lastID := "$"
 	for {
 		select {

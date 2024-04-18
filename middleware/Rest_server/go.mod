@@ -5,7 +5,7 @@ go 1.22.1
 toolchain go1.22.2
 
 require (
-	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418150422-ff66815a8f9a
+	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418165102-e8439fdce3d0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.19.0

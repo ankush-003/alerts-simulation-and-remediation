@@ -1,5 +1,5 @@
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418150422-ff66815a8f9a h1:TDwuO1Tmt3Y0WR0QAwXr2R4DIJk3BNce528CH9IJuP0=
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418150422-ff66815a8f9a/go.mod h1:Iv6a5dEMpDzRW4stKgqUUakKFxWoCA1MXvSsvYKf1BM=
+github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418165102-e8439fdce3d0 h1:Vj1lZmgnsByVVzqzJjFj7evuhsSzGLjJWNzF1dqY6do=
+github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418165102-e8439fdce3d0/go.mod h1:Iv6a5dEMpDzRW4stKgqUUakKFxWoCA1MXvSsvYKf1BM=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=
 github.com/bsm/ginkgo/v2 v2.12.0/go.mod h1:SwYbGRRDovPVboqFv0tPTcG1sN61LM1Z4ARdbAV9g4c=
 github.com/bsm/gomega v1.27.10 h1:yeMWxP2pV2fG3FgAODIY8EiRE3dy0aeFYt4l7wh6yKA=
