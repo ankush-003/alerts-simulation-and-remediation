@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
@@ -300,6 +302,30 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 		// publish the alert to the Redis stream
 		if err := redisClient.PublishData(ctx, alertMap, "userAlerts"); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish alert to Redis stream"})
+			return
+		}
+
+		redis_addr := os.Getenv("REDIS_ADDR")
+		if redis_addr == "" {
+			redis_addr = "localhost:6379"
+			log.Println("REDIS_ADDR not set, using default %s\n", redis_addr)
+		}
+
+		mongo_uri := os.Getenv("MONGO_URI")
+		if mongo_uri == "" {
+			mongo_uri = "mongodb://localhost:27017"
+			log.Println("MONGO_URI not set, using default %s\n", mongo_uri)
+		}
+		ctx := context.Background()
+		redisStore, redisErr := store.NewRedisStore(ctx, redis_addr)
+		if redisErr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating Redis store"})
+			return
+		}
+
+		err = redisStore.StoreAlertConfig(ctx, alertMap)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 			return
 		}
 
