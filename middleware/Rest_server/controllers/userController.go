@@ -20,8 +20,17 @@ middleware "Rest_server/middleware"
 "go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
-var alertCollection *mongo.Collection = database.OpenCollection(database.Client, "alerts")
+var userCollection *mongo.Collection
+
+func init() {
+	userCollection = database.OpenCollection("AlertSimAndRemediation","Users")
+}
+var alertCollection *mongo.Collection
+
+func init() {
+	alertCollection = database.OpenCollection("AlertSimAndRemediation","Users")
+}
+
 
 var validate = validator.New()
 
