@@ -4,6 +4,8 @@ import { AlertTriangle } from "lucide-react";
 import { useEffect, useRef } from "react";
 import Lottie from "lottie-react";
 import alertAnimation from "../public/alertAnimation.json";
+import Link from "next/link";
+
 
 export default function Home() {
   const words = [
@@ -37,12 +39,18 @@ export default function Home() {
         <Lottie animationData={alertAnimation} height={400} width={400} />
       </div>
       <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 space-x-0 md:space-x-4 mt-10">
+      <Link href = "/login">
+
         <button className="w-40 h-10 rounded-xl bg-black border dark:border-white border-transparent text-white text-lg">
-          Join now
+          Login
         </button>
+      </Link>
+        <Link href = "/signup">
         <button className="w-40 h-10 rounded-xl bg-white text-black border border-black  text-lg">
           Signup
         </button>
+        </Link>
+
       </div>
 
     </div>

@@ -84,7 +84,8 @@ const Page = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:9000/users/signup', {
+      console.log(formData)
+      const response = await fetch('http://localhost:8000/users/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +96,7 @@ const Page = () => {
       console.log(data);
       if (response.ok) {
         // Signup successful, navigate to /home
-        window.location.href = "/login";
+        window.location.href = "/home";
       }
     } catch (error) {
       console.error('Error:', error);
