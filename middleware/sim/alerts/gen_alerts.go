@@ -20,7 +20,8 @@ func genRandomParams(r *rand.Rand) (ParamInput, int) {
 	}
 	randomChoice := r.Intn(len(structs))
 	randomStruct := structs[randomChoice]
-
+	randomStruct.GenerateRandomMetrics()
+	
 	return randomStruct, randomChoice
 }
 

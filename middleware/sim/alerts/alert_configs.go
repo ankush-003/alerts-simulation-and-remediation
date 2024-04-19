@@ -13,6 +13,8 @@ import (
 
 type ParamInput interface {
 	DataKey() string
+	GenerateRandomMetrics()
+	Unmarshal(paramsData map[string]interface{}) error
 }
 
 type AlertInput struct {
@@ -336,4 +338,8 @@ func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
 		return err
 	}
 	return json.Unmarshal(paramsBytes, rt)
+}
+
+func (rt *RuntimeMetrics) GenerateRandomMetrics() {
+
 }
