@@ -5,19 +5,18 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/alerts"
 	"github.com/google/uuid"
 )
 
-func genRandomParams() (alerts.ParamInput, int) {
-	structs := []alerts.ParamInput{
-		&alerts.Memory{},
-		&alerts.CPU{},
-		&alerts.Disk{},
-		&alerts.Network{},
-		&alerts.Power{},
-		&alerts.Applications{},
-		&alerts.Security{},
+func genRandomParams() (ParamInput, int) {
+	structs := []ParamInput{
+		&Memory{},
+		&CPU{},
+		&Disk{},
+		&Network{},
+		&Power{},
+		&Applications{},
+		&Security{},
 	}
 	randomChoice := rand.Intn(len(structs))
 	randomStruct := structs[randomChoice]
@@ -25,7 +24,7 @@ func genRandomParams() (alerts.ParamInput, int) {
 	return randomStruct, randomChoice
 }
 
-func genRandomAlert(nodes []string) alerts.AlertInput {
+func genRandomAlert(nodes []string) AlertInput {
 	params, choice := genRandomParams()
 	category := fmt.Sprintf("%v", params)
 	node := nodes[rand.Intn(len(nodes))]
@@ -33,7 +32,7 @@ func genRandomAlert(nodes []string) alerts.AlertInput {
 	if choice > 4 {
 		source = "Software"
 	}
-	return alerts.AlertInput{
+	return AlertInput{
 		ID:        uuid.NewString(),
 		Category:  category,
 		Source:    source,
