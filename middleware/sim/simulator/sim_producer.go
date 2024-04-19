@@ -2,16 +2,16 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"time"
 
-	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
-	// rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 	"github.com/joho/godotenv"
-	// "github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -44,15 +44,26 @@ func main() {
 
 	// alertConf := alerts.NewAlertConfig("High CPU usage", "critical")
 	// alert := alerts.NewAlert(alertConf, uuid.New(), "CPU")
-	alert := alerts.AlertInput{
-		ID:        "ID1",
-		Category:  "Memory",
-		Source:    "Hardware",
-		Origin:    "NodeA",
-		Params:    &alerts.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
-		CreatedAt: time.Now(),
-		Handled:   false,
+	client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGO_URI"))
+	if err != nil {
+		panic(err)
 	}
+	defer mongo.Close(client, ctx, cancel)
+	db := client.Database("AlertSimAndRemediation")
+	collection := db.Collection("Nodes")
+	cursor, err := collection.Find(ctx, bson.M{}, options.Find().SetProjection(bson.M{"node": 1}))
+	if err != nil {
+		panic(err)
+	}
+	var nodes []string
+	for cursor.Next(ctx) {
+		var document bson.M
+		if err = cursor.Decode(&document); err != nil {
+			panic(err)
+		}
+		nodes = append(nodes, document["node"].(string))
+	}
+
 	// create a timer to send the alert every 5 seconds
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -63,10 +74,14 @@ func main() {
 	for {
 		select {
 		case <-ticker.C:
+			alert := alerts.genRandomAlert(nodes)
 			if err := producer.SendAlert("alerts", &alert); err != nil {
 				logger.Printf("Error sending alert: %s\n", err)
 			}
 			logger.Printf("Sent alert: %v\n", alert)
+			newDuration := time.Duration(rand.Intn(5)+1) * time.Second // Random duration between 1 and 5 seconds
+			ticker.Stop()
+			ticker = time.NewTicker(newDuration)
 		case <-signalChan:
 			logger.Printf("Interrupted\n")
 			return
