@@ -1,4 +1,4 @@
-package main
+package sim
 
 import (
 	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"

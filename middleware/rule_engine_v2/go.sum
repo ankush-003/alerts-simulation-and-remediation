@@ -7,12 +7,8 @@ github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migc
 github.com/Microsoft/go-winio v0.6.1/go.mod h1:LRdKpFKfdobln8UmuiYcKPot9D2v6svN5+sAH+4kjUM=
 github.com/ProtonMail/go-crypto v1.0.0 h1:LRuvITjQWX+WIfr930YHG2HNfjR1uOfyf5vE0kC2U78=
 github.com/ProtonMail/go-crypto v1.0.0/go.mod h1:EjAoLdwvbIOoOQr3ihjnSoLZRtE8azugULFRteWMNc0=
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240409124201-b52e3e96d20a h1:iTRIM5LR7dpKmSTb7kxd/t8O0paPQgqStyl9rF5nvxU=
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240409124201-b52e3e96d20a/go.mod h1:E+5bCwkNTqMycD6ej7TFGUdgrxm2P9lwH5UG5/hIBck=
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418003453-117f94aabd1a h1:F5rgr39ww9QpIssW0RZAFy17lr63JFvnzVgeGpouHgs=
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418003453-117f94aabd1a/go.mod h1:Iv6a5dEMpDzRW4stKgqUUakKFxWoCA1MXvSsvYKf1BM=
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418135249-19817b4be170 h1:fg3xk3uuNXv7dRX6+tHPLPrb0RXPi938lDyRsWXgocA=
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418135249-19817b4be170/go.mod h1:Iv6a5dEMpDzRW4stKgqUUakKFxWoCA1MXvSsvYKf1BM=
+github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418180447-4d80977c94ca h1:1na6nybZNyEjAsWkXqC4MO0g4d3udlStdkhy4/flubs=
+github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418180447-4d80977c94ca/go.mod h1:Iv6a5dEMpDzRW4stKgqUUakKFxWoCA1MXvSsvYKf1BM=
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFIImctFaOjnTIavg87rW78vTPkQqLI8=
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be/go.mod h1:ySMOLuWl6zY27l47sB3qLNK6tF2fkHG55UZxx8oIVo4=
 github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 h1:yL7+Jz0jTC6yykIK/Wh74gnTJnrGr5AyrNMXuA0gves=

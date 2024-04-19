@@ -122,16 +122,24 @@ func main() {
 
 	ruleEngineSvc := rule_engine.NewRuleEngineSvc()
 
+	// alertA := alerts.AlertInput{
+	// 	ID:        "ID1",
+	// 	Category:  "Memory",
+	// 	Source:    "Hardware",
+	// 	Origin:    "NodeB",
+	// 	Params:    &alerts.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
+	// 	CreatedAt: time.Now().Format(time.DateTime),
+	// 	Handled:   false,
+	// }
 	alertA := alerts.AlertInput{
 		ID:        "ID1",
-		Category:  "Memory",
+		Category:  "Runtime",
 		Source:    "Hardware",
 		Origin:    "NodeB",
-		Params:    &alerts.Memory{Usage: 76, PageFaults: 30, SwapUsage: 2},
+		Params:    &alerts.RuntimeMetrics{NumGoroutine: 10, CpuUsage: 60, RamUsage: 50},
 		CreatedAt: time.Now().Format(time.DateTime),
 		Handled:   false,
 	}
-
 	// alertB := alerts.AlertInput{
 	// 	ID:        "ID2",
 	// 	Category:  "CPU",

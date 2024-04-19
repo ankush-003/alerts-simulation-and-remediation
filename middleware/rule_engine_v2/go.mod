@@ -1,11 +1,10 @@
 module github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2
 
-replace github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2 => /rule_engine
 
 go 1.22.1
 
 require (
-	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418135249-19817b4be170
+	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418180447-4d80977c94ca
 	github.com/hyperjumptech/grule-rule-engine v1.15.0
 	go.mongodb.org/mongo-driver v1.15.0
 )

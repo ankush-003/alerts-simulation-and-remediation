@@ -3,6 +3,7 @@ package alerts
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 	// "time"
 )
 
@@ -41,7 +42,7 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 	alert.Handled = data["handled"].(bool)
 	alert.Origin = data["origin"].(string)
 	alert.CreatedAt, _ = data["createdAt"].(string)
-	
+
 	switch paramsType {
 	case "Memory":
 		var memory Memory
@@ -90,7 +91,7 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 		if err := rt.Unmarshal(paramsData); err != nil {
 			return err
 		}
-		alert.Params = &rt 
+		alert.Params = &rt
 	default:
 		return errors.New("WRONG PARAM INPUT TYPE")
 	}
@@ -179,12 +180,12 @@ type Security struct {
 	IDSEvents      uint `json:"idsEvents"`
 }
 
-func (cpu *CPU) DataKey() string {
-	return "CpuInput"
-}
-
 func (mem *Memory) DataKey() string {
 	return "MemInput"
+}
+
+func (cpu *CPU) DataKey() string {
+	return "CpuInput"
 }
 
 func (disk *Disk) DataKey() string {
@@ -266,6 +267,48 @@ func (security *Security) Unmarshal(paramsData map[string]interface{}) error {
 		return err
 	}
 	return json.Unmarshal(paramsBytes, security)
+}
+
+func (m *Memory) generateRandomMetrics() {
+	m.Usage = uint(rand.Intn(90)) + 10 // Assuming usage percentage
+	m.PageFaults = uint(rand.Intn(100))
+	m.SwapUsage = uint(rand.Intn(50))
+}
+
+func (c *CPU) generateRandomMetrics() {
+	c.Utilization = uint(rand.Intn(101))     // Utilization can range from 0 to 100%
+	c.Temperature = uint(rand.Intn(50)) + 30 // Temperature in Celsius
+}
+
+func (d *Disk) generateRandomMetrics() {
+	d.Usage = uint(rand.Intn(90)) + 10   // Disk usage percentage
+	d.IOPs = uint(rand.Intn(10000))      // Assuming IOPs range
+	d.ThroughtPut = uint(rand.Intn(100)) // Throughput in MB/s
+}
+
+func (n *Network) generateRandomMetrics() {
+	n.Traffic = uint(rand.Intn(500))            // Traffic in Mbytes per second
+	n.PacketLoss = uint(rand.Intn(4000)) + 1000 // Packet loss percentage
+	n.Latency = uint(rand.Intn(100))            // Latency in milliseconds
+}
+
+func (p *Power) generateRandomMetrics() {
+	p.BatteryLevel = uint(rand.Intn(101)) // Battery level percentage
+	p.Consumption = uint(rand.Intn(100))  // Power consumption in Watts
+	p.Efficiency = uint(rand.Intn(100))   // Remaining runtime in minutes
+}
+
+func (a *Applications) generateRandomMetrics() {
+	a.Processes = uint(rand.Intn(10000)) // Number of processes running (0-100)
+	a.MaxCPUusage = uint(rand.Intn(101)) // Max CPU usage by all processes (0-100)
+	a.MaxMemUsage = uint(rand.Intn(101)) // Max memory usage by all processes (0-100)
+}
+
+func (s *Security) generateRandomMetrics() {
+	s.LoginAttempts = uint(rand.Intn(101))  // Number of login attempts (0-100)
+	s.FailedLogins = uint(rand.Intn(30))    // Number of failed logins (0-100)
+	s.SuspectedFiles = uint(rand.Intn(101)) // Number of suspected files (0-100)
+	s.IDSEvents = uint(rand.Intn(101))      // Number of IDS events (0-100)
 }
 
 type RuntimeMetrics struct {
