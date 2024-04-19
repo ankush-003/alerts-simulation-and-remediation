@@ -1,19 +1,14 @@
-package alerts
+package rule_engine
 
 import (
 	"encoding/json"
 	"errors"
-	"math/rand"
-	"time"
+	"fmt"
 	// "time"
 )
 
 // Implements RuleInput interface
 // Holds all the input to rule engine parameters
-
-type ParamInput interface {
-	DataKey() string
-}
 
 type AlertInput struct {
 	ID        string     `json:"id"`
@@ -38,12 +33,12 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 	paramsData := data["params"].(map[string]interface{})
 	paramsType := data["category"].(string)
 	alert.Category = data["category"].(string)
+	fmt.Println("Category: ", alert.Category)
 	alert.ID = data["id"].(string)
 	alert.Source = data["source"].(string)
 	alert.Handled = data["handled"].(bool)
 	alert.Origin = data["origin"].(string)
 	alert.CreatedAt, _ = data["createdAt"].(string)
-
 	switch paramsType {
 	case "Memory":
 		var memory Memory
@@ -88,11 +83,11 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 		}
 		alert.Params = &security
 	case "RuntimeMetrics":
-		var rt RuntimeMetrics
-		if err := rt.Unmarshal(paramsData); err != nil {
+		var runtimeMetrics RuntimeMetrics
+		if err := runtimeMetrics.Unmarshal(paramsData); err != nil {
 			return err
 		}
-		alert.Params = &rt
+		alert.Params = &runtimeMetrics
 	default:
 		return errors.New("WRONG PARAM INPUT TYPE")
 	}
@@ -163,7 +158,7 @@ type Power struct {
 	Efficiency   uint `json:"efficiency"`
 }
 
-// Applications:
+// Applicatios:
 // No. of Processes running
 // Max CPU usage by all Processes
 // Max Memory usage by all Processes
@@ -181,12 +176,30 @@ type Security struct {
 	IDSEvents      uint `json:"idsEvents"`
 }
 
-func (mem *Memory) DataKey() string {
-	return "MemInput"
+type RuntimeMetrics struct {
+	NumGoroutine uint64  `json:"num_goroutine"`
+	CpuUsage     float64 `json:"cpu_usage"`
+	RamUsage     float64 `json:"ram_usage"`
+}
+
+func (*RuntimeMetrics) DataKey() string {
+	return "RuntimeMetrics"
+}
+
+func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
+	paramsBytes, err := json.Marshal(paramsData)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(paramsBytes, rt)
 }
 
 func (cpu *CPU) DataKey() string {
 	return "CpuInput"
+}
+
+func (mem *Memory) DataKey() string {
+	return "MemInput"
 }
 
 func (disk *Disk) DataKey() string {
@@ -268,72 +281,4 @@ func (security *Security) Unmarshal(paramsData map[string]interface{}) error {
 		return err
 	}
 	return json.Unmarshal(paramsBytes, security)
-}
-
-func (m *Memory) GenerateRandomMetrics() {
-	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	m.Usage = uint(rand.Intn(90)) + 10 // Assuming usage percentage
-	m.PageFaults = uint(rand.Intn(100))
-	m.SwapUsage = uint(rand.Intn(50))
-}
-
-func (c *CPU) GenerateRandomMetrics() {
-	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	c.Utilization = uint(rand.Intn(101))     // Utilization can range from 0 to 100%
-	c.Temperature = uint(rand.Intn(50)) + 30 // Temperature in Celsius
-}
-
-func (d *Disk) GenerateRandomMetrics() {
-	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	d.Usage = uint(rand.Intn(90)) + 10   // Disk usage percentage
-	d.IOPs = uint(rand.Intn(10000))      // Assuming IOPs range
-	d.ThroughtPut = uint(rand.Intn(100)) // Throughput in MB/s
-}
-
-func (n *Network) GenerateRandomMetrics() {
-	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	n.Traffic = uint(rand.Intn(500))            // Traffic in Mbytes per second
-	n.PacketLoss = uint(rand.Intn(4000)) + 1000 // Packet loss percentage
-	n.Latency = uint(rand.Intn(100))            // Latency in milliseconds
-}
-
-func (p *Power) GenerateRandomMetrics() {
-	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	p.BatteryLevel = uint(rand.Intn(101)) // Battery level percentage
-	p.Consumption = uint(rand.Intn(100))  // Power consumption in Watts
-	p.Efficiency = uint(rand.Intn(100))   // Remaining runtime in minutes
-}
-
-func (a *Applications) GenerateRandomMetrics() {
-	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	a.Processes = uint(rand.Intn(10000)) // Number of processes running (0-100)
-	a.MaxCPUusage = uint(rand.Intn(101)) // Max CPU usage by all processes (0-100)
-	a.MaxMemUsage = uint(rand.Intn(101)) // Max memory usage by all processes (0-100)
-}
-
-func (s *Security) GenerateRandomMetrics() {
-	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	s.LoginAttempts = uint(rand.Intn(101))  // Number of login attempts (0-100)
-	s.FailedLogins = uint(rand.Intn(30))    // Number of failed logins (0-100)
-	s.SuspectedFiles = uint(rand.Intn(101)) // Number of suspected files (0-100)
-	s.IDSEvents = uint(rand.Intn(101))      // Number of IDS events (0-100)
-	println(s)
-}
-
-type RuntimeMetrics struct {
-	NumGoroutine uint64  `json:"num_goroutine"`
-	CpuUsage     float64 `json:"cpu_usage"`
-	RamUsage     float64 `json:"ram_usage"`
-}
-
-func (*RuntimeMetrics) DataKey() string {
-	return "RuntimeMetrics"
-}
-
-func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
-	paramsBytes, err := json.Marshal(paramsData)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(paramsBytes, rt)
 }
