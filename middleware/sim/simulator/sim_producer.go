@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -75,7 +75,7 @@ func main() {
 	for {
 		select {
 		case <-ticker.C:
-			alert := alerts.ge(nodes)
+			alert := alerts.GenRandomAlert(nodes)
 			if err := producer.SendAlert("alerts", &alert); err != nil {
 				logger.Printf("Error sending alert: %s\n", err)
 			}

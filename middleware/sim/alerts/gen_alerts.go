@@ -1,14 +1,14 @@
 package alerts
 
 import (
-	"fmt"
 	"math/rand"
+	"reflect"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-func genRandomParams() (ParamInput, int) {
+func genRandomParams(r *rand.Rand) (ParamInput, int) {
 	structs := []ParamInput{
 		&Memory{},
 		&CPU{},
@@ -18,16 +18,17 @@ func genRandomParams() (ParamInput, int) {
 		&Applications{},
 		&Security{},
 	}
-	randomChoice := rand.Intn(len(structs))
+	randomChoice := r.Intn(len(structs))
 	randomStruct := structs[randomChoice]
 
 	return randomStruct, randomChoice
 }
 
-func genRandomAlert(nodes []string) AlertInput {
-	params, choice := genRandomParams()
-	category := fmt.Sprintf("%v", params)
-	node := nodes[rand.Intn(len(nodes))]
+func GenRandomAlert(nodes []string) AlertInput {
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	params, choice := genRandomParams(r)
+	category := reflect.TypeOf(params).Elem().Name()
+	node := nodes[r.Intn(len(nodes))]
 	source := "Hardware"
 	if choice > 4 {
 		source = "Software"
