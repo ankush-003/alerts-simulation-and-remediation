@@ -75,7 +75,7 @@ func main() {
 	for {
 		select {
 		case <-ticker.C:
-			alert := alerts.(nodes)
+			alert := alerts.ge(nodes)
 			if err := producer.SendAlert("alerts", &alert); err != nil {
 				logger.Printf("Error sending alert: %s\n", err)
 			}
