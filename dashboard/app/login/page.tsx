@@ -76,7 +76,6 @@ const Page = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:9000/users/login', {
       const response = await fetch('http://localhost:8000/users/login', {
         method: 'POST',
         headers: {
