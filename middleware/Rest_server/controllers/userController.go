@@ -260,15 +260,12 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 		// 	return
 		// }
 		var alertMap map[string]interface{}
+
 		// Bind the JSON data into a map
 		if err := c.ShouldBindJSON(&alertMap); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		alertMap["node"] = alertMap["Origin"]
-		delete(alertMap, "Origin")
-		delete(alertMap, "ID")
-		alertMap["Acknowledged"] = false
 		/*if err := c.ShouldBindJSON(&alertOutput); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
