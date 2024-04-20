@@ -1,20 +1,40 @@
 package middleware
 
-import(
+import (
+	helper "Rest_server/helpers"
 	"fmt"
 	"net/http"
-	helper "Rest_server/helpers"
+
 	"github.com/gin-gonic/gin"
 )
 
 func Authenticate() gin.HandlerFunc{
 	return func(c *gin.Context){
-		clientToken := c.Request.Header.Get("token")
+		clientToken := c.Request.Header.Get("Authorization")
+		// fmt.Println(c.Request.Header)
+		// fmt.Println(c.Request)
+
+		fmt.Println(clientToken)
+
+
+		clientToken = clientToken[7:]
+
+		fmt.Println(clientToken)
+
+
+
+		// clientToken = strings.Split(clientToken, "Bearer ")[1]
+
+
 		if clientToken == ""{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":fmt.Sprintf("No Authorization header provided")})
 			c.Abort()
 			return
 		}
+
+		fmt.Println("He")
+
+
 
 		claims, err := helper.ValidateToken(clientToken)
 		if err !="" {
@@ -22,12 +42,18 @@ func Authenticate() gin.HandlerFunc{
 			c.Abort()
 			return
 		}
+
+		fmt.Println(claims)
+
 		c.Set("email", claims.Email)
 		c.Set("first_name", claims.First_name)
 		c.Set("last_name", claims.Last_name)
 		c.Set("uid",claims.Uid)
 		c.Set("user_type", claims.User_type)
 		c.Next()
+
+		fmt.Println("end")
+
 	}
 }
 

@@ -1,14 +1,14 @@
 package main
 
 import (
-    "log"
-    "net/http"
-    "os"
+	"log"
+	"net/http"
+	"os"
 
-    "github.com/gin-gonic/gin"
-    "github.com/joho/godotenv"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 
-    routes "Rest_server/routes"
+	routes "Rest_server/routes"
 )
 
 func main() {
@@ -31,8 +31,9 @@ func main() {
     // Enable CORS middleware
     router.Use(func(c *gin.Context) {
         c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-        c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+        c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS ,HEAD, PUT, FETCH")
+        c.Writer.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Authorization, Access-Control-Request-Method, Access-Control-Request-Headers");
+
         if c.Request.Method == "OPTIONS" {
             c.AbortWithStatus(http.StatusNoContent)
             return

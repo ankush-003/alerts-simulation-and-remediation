@@ -78,6 +78,35 @@ export default function AlertConfig() {
     setSeverities({ ...severities, [event.target.name]: event.target.checked });
   };
 
+  const handleSubmit = async () => {
+    const alertConfig = {
+      categories,
+      severities,
+    };
+
+    const jwtToken = sessionStorage.getItem('token'); // Assuming the JWT token is stored in localStorage
+    console.log(jwtToken, alertConfig)
+
+    try {
+      const response = await fetch('http://localhost:8000/users/alertconfig', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`,
+        },
+        body: JSON.stringify(alertConfig),
+      });
+
+      if (response.ok) {
+        console.log('Alert configuration saved successfully');
+      } else {
+        console.error('Failed to save alert configuration');
+      }
+    } catch (error) {
+      console.error('Error saving alert configuration:', error);
+    }
+  };
+
   return (
     <div style={containerStyle}>
       <h2 style={titleStyle}>Alert Configuration</h2>
@@ -159,6 +188,10 @@ export default function AlertConfig() {
           </div>
         </div>
       </div>
+      <button onClick={handleSubmit} style={{ marginTop: '24px' }}>
+        Submit
+      </button>
+      
     </div>
   );
 }
