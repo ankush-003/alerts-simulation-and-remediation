@@ -4,21 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"sync"
 	// "time"
 
-	// "time"
-
 	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mailserver"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
+	"github.com/joho/godotenv"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
-	"github.com/joho/godotenv"
 )
 
 type AlertContext struct {
@@ -48,6 +46,8 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 		&alertInput.Params,
 	}
 
+	printStruct(*alertInput)
+
 	err := ruleEngineSvc.Execute(&alertContext)
 	if err != nil {
 		panic(err)
@@ -60,7 +60,8 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 	// Find the user associated with alertContext.AlertInput.source Node
 	email, err := mongo.FindUser(alertInput.Origin)
 	if err != nil {
-		panic(err)
+		// panic(err)
+		fmt.Println("Error in finding user")
 	}
 
 	// Call mail server
@@ -100,10 +101,13 @@ func notifyRestServer(alertContext *AlertContext) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error in Connecting to Rest Server")
+		return
+		// panic(err)
+
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -127,7 +131,15 @@ func main() {
 	// 	CreatedAt: time.Now().Format(time.DateTime),
 	// 	Handled:   false,
 	// }
-
+	// alertA := alerts.AlertInput{
+	// 	ID:        "ID1",
+	// 	Category:  "Runtime",
+	// 	Source:    "Hardware",
+	// 	Origin:    "NodeB",
+	// 	Params:    &alerts.RuntimeMetrics{NumGoroutine: 10, CpuUsage: 60, RamUsage: 50},
+	// 	CreatedAt: time.Now().Format(time.DateTime),
+	// 	Handled:   false,
+	// }
 	// alertB := alerts.AlertInput{
 	// 	ID:        "ID2",
 	// 	Category:  "CPU",

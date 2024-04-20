@@ -1,4 +1,4 @@
-package main
+package sim
 
 import (
 	"encoding/json"
@@ -46,7 +46,7 @@ func fetchMetrics(url string) (float64, error) {
 		return -1, fmt.Errorf("unable to parse value")
 	}
 
-	usage,_ := strconv.ParseFloat(valueTr, 64)
+	usage, _ := strconv.ParseFloat(valueTr, 64)
 
 	return usage, nil
 }

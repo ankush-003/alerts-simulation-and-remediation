@@ -65,24 +65,6 @@ func fetchMetrics(url string) (float64, error) {
 	return usage, nil
 }
 
-type RuntimeMetrics struct {
-	NumGoroutine uint64  `json:"num_goroutine"`
-	CpuUsage     float64 `json:"cpu_usage"`
-	RamUsage     float64 `json:"ram_usage"`
-}
-
-func (*RuntimeMetrics) DataKey() string {
-	return "RuntimeMetrics"
-}
-
-func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
-	paramsBytes, err := json.Marshal(paramsData)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(paramsBytes, rt)
-}
-
 func NewRuntimeMetrics() *RuntimeMetrics {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
@@ -105,10 +87,9 @@ func NewRuntimeMetrics() *RuntimeMetrics {
 
 func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *AlertInput {
 	return &AlertInput{
-		// ID:        uuid.New().String(),
-		ID:        NodeID,
+		ID: uuid.New().String(),
 		// Category:  alertConfig.Description,
-		Category: "RuntimeMetrics",
+		Category:  "RuntimeMetrics",
 		Source:    source,
 		Origin:    NodeID,
 		Params:    NewRuntimeMetrics(),
@@ -117,47 +98,24 @@ func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *Aler
 	}
 }
 
-// older version alert
-type Alerts struct {
-	ID             uuid.UUID       `json:"id"`
-	NodeID         uuid.UUID       `json:"node_id"`
-	Description    string          `json:"description"`
-	Severity       string          `json:"severity"`
-	Source         string          `json:"source"`
-	CreatedAt      string          `json:"created_at"`
-	RuntimeMetrics *RuntimeMetrics `json:"runtime_metrics"`
-}
-
 type AlertConfig struct {
-	ID          uuid.UUID `json:"id"`
-	Description string    `json:"description"`
-	Severity    string    `json:"severity"`
+	ID       uuid.UUID `json:"id"`
+	Category string    `json:"category"`
+	Source   string    `json:"source"`
 }
 
-func NewAlert(alertConfig *AlertConfig, NodeID uuid.UUID, source string) *Alerts {
-	return &Alerts{
-		ID:             uuid.New(),
-		NodeID:         NodeID,
-		Description:    alertConfig.Description,
-		Severity:       alertConfig.Severity,
-		Source:         source,
-		CreatedAt:      time.Now().Format(time.DateTime),
-		RuntimeMetrics: NewRuntimeMetrics(),
-	}
-}
-
-func NewAlertConfig(description, severity string) *AlertConfig {
+func NewAlertConfig(category string, source string) *AlertConfig {
 	return &AlertConfig{
 		ID:          uuid.New(),
-		Description: description,
-		Severity:    severity,
+		Category:    category,
+		Source:      source,
 	}
 }
 
-func NewAlertConfigWithID(description, severity string, id uuid.UUID) *AlertConfig {
+func NewAlertConfigWithID(id uuid.UUID, category string, source string) *AlertConfig {
 	return &AlertConfig{
 		ID:          id,
-		Description: description,
-		Severity:    severity,
+		Category:    category,
+		Source:      source,
 	}
 }

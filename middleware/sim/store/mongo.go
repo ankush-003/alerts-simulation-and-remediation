@@ -1,9 +1,8 @@
 package store
 
 import (
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
-
 	"context"
+	"log"
 	// "encoding/json"
 	"fmt"
 
@@ -25,6 +24,8 @@ func NewMongoStore(ctx context.Context, uri, db, coll string) (*MongoStore, erro
 
 	collection := client.Database(db).Collection(coll)
 
+	log.Println("Connected to MongoDB")
+
 	return &MongoStore{Client: client, Coll: collection}, nil
 }
 
@@ -32,35 +33,28 @@ func (s *MongoStore) Close(ctx context.Context) error {
 	return s.Client.Disconnect(ctx)
 }
 
-func (s *MongoStore) FetchAlertConfigs(ctx context.Context) ([]alerts.AlertConfig, error) {
-	cur, err := s.Coll.Find(ctx, bson.D{})
+func (s *MongoStore) GetNodeId(ctx context.Context) (string, func(), error) {
+	// get a random node id to be assigned to the current simulator
+	var result bson.M
+	
+	if err := s.Coll.FindOne(ctx, bson.M{"available": true}).Decode(&result); err != nil {
+		return "", nil, fmt.Errorf("error finding available node: %v", err)
+	}
+	
+	nodeId := result["node"].(string)
+
+	_, err := s.Coll.UpdateOne(ctx, bson.M{"node": nodeId}, bson.M{"$set": bson.M{"available": false}})
+
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch alert configs: %v", err)
-	}
-	defer cur.Close(ctx)
-
-	var alertConfigs []alerts.AlertConfig
-	for cur.Next(ctx) {
-		var alertConfig alerts.AlertConfig
-		if err := cur.Decode(&alertConfig); err != nil {
-			return nil, fmt.Errorf("cur.Decode: %v", err)
-		}
-		alertConfigs = append(alertConfigs, alertConfig)
-	}
-	if err := cur.Err(); err != nil {
-		return nil, fmt.Errorf("error in cursor: %v", err)
+		return "", nil, fmt.Errorf("error updating node availability: %v", err)
 	}
 
-	return alertConfigs, nil
-}
-
-func (s *MongoStore) InsertAlertConfigs(ctx context.Context, alertConfigs []alerts.AlertConfig) error {
-	for _, alertConfig := range alertConfigs {
-		_, err := s.Coll.InsertOne(ctx, alertConfig)
+	closeFunc := func() {
+		_, err := s.Coll.UpdateOne(ctx, bson.M{"node": nodeId}, bson.M{"$set": bson.M{"available": true}})
 		if err != nil {
-			return fmt.Errorf("could not insert alert config: %v", err)
+			fmt.Printf("error updating node availability: %v\n", err)
 		}
 	}
 
-	return nil
+	return nodeId, closeFunc, nil	
 }

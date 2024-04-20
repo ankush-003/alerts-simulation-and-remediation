@@ -1,7 +1,7 @@
-package main
+package sim
 
 import (
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 
 	"context"
 	"log"
@@ -39,25 +39,47 @@ func main() {
 
 	defer redis.Close()
 
-	alertsChan := make(chan alerts.Alerts)
+// 	alertsChan := make(chan alerts.Alerts)
+// 	doneChan := make(chan struct{})
+
+// 	logger.Println("Consuming alerts !")
+
+// 	stream := "alerts"
+// 	// groupName := "alerts-group"
+
+// 	// go redis.ConsumeAlertsGroup(ctx, alertsChan, doneChan, stream, groupName)
+// 	go redis.ConsumeAlerts(ctx, alertsChan, doneChan, stream)
+
+// consumerLoop:
+// 	for {
+// 		select {
+// 		case alert := <-alertsChan:
+// 			logger.Printf("Received alert: alrtID: %s, NodeID: %s, Description: %s, Severity: %s, Source: %s, CreatedAt: %s\t", alert.ID.String(), alert.NodeID.String(), alert.Description, alert.Severity, alert.Source, alert.CreatedAt)
+// 			logger.Printf("RuntimeMetrics: NumGoroutine: %d, CpuUsage: %f, RamUsage: %f\n\n", alert.RuntimeMetrics.NumGoroutine, alert.RuntimeMetrics.CpuUsage, alert.RuntimeMetrics.RamUsage)
+// 		case <-doneChan:
+// 			break consumerLoop
+// 		}
+// 	}
+
+	dataChan := make(chan map[string]interface{})
 	doneChan := make(chan struct{})
+	stream := "userAlerts"
 
-	logger.Println("Consuming alerts !")
-
-	stream := "alerts"
-	// groupName := "alerts-group"
-
-	// go redis.ConsumeAlertsGroup(ctx, alertsChan, doneChan, stream, groupName)
-	go redis.ConsumeAlerts(ctx, alertsChan, doneChan, stream)
+	go redis.ConsumeData(ctx, stream, dataChan, doneChan)
 
 consumerLoop:
 	for {
 		select {
-		case alert := <-alertsChan:
-			logger.Printf("Received alert: alrtID: %s, NodeID: %s, Description: %s, Severity: %s, Source: %s, CreatedAt: %s\t", alert.ID.String(), alert.NodeID.String(), alert.Description, alert.Severity, alert.Source, alert.CreatedAt)
-			logger.Printf("RuntimeMetrics: NumGoroutine: %d, CpuUsage: %f, RamUsage: %f\n\n", alert.RuntimeMetrics.NumGoroutine, alert.RuntimeMetrics.CpuUsage, alert.RuntimeMetrics.RamUsage)
+		case data := <-dataChan:
+			printData(data)
 		case <-doneChan:
 			break consumerLoop
 		}
+	}
+}
+
+func printData(data map[string]interface{}) {
+	for key, value := range data {
+		log.Printf("%s: %v\n", key, value.(string))
 	}
 }

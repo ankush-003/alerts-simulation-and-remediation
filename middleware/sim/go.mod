@@ -1,17 +1,16 @@
 module github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim
 
-replace github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim => /sim
-
 go 1.22.1
 
 require (
 	github.com/IBM/sarama v1.43.1
+	github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2 v0.0.0-20240418180447-4d80977c94ca
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.5.1
 	github.com/xdg-go/scram v1.1.2
-	go.mongodb.org/mongo-driver v1.14.0
+	go.mongodb.org/mongo-driver v1.15.0
 )
 
 require (

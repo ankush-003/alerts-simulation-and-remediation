@@ -3,6 +3,7 @@ package rule_engine
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	// "time"
 )
 
@@ -32,6 +33,7 @@ func (alert *AlertInput) Unmarshal(obj []byte) error {
 	paramsData := data["params"].(map[string]interface{})
 	paramsType := data["category"].(string)
 	alert.Category = data["category"].(string)
+	fmt.Println("Category: ", alert.Category)
 	alert.ID = data["id"].(string)
 	alert.Source = data["source"].(string)
 	alert.Handled = data["handled"].(bool)
@@ -156,7 +158,7 @@ type Power struct {
 	Efficiency   uint `json:"efficiency"`
 }
 
-// Applications:
+// Applicatios:
 // No. of Processes running
 // Max CPU usage by all Processes
 // Max Memory usage by all Processes
