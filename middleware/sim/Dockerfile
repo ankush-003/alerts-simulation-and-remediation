@@ -1,7 +1,7 @@
 FROM golang:alpine
-WORKDIR /go/src/app
+WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 COPY . .
-RUN go build -o /simulatorApp
-CMD ["/simulatorApp"]
+RUN go build -o /sim
+CMD ["/sim"]
