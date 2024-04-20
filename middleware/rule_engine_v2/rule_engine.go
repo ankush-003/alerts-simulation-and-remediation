@@ -9,14 +9,14 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
+	// "time"
 
 	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mailserver"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/alerts"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 	"github.com/joho/godotenv"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 )
 
 type AlertContext struct {
@@ -131,15 +131,15 @@ func main() {
 	// 	CreatedAt: time.Now().Format(time.DateTime),
 	// 	Handled:   false,
 	// }
-	alertA := alerts.AlertInput{
-		ID:        "ID1",
-		Category:  "Runtime",
-		Source:    "Hardware",
-		Origin:    "NodeB",
-		Params:    &alerts.RuntimeMetrics{NumGoroutine: 10, CpuUsage: 60, RamUsage: 50},
-		CreatedAt: time.Now().Format(time.DateTime),
-		Handled:   false,
-	}
+	// alertA := alerts.AlertInput{
+	// 	ID:        "ID1",
+	// 	Category:  "Runtime",
+	// 	Source:    "Hardware",
+	// 	Origin:    "NodeB",
+	// 	Params:    &alerts.RuntimeMetrics{NumGoroutine: 10, CpuUsage: 60, RamUsage: 50},
+	// 	CreatedAt: time.Now().Format(time.DateTime),
+	// 	Handled:   false,
+	// }
 	// alertB := alerts.AlertInput{
 	// 	ID:        "ID2",
 	// 	Category:  "CPU",
@@ -154,9 +154,9 @@ func main() {
 	// wg.Add(1)
 	wg.Add(1)
 
-	go NewAlert(&alertA, ruleEngineSvc)
+	// go NewAlert(&alertA, ruleEngineSvc)
 	// go NewAlert(&alertB, ruleEngineSvc)
-	// go kafka_consumer(ruleEngineSvc)
+	go kafka_consumer(ruleEngineSvc)
 
 	wg.Wait()
 

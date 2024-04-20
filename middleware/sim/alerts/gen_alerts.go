@@ -10,26 +10,26 @@ import (
 
 func genRandomParams(r *rand.Rand) (ParamInput, int) {
 	structs := []ParamInput{
-		&Memory{},
-		&CPU{},
-		&Disk{},
-		&Network{},
-		&Power{},
-		&Applications{},
-		&Security{},
+		// &Memory{},
+		// &CPU{},
+		// &Disk{},
+		// &Network{},
+		// &Power{},
+		// &Applications{},
+		// &Security{},
+		&RuntimeMetrics{},
 	}
 	randomChoice := r.Intn(len(structs))
 	randomStruct := structs[randomChoice]
-	randomStruct.GenerateRandomMetrics()
+	randomStruct.GenerateMetrics()
 	
 	return randomStruct, randomChoice
 }
 
-func GenRandomAlert(nodes []string) AlertInput {
+func GenRandomAlert(nodeId string) AlertInput {
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	params, choice := genRandomParams(r)
 	category := reflect.TypeOf(params).Elem().Name()
-	node := nodes[r.Intn(len(nodes))]
 	source := "Hardware"
 	if choice > 4 {
 		source = "Software"
@@ -38,7 +38,7 @@ func GenRandomAlert(nodes []string) AlertInput {
 		ID:        uuid.NewString(),
 		Category:  category,
 		Source:    source,
-		Origin:    node,
+		Origin:    nodeId,
 		Params:    params,
 		CreatedAt: time.Now().Format(time.DateTime),
 		Handled:   false,

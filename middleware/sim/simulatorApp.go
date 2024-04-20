@@ -1,4 +1,4 @@
-package sim
+package main
 
 import (
 	"context"
@@ -6,17 +6,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sync"
 	"time"
-
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
-
-	//"math/rand"
-
+	"math/rand"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
-
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
 
@@ -27,10 +21,27 @@ func main() {
 		log.Fatalf("Error loading .env file: %s\n", err_load)
 	}
 
-	// new uuid from env
-	NodeID := uuid.New()
-	StaticId := os.Getenv("ID")
-	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID.String()), log.LstdFlags)
+	ctx := context.Background()
+
+	// create a new mongo store
+	mongo_uri := os.Getenv("MONGO_URI")
+	if mongo_uri == "" {
+		log.Fatalf("MONGO_URI not set\n")
+	}
+	mongo_client, err := store.NewMongoStore(ctx, mongo_uri, "AlertSimAndRemediation", "Nodes")
+	if err != nil {
+		log.Fatalf("Error creating mongo store: %s\n", err)
+	}
+	defer mongo_client.Close(ctx)
+
+	// new uid from available nodes from mongo
+	NodeID, close_id, err := mongo_client.GetNodeId(ctx)
+	if err != nil {
+		log.Fatalf("Error getting node id: %s\n", err)
+	}
+	defer close_id()
+
+	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID), log.LstdFlags)
 
 	// config
 	// time_limit := 10 // 2 min
@@ -66,7 +77,6 @@ func main() {
 		redis_addr = "localhost:6379"
 	}
 
-	ctx := context.Background()
 
 	redis, redisErr := store.NewRedisStore(ctx, redis_addr)
 
@@ -76,58 +86,36 @@ func main() {
 
 	defer redis.Close()
 
-	alertsConfigChan := make(chan *alerts.AlertConfig)
-
-	signalChan := make(chan os.Signal, 2)
+	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
+
+	stream := os.Getenv("STREAM")
+	if stream == "" {
+		stream = "alerts"
+	}
 
 	// Creating Alerts
 	logger.Println("Creating alerts")
 
-	go func() {
-		// set lower limit of 1min and upper of 1min + time_limit
-		// interval := time.Duration(rand.Intn(time_limit)+1) * time.Minute
-		ticker := time.NewTicker(30 * time.Second)
-		for {
-			select {
-			case <-ticker.C:
-				alertConfig, err := redis.GetRandomAlertConfig(ctx)
-				if err != nil {
-					logger.Printf("Error getting random alert: %s\n", err)
-					continue
-				}
-				logger.Printf("Creating alert: %s\n", alertConfig)
-				alertsConfigChan <- &alertConfig
-
-			case <-signalChan:
-				logger.Printf("Interrupted\n")
-				close(signalChan)
-				return
-			}
-		}
-	}()
-
-	var wg sync.WaitGroup
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
 
 	for {
 		select {
-		case alertConfig := <-alertsConfigChan:
-			wg.Add(1)
-			go func(alertConfig *alerts.AlertConfig) {
-				defer wg.Done()
-				newALert := alerts.NewAlertInput(alertConfig, StaticId, "CPU")
-				logger.Printf("Sending alert: %s\n", newALert)
-				producer.SendAlert("alerts", newALert)
-				err := redis.PublishAlerts(ctx, newALert)
-				if err != nil {
-					logger.Printf("Error publishing alert: %s\n", err)
-				}
-				logger.Printf("Alert sent: %s\n", newALert)
-			}(alertConfig)
+		case <-ticker.C:
+			alert := alerts.GenRandomAlert(NodeID)
+			if err := producer.SendAlert("alerts", &alert); err != nil {
+				logger.Printf("Error sending alert: %s\n", err)
+			}
+			logger.Printf("Sent alert: %v\n", alert)
+			redis.PublishAlertInputs(ctx, &alert, stream)
+
+			newDuration := time.Duration(rand.Intn(30)) * time.Second // Random duration between 1 and 30 seconds
+			ticker.Stop()
+			ticker = time.NewTicker(newDuration)
 
 		case <-signalChan:
-			logger.Printf("Stopping Simulator %s\n", NodeID.String())
-			wg.Wait()
+			logger.Println("Received signal to stop")
 			return
 		}
 	}
