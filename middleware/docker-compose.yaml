@@ -1,12 +1,26 @@
 services:
   simulator:
     build: ./sim
-    # depends_on:
-    #   - redis
+    depends_on:
+      # - redis
+      - rule-engine
+      - rest-server
     networks:
       - test
     deploy:
-      replicas: 2     
+      replicas: 2  
+
+  rule-engine:
+    build: ./rule_engine
+    networks:
+      - test       
+
+  rest-server:
+    build: ./rest_server
+    networks:
+      - test
+    ports:
+      - "8000:8000"      
 
   # redis:
   #   image: redis/redis-stack
