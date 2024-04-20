@@ -7,8 +7,9 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
-	"time"
 	"sync"
+	"time"
+
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
@@ -137,7 +138,7 @@ func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID s
 	for {
 		select {
 		case <-ticker.C:
-			err := redis.SendHeartBeat(ctx, NodeID)
+			err := redis.StoreHeartBeat(ctx, NodeID, alerts.NewRuntimeMetrics(), logger)
 			if err != nil {
 				logger.Printf("Error sending heartbeat: %s\n", err)
 			}

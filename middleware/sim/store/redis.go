@@ -2,7 +2,7 @@ package store
 
 import (
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
-
+	"log"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -252,4 +252,26 @@ func (r *RedisStore) ConsumeAlertInputs(ctx context.Context, alertsChan chan<- a
 	}
 }
 
+func (r *RedisStore) StoreHeartBeat(ctx context.Context, NodeID string, metrics *alerts.RuntimeMetrics, logger *log.Logger) error {
+	values := map[string]interface{}{
+		"nodeID": NodeID,
+		"metrics": map[string]interface{}{
+			"numGoroutine": metrics.NumGoroutine,
+			"cpuUsage":     metrics.CpuUsage,
+			"ramUsage":     metrics.RamUsage,
+		},
+		"status": "UP",
+	}
 
+	txn := r.Client.TxPipeline()
+
+	// update the hash with the new values
+	if err := txn.HMSet(ctx, NodeID, values).Err(); err != nil {
+		txn.Discard()
+		return fmt.Errorf("error storing heartbeat: %s", err)
+	}
+
+	logger.Printf("Published heartbeat to Redis Stream: %s\n %s\n", NodeID, values)
+
+	return nil
+}
