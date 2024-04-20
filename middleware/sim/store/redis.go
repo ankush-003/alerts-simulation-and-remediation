@@ -251,3 +251,5 @@ func (r *RedisStore) ConsumeAlertInputs(ctx context.Context, alertsChan chan<- a
 		}
 	}
 }
+
+

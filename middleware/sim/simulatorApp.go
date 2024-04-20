@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"time"
+	"sync"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
-	"math/rand"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 	"github.com/joho/godotenv"
 )
@@ -86,7 +87,7 @@ func main() {
 
 	defer redis.Close()
 
-	signalChan := make(chan os.Signal, 1)
+	signalChan := make(chan os.Signal, 2)
 	signal.Notify(signalChan, os.Interrupt)
 
 	stream := os.Getenv("STREAM")
@@ -99,6 +100,11 @@ func main() {
 
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go sendHeartBeatToRedis(ctx, redis, NodeID, signalChan, logger, &wg)
 
 	for {
 		select {
@@ -113,6 +119,29 @@ func main() {
 			newDuration := time.Duration(rand.Intn(30)) * time.Second // Random duration between 1 and 30 seconds
 			ticker.Stop()
 			ticker = time.NewTicker(newDuration)
+
+		case <-signalChan:
+			logger.Println("Received signal to stop")
+			return
+		}
+	}
+
+	defer wg.Wait()
+}
+
+func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID string, signalChan chan os.Signal, logger *log.Logger, wg *sync.WaitGroup) {
+	defer wg.Done()
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			err := redis.SendHeartBeat(ctx, NodeID)
+			if err != nil {
+				logger.Printf("Error sending heartbeat: %s\n", err)
+			}
+			logger.Printf("Sent heartbeat: %s\n", NodeID)
 
 		case <-signalChan:
 			logger.Println("Received signal to stop")
