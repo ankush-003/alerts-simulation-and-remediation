@@ -1,13 +1,12 @@
 module github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2
 
-replace github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2 => /rule_engine
 
 go 1.22.1
 
 require (
 	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418003453-117f94aabd1a
 	github.com/hyperjumptech/grule-rule-engine v1.15.0
-	go.mongodb.org/mongo-driver v1.14.0
+	go.mongodb.org/mongo-driver v1.15.0
 )
 
 require (
@@ -43,7 +42,7 @@ require (
 	github.com/go-git/go-git/v5 v5.12.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/uuid v1.6.0 // indirect
+	github.com/google/uuid v1.6.0
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/joho/godotenv v1.5.1
 	github.com/kevinburke/ssh_config v1.2.0 // indirect

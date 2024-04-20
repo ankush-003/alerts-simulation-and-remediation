@@ -11,10 +11,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 
+	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -244,7 +246,7 @@ func GetUser() gin.HandlerFunc {
 	}
 }*/
 
-func PostRem() gin.HandlerFunc {
+func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// var alert models.Alerts
 		//var alertOutput models.AlertOutput
@@ -292,6 +294,12 @@ func PostRem() gin.HandlerFunc {
 		result, err := alertCollection.InsertOne(context.Background(), alertMap)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
+			return
+		}
+
+		// publish the alert to the Redis stream
+		if err := redisClient.PublishData(ctx, alertMap, "alerts"); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish alert to Redis stream"})
 			return
 		}
 
