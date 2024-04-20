@@ -1,21 +1,12 @@
 services:
-  simulator1:
-    build: .
+  simulator:
+    build: ./sim
     # depends_on:
     #   - redis
     networks:
       - test
-    # deploy:
-    #   replicas: 2
-    environment:
-      - ID=1
-
-  simulator2:
-    build: .
-    networks:
-      - test
-    environment:
-      - ID=2      
+    deploy:
+      replicas: 2     
 
   # redis:
   #   image: redis/redis-stack
@@ -37,7 +28,7 @@ services:
       - 9090:9090
     restart: unless-stopped
     volumes:
-      - ../prometheus/prometheus:/etc/prometheus
+      - ./prometheus/prometheus:/etc/prometheus
       - prom_data:/prometheus
     networks:
       - test  
@@ -101,8 +92,6 @@ services:
   #     - 6969:9100
   #   networks:
   #     - test  
-
-
 
 volumes:
   grafana-storage: {}
