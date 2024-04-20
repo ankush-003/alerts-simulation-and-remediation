@@ -1,6 +1,5 @@
 module github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim
 
-
 go 1.22.1
 
 require (
