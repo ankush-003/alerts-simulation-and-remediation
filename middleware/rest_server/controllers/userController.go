@@ -266,6 +266,12 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		alertMap["node"] = alertMap["Origin"]
+		delete(alertMap, "Origin")
+		delete(alertMap, "ID")
+		alertMap["Acknowledged"] = false
+
 		/*if err := c.ShouldBindJSON(&alertOutput); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
