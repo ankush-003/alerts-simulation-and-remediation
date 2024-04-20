@@ -1,11 +1,11 @@
 package store
 
 import (
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
-	"log"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	"log"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -91,7 +91,6 @@ func (r *RedisStore) GetRandomAlertConfig(ctx context.Context) (alerts.AlertConf
 	return alertConfig, nil
 }
 
-
 // Redis Stream functions
 func (r *RedisStore) PublishData(ctx context.Context, data map[string]interface{}, stream string) error {
 	entry := &redis.XAddArgs{
@@ -105,7 +104,7 @@ func (r *RedisStore) PublishData(ctx context.Context, data map[string]interface{
 	}
 
 	fmt.Printf("Published data to Redis Stream: %s\n", result)
-	return nil	
+	return nil
 }
 
 func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.AlertInput) error {
@@ -254,24 +253,42 @@ func (r *RedisStore) ConsumeAlertInputs(ctx context.Context, alertsChan chan<- a
 
 func (r *RedisStore) StoreHeartBeat(ctx context.Context, NodeID string, metrics *alerts.RuntimeMetrics, logger *log.Logger) error {
 	values := map[string]interface{}{
-		"nodeID": NodeID,
-		"metrics": map[string]interface{}{
-			"numGoroutine": metrics.NumGoroutine,
-			"cpuUsage":     metrics.CpuUsage,
-			"ramUsage":     metrics.RamUsage,
-		},
-		"status": "UP",
+		"nodeID":       NodeID,
+		"numGoroutine": metrics.NumGoroutine,
+		"cpuUsage":     metrics.CpuUsage,
+		"ramUsage":     metrics.RamUsage,
+		"status":       "UP",
 	}
 
 	txn := r.Client.TxPipeline()
 
-	// update the hash with the new values
-	if err := txn.HMSet(ctx, NodeID, values).Err(); err != nil {
+	txn.HSet(ctx, NodeID, values)
+
+	if _, err := txn.Exec(ctx); err != nil {
 		txn.Discard()
 		return fmt.Errorf("error storing heartbeat: %s", err)
 	}
-
+	
 	logger.Printf("Published heartbeat to Redis Stream: %s\n %s\n", NodeID, values)
+
+	return nil
+}
+
+func (r *RedisStore) KillHeartBeat(ctx context.Context, NodeID string, logger *log.Logger) error {
+	values := map[string]interface{}{
+		"status": "DOWN",
+	}
+
+	txn := r.Client.TxPipeline()
+
+	txn.HSet(ctx, NodeID, values)
+
+	if _, err := txn.Exec(ctx); err != nil {
+		txn.Discard()
+		return fmt.Errorf("error killing heartbeat: %s", err)
+	}
+
+	logger.Printf("Killed heartbeat to Redis Stream: %s\n %s\n", NodeID, values)
 
 	return nil
 }
