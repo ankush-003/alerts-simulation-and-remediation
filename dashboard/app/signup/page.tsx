@@ -96,7 +96,8 @@ const Page = () => {
       console.log(data);
       if (response.ok) {
         // Signup successful, navigate to /home
-        window.location.href = "/home";
+        sessionStorage.setItem('token', data.token);
+        window.location.href = "/login";
       }
     } catch (error) {
       console.error('Error:', error);

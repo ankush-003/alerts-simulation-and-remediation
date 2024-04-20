@@ -16,7 +16,6 @@ middleware "Rest_server/middleware"
 "golang.org/x/crypto/bcrypt"
 
 "go.mongodb.org/mongo-driver/bson"
-"go.mongodb.org/mongo-driver/bson/primitive"
 "go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -54,63 +53,94 @@ func VerifyPassword(userPassword string, providedPassword string)(bool, string){
 	return check, msg
 }
 
-func Signup()gin.HandlerFunc{
+func Signup() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Create a context with a timeout for database operations
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel() // Always defer the cancel function to release resources
 
-	return func(c *gin.Context){
-		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		// Bind the request JSON to a User struct
 		var user models.User
-
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
+		// Perform validation of the user struct
 		validationErr := validate.Struct(user)
 		if validationErr != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error":validationErr.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			return
 		}
 
-		count, err := userCollection.CountDocuments(ctx, bson.M{"email":user.Email})
-		defer cancel()
+		// Check if the email already exists in the database
+		count, err := userCollection.CountDocuments(ctx, bson.M{"email": user.Email})
 		if err != nil {
 			log.Panic(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error":"error occured while checking for the email"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the email"})
+			return
+		}
+		if count > 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email already exists"})
+			return
 		}
 
+		// Check if the phone number already exists in the database
+		count, err = userCollection.CountDocuments(ctx, bson.M{"phone": user.Phone})
+		if err != nil {
+			log.Panic(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the phone number"})
+			return
+		}
+		if count > 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "this phone number already exists"})
+			return
+		}
+
+		// Hash the password before storing it in the database
 		password := HashPassword(*user.Password)
 		user.Password = &password
 
-		count, err = userCollection.CountDocuments(ctx, bson.M{"phone":user.Phone})
-		defer cancel()
-		if err!= nil {
-			log.Panic(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error":"error occured while checking for the phone number"})
-		}
+		// Set the created_at and updated_at fields
+		user.Created_at = time.Now()
+		user.Updated_at = time.Now()
 
-		if count >0{
-			c.JSON(http.StatusInternalServerError, gin.H{"error":"this email or phone number already exists"})
-		}
-
-		user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		user.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		user.ID = primitive.NewObjectID()
-		user.User_id = user.ID.Hex()
-		token, refreshToken, _ := helper.GenerateAllTokens(*user.Email, *user.First_name, *user.Last_name, *user.User_type, *&user.User_id)
+		// Generate authentication tokens
+		token, refreshToken, _ := helper.GenerateAllTokens(*user.Email, *user.First_name, *user.Last_name, *user.User_type, user.ID.Hex())
 		user.Token = &token
 		user.Refresh_token = &refreshToken
 
-		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, user)
-		if insertErr !=nil {
-			msg := fmt.Sprintf("User item was not created")
-			c.JSON(http.StatusInternalServerError, gin.H{"error":msg})
-			return
-		}
-		defer cancel()
-		c.JSON(http.StatusOK, resultInsertionNumber)
+		// Insert only the required fields into the database
+		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, bson.M{
+    		"first_name":    user.First_name,
+    		"last_name":     user.Last_name,
+    		"email":         user.Email,
+    		"password":      user.Password,
+    		"phone":         user.Phone,
+    		"user_type":     user.User_type,
+    		"created_at":    user.Created_at,
+    		"updated_at":    user.Updated_at,
+	})
+	if insertErr != nil {
+    	msg := fmt.Sprintf("User item was not created")
+    	c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+    	return
 	}
 
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "session_token",
+		Value:    token,
+		Expires:  time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+		HttpOnly: true,
+	})
+
+	
+	// Return success response with the inserted document ID
+	//c.JSON(http.StatusOK, gin.H{"inserted_id": resultInsertionNumber.InsertedID})
+	c.JSON(http.StatusOK, gin.H{"token": token, "inserted_id": resultInsertionNumber.InsertedID})
+	}
 }
+
 
 func Login() gin.HandlerFunc{
 	return func(c *gin.Context){
@@ -148,7 +178,41 @@ func Login() gin.HandlerFunc{
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, foundUser)
+
+		/*type Session struct {
+			Token    string
+			ExpireAt time.Time
+		}
+
+		var sessions map[string]Session
+
+		session := Session{
+			Token:    token,
+			ExpireAt: time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+		}
+
+		// Store session data
+		sessions[token] = session
+
+		// Set session cookie in the response
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "session_token",
+			Value:    token,
+			Expires:  session.ExpireAt,
+			HttpOnly: true,
+		})*/
+
+		/*http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "session_token",
+			Value:    token,
+			Expires:  time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+			HttpOnly: true,
+		})*/
+
+		//c.JSON(http.StatusOK, foundUser)
+		// Store the tokens in the session storage
+		//sessionStorage.setItem('accessToken', token);
+		c.JSON(http.StatusOK, gin.H{"token": token, "user": foundUser})
 	}
 }
 
