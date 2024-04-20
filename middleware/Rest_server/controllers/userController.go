@@ -127,8 +127,17 @@ func Signup() gin.HandlerFunc {
     	return
 	}
 
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "session_token",
+		Value:    token,
+		Expires:  time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+		HttpOnly: true,
+	})
+
+	
 	// Return success response with the inserted document ID
-	c.JSON(http.StatusOK, gin.H{"inserted_id": resultInsertionNumber.InsertedID})
+	//c.JSON(http.StatusOK, gin.H{"inserted_id": resultInsertionNumber.InsertedID})
+	c.JSON(http.StatusOK, gin.H{"token": token, "inserted_id": resultInsertionNumber.InsertedID})
 	}
 }
 
@@ -169,7 +178,41 @@ func Login() gin.HandlerFunc{
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, foundUser)
+
+		/*type Session struct {
+			Token    string
+			ExpireAt time.Time
+		}
+
+		var sessions map[string]Session
+
+		session := Session{
+			Token:    token,
+			ExpireAt: time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+		}
+
+		// Store session data
+		sessions[token] = session
+
+		// Set session cookie in the response
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "session_token",
+			Value:    token,
+			Expires:  session.ExpireAt,
+			HttpOnly: true,
+		})*/
+
+		/*http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "session_token",
+			Value:    token,
+			Expires:  time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+			HttpOnly: true,
+		})*/
+
+		//c.JSON(http.StatusOK, foundUser)
+		// Store the tokens in the session storage
+		//sessionStorage.setItem('accessToken', token);
+		c.JSON(http.StatusOK, gin.H{"token": token, "user": foundUser})
 	}
 }
 

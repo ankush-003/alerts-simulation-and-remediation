@@ -87,6 +87,7 @@ const Page = () => {
       console.log(data);
       if (response.ok) {
         // Login successful, navigate to /home
+        sessionStorage.setItem('token', data.token);
         window.location.href = "/home";
       } else {
         // Invalid credentials
