@@ -89,7 +89,6 @@ func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *Aler
 	return &AlertInput{
 		ID: uuid.New().String(),
 		// ID:        uuid.New().String(),
-		ID:        NodeID,
 		// Category:  alertConfig.Description,
 		Category:  "RuntimeMetrics",
 		Source:    source,
@@ -108,16 +107,16 @@ type AlertConfig struct {
 
 func NewAlertConfig(category string, source string) *AlertConfig {
 	return &AlertConfig{
-		ID:          uuid.New(),
-		Category:    category,
-		Source:      source,
+		ID:       uuid.New(),
+		Category: category,
+		Source:   source,
 	}
 }
 
 func NewAlertConfigWithID(id uuid.UUID, category string, source string) *AlertConfig {
 	return &AlertConfig{
-		ID:          id,
-		Category:    category,
-		Source:      source,
+		ID:       id,
+		Category: category,
+		Source:   source,
 	}
 }

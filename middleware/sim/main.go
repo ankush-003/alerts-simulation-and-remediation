@@ -79,7 +79,6 @@ func main() {
 		redis_addr = "localhost:6379"
 	}
 
-
 	redis, redisErr := store.NewRedisStore(ctx, redis_addr)
 
 	if redisErr != nil {
