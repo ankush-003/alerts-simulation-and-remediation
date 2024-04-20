@@ -3,5 +3,5 @@ WORKDIR /go/src/app
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 COPY . .
-RUN go build rule_engine.go
-CMD ["./simulatorApp"]
+RUN go build -o /rule_engine
+CMD ["/rule_engine"]
