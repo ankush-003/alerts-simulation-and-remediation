@@ -88,7 +88,6 @@ func NewRuntimeMetrics() *RuntimeMetrics {
 func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *AlertInput {
 	return &AlertInput{
 		ID: uuid.New().String(),
-		// ID:        uuid.New().String(),
 		// Category:  alertConfig.Description,
 		Category:  "RuntimeMetrics",
 		Source:    source,
@@ -100,23 +99,23 @@ func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *Aler
 }
 
 type AlertConfig struct {
-	ID       uuid.UUID `json:"id"`
-	Category string    `json:"category"`
-	Source   string    `json:"source"`
+	ID          uuid.UUID `json:"id"`
+	Description string    `json:"description"`
+	Severity    string    `json:"severity"`
 }
 
 func NewAlertConfig(category string, source string) *AlertConfig {
 	return &AlertConfig{
-		ID:       uuid.New(),
-		Category: category,
-		Source:   source,
+		ID:          uuid.New(),
+		Category:    category,
+		Source:      source,
 	}
 }
 
 func NewAlertConfigWithID(id uuid.UUID, category string, source string) *AlertConfig {
 	return &AlertConfig{
-		ID:       id,
-		Category: category,
-		Source:   source,
+		ID:          id,
+		Category:    category,
+		Source:      source,
 	}
 }

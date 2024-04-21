@@ -38,10 +38,11 @@ func main() {
 
 	// new uid from available nodes from mongo
 	NodeID, close_id, err := mongo_client.GetNodeId(ctx)
+	fmt.Println("NodeID: ", NodeID)
+	defer close_id()
 	if err != nil {
 		log.Fatalf("Error getting node id: %s\n", err)
 	}
-	defer close_id()
 
 	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID), log.LstdFlags)
 
@@ -79,6 +80,7 @@ func main() {
 		redis_addr = "localhost:6379"
 	}
 
+
 	redis, redisErr := store.NewRedisStore(ctx, redis_addr)
 
 	if redisErr != nil {
@@ -105,6 +107,8 @@ func main() {
 	wg.Add(1)
 
 	go sendHeartBeatToRedis(ctx, redis, NodeID, signalChan, logger, &wg)
+	defer wg.Wait()
+	defer redis.KillHeartBeat(ctx, NodeID, logger)
 
 	for {
 		select {
@@ -116,7 +120,7 @@ func main() {
 			logger.Printf("Sent alert: %v\n", alert)
 			redis.PublishAlertInputs(ctx, &alert, stream)
 
-			newDuration := time.Duration(rand.Intn(30)) * time.Second // Random duration between 1 and 30 seconds
+			newDuration := time.Duration(rand.Intn(30)+1) * time.Second // Random duration between 1 and 30 seconds
 			ticker.Stop()
 			ticker = time.NewTicker(newDuration)
 
@@ -126,7 +130,6 @@ func main() {
 		}
 	}
 
-	defer wg.Wait()
 }
 
 func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID string, signalChan chan os.Signal, logger *log.Logger, wg *sync.WaitGroup) {
