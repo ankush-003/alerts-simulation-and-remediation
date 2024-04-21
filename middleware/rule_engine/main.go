@@ -11,9 +11,9 @@ import (
 	"sync"
 	// "time"
 
-	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mailserver"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
+	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine/engine"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine/mailserver"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine/mongo"
 	"github.com/joho/godotenv"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"

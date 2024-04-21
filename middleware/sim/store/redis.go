@@ -1,11 +1,11 @@
 package store
 
 import (
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
-	"log"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
+	"log"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -37,61 +37,6 @@ func (r *RedisStore) Close() error {
 	return r.Client.Close()
 }
 
-func (r *RedisStore) StoreAlertConfig(ctx context.Context, alertConfig *alerts.AlertConfig) error {
-	key := fmt.Sprintf("alertconfig:%s", alertConfig.ID.String())
-	data, err := json.Marshal(alertConfig)
-	if err != nil {
-		return fmt.Errorf("error marshalling alert: %s", err)
-	}
-
-	txn := r.Client.TxPipeline()
-
-	txn.Set(ctx, key, string(data), 0)
-
-	if _, err := txn.Exec(ctx); err != nil {
-		txn.Discard()
-		return fmt.Errorf("error storing alert: %s", err)
-	}
-
-	fmt.Printf("Stored alert: %s\n", string(data))
-	return nil
-}
-
-func (r *RedisStore) GetAlertConfigByID(ctx context.Context, id string) (alerts.AlertConfig, error) {
-	data, err := r.Client.Get(ctx, id).Result()
-	if err != nil {
-		return alerts.AlertConfig{}, fmt.Errorf("error getting alert: %s", err)
-	}
-
-	var alertConfig alerts.AlertConfig
-	if err := json.Unmarshal([]byte(data), &alertConfig); err != nil {
-		return alerts.AlertConfig{}, fmt.Errorf("error unmarshalling alert: %s", err)
-	}
-
-	return alertConfig, nil
-
-}
-
-func (r *RedisStore) GetRandomAlertConfig(ctx context.Context) (alerts.AlertConfig, error) {
-	key, err := r.Client.RandomKey(ctx).Result()
-	if err != nil {
-		return alerts.AlertConfig{}, fmt.Errorf("error getting random key: %s", err)
-	}
-
-	data, err := r.Client.Get(ctx, key).Result()
-	if err != nil {
-		return alerts.AlertConfig{}, fmt.Errorf("error getting alert: %s", err)
-	}
-
-	var alertConfig alerts.AlertConfig
-	if err := json.Unmarshal([]byte(data), &alertConfig); err != nil {
-		return alerts.AlertConfig{}, fmt.Errorf("error unmarshalling alert: %s", err)
-	}
-
-	return alertConfig, nil
-}
-
-
 // Redis Stream functions
 func (r *RedisStore) PublishData(ctx context.Context, data map[string]interface{}, stream string) error {
 	entry := &redis.XAddArgs{
@@ -105,7 +50,7 @@ func (r *RedisStore) PublishData(ctx context.Context, data map[string]interface{
 	}
 
 	fmt.Printf("Published data to Redis Stream: %s\n", result)
-	return nil	
+	return nil
 }
 
 func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.AlertInput) error {
@@ -254,24 +199,42 @@ func (r *RedisStore) ConsumeAlertInputs(ctx context.Context, alertsChan chan<- a
 
 func (r *RedisStore) StoreHeartBeat(ctx context.Context, NodeID string, metrics *alerts.RuntimeMetrics, logger *log.Logger) error {
 	values := map[string]interface{}{
-		"nodeID": NodeID,
-		"metrics": map[string]interface{}{
-			"numGoroutine": metrics.NumGoroutine,
-			"cpuUsage":     metrics.CpuUsage,
-			"ramUsage":     metrics.RamUsage,
-		},
-		"status": "UP",
+		"nodeID":       NodeID,
+		"numGoroutine": metrics.NumGoroutine,
+		"cpuUsage":     metrics.CpuUsage,
+		"ramUsage":     metrics.RamUsage,
+		"status":       "UP",
 	}
 
 	txn := r.Client.TxPipeline()
 
-	// update the hash with the new values
-	if err := txn.HMSet(ctx, NodeID, values).Err(); err != nil {
+	txn.HSet(ctx, NodeID, values)
+
+	if _, err := txn.Exec(ctx); err != nil {
 		txn.Discard()
 		return fmt.Errorf("error storing heartbeat: %s", err)
 	}
-
+	
 	logger.Printf("Published heartbeat to Redis Stream: %s\n %s\n", NodeID, values)
+
+	return nil
+}
+
+func (r *RedisStore) KillHeartBeat(ctx context.Context, NodeID string, logger *log.Logger) error {
+	values := map[string]interface{}{
+		"status": "DOWN",
+	}
+
+	txn := r.Client.TxPipeline()
+
+	txn.HSet(ctx, NodeID, values)
+
+	if _, err := txn.Exec(ctx); err != nil {
+		txn.Discard()
+		return fmt.Errorf("error killing heartbeat: %s", err)
+	}
+
+	logger.Printf("Killed heartbeat to Redis Stream: %s\n %s\n", NodeID, values)
 
 	return nil
 }
