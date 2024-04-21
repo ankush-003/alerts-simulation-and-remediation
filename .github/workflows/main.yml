@@ -25,7 +25,7 @@ jobs:
         name: Build and push rule_engine
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./middleware/rule_engine
           file: ./middleware/rule_engine/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/rule-engine:latest
@@ -33,7 +33,7 @@ jobs:
         name: Build and push rest_server
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./middleware/rest_server
           file: ./middleware/rest_server/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/rest-server:latest
@@ -41,7 +41,7 @@ jobs:
         name: Build and push simulator
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./middleware/sim
           file: ./middleware/sim/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/simulator:latest
