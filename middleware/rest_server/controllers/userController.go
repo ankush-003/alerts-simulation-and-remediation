@@ -22,8 +22,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
-var alertCollection *mongo.Collection = database.OpenCollection(database.Client, "nodes")
+var userCollection *mongo.Collection = database.OpenCollection(database.Client, "AlertSimAndRemediation")
+var alertCollection *mongo.Collection = database.OpenCollection(database.Client, "Alerts")
 
 var validate = validator.New()
 

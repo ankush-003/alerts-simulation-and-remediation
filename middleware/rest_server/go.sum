@@ -1,5 +1,3 @@
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418170118-5b9119ba6334 h1:kszR//WWv7GRIfd03jCgY6e/PttXHuDfCn9JcxlJbPo=
-github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418170118-5b9119ba6334/go.mod h1:Iv6a5dEMpDzRW4stKgqUUakKFxWoCA1MXvSsvYKf1BM=
 github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418180447-4d80977c94ca h1:1na6nybZNyEjAsWkXqC4MO0g4d3udlStdkhy4/flubs=
 github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240418180447-4d80977c94ca/go.mod h1:Iv6a5dEMpDzRW4stKgqUUakKFxWoCA1MXvSsvYKf1BM=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=

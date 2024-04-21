@@ -7,6 +7,8 @@ github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migc
 github.com/Microsoft/go-winio v0.6.1/go.mod h1:LRdKpFKfdobln8UmuiYcKPot9D2v6svN5+sAH+4kjUM=
 github.com/ProtonMail/go-crypto v1.0.0 h1:LRuvITjQWX+WIfr930YHG2HNfjR1uOfyf5vE0kC2U78=
 github.com/ProtonMail/go-crypto v1.0.0/go.mod h1:EjAoLdwvbIOoOQr3ihjnSoLZRtE8azugULFRteWMNc0=
+github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2 v0.0.0-20240418180447-4d80977c94ca h1:ZnnndNTeYOomLv/UKezyJKpwDINNACj2z84NA1iEk6E=
+github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2 v0.0.0-20240418180447-4d80977c94ca/go.mod h1:B+nl3JG+LI1TY0HXkN6IOQCC/dRqxMGprWcRaKlunYY=
 github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240419203040-c81688852141 h1:tDi+cxXbKdejDVqIlVqMLth5qQZMEe8Cr782uXN7KmM=
 github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240419203040-c81688852141/go.mod h1:qeP7kHoy3W70oObba0Plw22uBX1EA9zDN6kAsG2GNq0=
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFIImctFaOjnTIavg87rW78vTPkQqLI8=

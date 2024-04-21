@@ -10,13 +10,13 @@ import (
 
 func genRandomParams(r *rand.Rand) (ParamInput, int) {
 	structs := []ParamInput{
-		// &Memory{},
-		// &CPU{},
-		// &Disk{},
-		// &Network{},
-		// &Power{},
-		// &Applications{},
-		// &Security{},
+		&Memory{},
+		&CPU{},
+		&Disk{},
+		&Network{},
+		&Power{},
+		&Applications{},
+		&Security{},
 		&RuntimeMetrics{},
 	}
 	randomChoice := r.Intn(len(structs))

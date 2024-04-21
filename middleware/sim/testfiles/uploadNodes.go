@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 	"time"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine/mongo"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )

@@ -7,9 +7,6 @@ import (
 	"net/http"
 	"runtime"
 	"strconv"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 type PromResponse struct {
@@ -82,40 +79,5 @@ func NewRuntimeMetrics() *RuntimeMetrics {
 		NumGoroutine: uint64(runtime.NumGoroutine()),
 		CpuUsage:     CpuUsage,
 		RamUsage:     RamUsage,
-	}
-}
-
-func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *AlertInput {
-	return &AlertInput{
-		ID: uuid.New().String(),
-		// Category:  alertConfig.Description,
-		Category:  "RuntimeMetrics",
-		Source:    source,
-		Origin:    NodeID,
-		Params:    NewRuntimeMetrics(),
-		CreatedAt: time.Now().Format(time.DateTime),
-		Handled:   false,
-	}
-}
-
-type AlertConfig struct {
-	ID          uuid.UUID `json:"id"`
-	Description string    `json:"description"`
-	Severity    string    `json:"severity"`
-}
-
-func NewAlertConfig(category string, source string) *AlertConfig {
-	return &AlertConfig{
-		ID:          uuid.New(),
-		Category:    category,
-		Source:      source,
-	}
-}
-
-func NewAlertConfigWithID(id uuid.UUID, category string, source string) *AlertConfig {
-	return &AlertConfig{
-		ID:          id,
-		Category:    category,
-		Source:      source,
 	}
 }
