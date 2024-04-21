@@ -183,6 +183,34 @@ func (r *RedisStore) ConsumeData(ctx context.Context, stream string, dataChan ch
 }
 
 func (r *RedisStore) ConsumeDataGroup(ctx context.Context, stream string, dataChan chan<- map[string]interface{}, doneChan chan struct{}, groupName string) {
+func (r *RedisStore) ConsumeData(ctx context.Context, stream string, dataChan chan<- map[string]interface{}, doneChan chan struct{}) {
+	lastID := "$"
+	for {
+		select {
+		case <-doneChan:
+			return
+		default:
+			streamData, err := r.Client.XRead(ctx, &redis.XReadArgs{
+				Streams: []string{stream, lastID},
+				Count:   1,
+				Block:   0,
+			}).Result()
+			if err != nil {
+				fmt.Printf("Error reading from stream: %s\n", err)
+				continue
+			}
+
+			for _, stream := range streamData {
+				for _, message := range stream.Messages {
+					dataChan <- message.Values
+					lastID = message.ID
+				}
+			}
+		}
+	}
+}
+
+func (r *RedisStore) ConsumeDataGroup(ctx context.Context, stream string, dataChan chan<- map[string]interface{}, doneChan chan struct{}, groupName string) {
 	status, err := r.Client.XGroupCreate(ctx, stream, groupName, "0").Result()
 	if err != nil {
 		fmt.Printf("Error creating group: %s\n", err)

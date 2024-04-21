@@ -99,9 +99,9 @@ func NewAlertInput(alertConfig *AlertConfig, NodeID string, source string) *Aler
 }
 
 type AlertConfig struct {
-	ID       uuid.UUID `json:"id"`
-	Category string    `json:"category"`
-	Source   string    `json:"source"`
+	ID          uuid.UUID `json:"id"`
+	Description string    `json:"description"`
+	Severity    string    `json:"severity"`
 }
 
 func NewAlertConfig(category string, source string) *AlertConfig {
