@@ -1,10 +1,14 @@
 # Alerts Simulation & Remediation 🔔
-Alert Simulation and Remediation is an advanced monitoring and alerting system designed to help manage alerts from deployments effectively. This project aims to provide a comprehensive solution for simulating various system environments, evaluating alerts, providing remediation recommendations, and delivering real-time notifications and insights.
+![Workflow](https://github.com/ankush-003/alerts-simulation-and-remediation/actions/workflows/main.yml/badge.svg)
+![Simulator Docker Pulls](https://img.shields.io/docker/pulls/ankush003/simulator)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/t/ankush-003/alerts-simulation-and-remediation)
+![Vercel Deploy](https://deploy-badge.vercel.app/vercel/alerts-simulation-and-remediation)
+
+`Alert Simulation and Remediation` is an advanced monitoring and alerting system designed to help manage alerts from deployments effectively. This project aims to provide a comprehensive solution for simulating various system environments, evaluating alerts, providing remediation recommendations, and delivering real-time notifications and insights.
 
 ## Features ✨
 ### Simulation Environment 🌲
-Simulator: Simulates various system environments, such as high CPU load, network load, low memory availability, and high disk usage, by creating multiple goroutines, sending HTTP requests, allocating memory, and writing files.
-Environments: Supports simulating environments like high system load, network load, low available memory, and high disk usage.
+- `Simulator`: Simulates various system environments, such as high CPU load, network load, low memory availability, and high disk usage, by creating multiple goroutines, sending HTTP requests, allocating memory, and writing files.
 
 ### Alert Management 📢
 - `Rule Engine`: Evaluates alerts based on predefined rules and provides remediation recommendations.
