@@ -272,6 +272,9 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 		delete(alertMap, "ID")
 		alertMap["Acknowledged"] = false
 
+		log.Println("Received alert")
+		PrintAlert(alertMap)
+
 		/*if err := c.ShouldBindJSON(&alertOutput); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -302,6 +305,7 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
 			return
 		}
+		log.Println("Alert inserted successfully with ID:", result.InsertedID)
 
 		// publish the alert to the Redis stream
 		if err := redisClient.PublishData(ctx, alertMap, "alerts"); err != nil {
@@ -341,6 +345,8 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 		// }
 
 		// Return a success response with the inserted alert
+		log.Println("Alert published successfully")
+		
 		c.JSON(http.StatusOK, gin.H{"message": "Alert inserted successfully", "alertID": result.InsertedID})
 	}
 }
@@ -367,4 +373,12 @@ func checkForDuplicateAlert(alert models.Alerts) (bool, error) {
 
 	// If count is greater than 0, a duplicate alert exists
 	return count > 0, nil
+}
+
+func PrintAlert(alertMap map[string]interface{}) {
+	// Print the alert data
+	log.Println("Alert data:")
+	for key, value := range alertMap {
+		log.Printf("%s: %v\n", key, value)
+	}
 }
