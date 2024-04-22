@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Alert as AlertData, columns } from "./columns"
 import { DataTable } from "@/components/DataTable";
 import { toast } from "sonner"
+import { TracingBeam } from "@/components/ui/tracing-beam"
 
 
 export default function Realtime() {
@@ -32,8 +33,10 @@ export default function Realtime() {
     }, []);
 
     return (
+        <TracingBeam className="px-6">
         <div className="container mx-auto py-10">
             <DataTable columns={columns} data={data} />
         </div>
+        </TracingBeam>
     )
 }

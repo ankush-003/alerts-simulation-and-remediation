@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import Lottie from "lottie-react";
 import alertAnimation from "../public/alertAnimation.json";
 import {Login, LoginType} from "@/components/Login";
+import { Globe } from "@/components/ui/globe";
 
 export default function Home() {
   const words = [
@@ -41,8 +42,8 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center h-[40rem] ">
-      <p className="mb-4 text-4xl font-semibold text-center">
+    <div className="flex flex-col items-center justify-center mt-4">
+      <p className="mb-4 text-4xl font-semibold text-center mt-5">
         Welcome to <span className="text-red-500 inline-block">Alerts Simulation & Remediation</span>
       </p>
       <div className="mt-2">
@@ -69,6 +70,7 @@ export default function Home() {
             </DialogContent>
           </Dialog>
       </div>
+      {/* <Globe /> */}
     </div>
   );
 }

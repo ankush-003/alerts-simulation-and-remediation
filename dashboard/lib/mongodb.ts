@@ -1,11 +1,11 @@
 // "use server";
-import { MongoClient } from "mongodb";
+import { MongoClient } from 'mongodb';
 
 
 // console.log("HEREE")
 
 
-const uri = "mongodb+srv://alertssim:RRdxdKTHt99cEnWw@cluster0.aenmhq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const uri = process.env.MONGO_URI;
 const options = {};
 const client =  new MongoClient(uri, options);
 console.log("client", client)
