@@ -193,8 +193,8 @@ export default function AlertConfig() {
           <div style={{ ...labelStyle, color: '#ff0000' }}>
             <input
               type="checkbox"
-              name="error"
-              checked={severities.error}
+              name="severe"
+              checked={severities.severe}
               onChange={handleSeverityChange}
               style={inputStyle}
             />
