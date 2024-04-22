@@ -33,19 +33,19 @@ services:
   #   networks:
   #     - test
 
-  # prometheus-sim:
-  #   image: prom/prometheus
-  #   container_name: prometheus-sim
-  #   command:
-  #     - '--config.file=/etc/prometheus/prometheus.yaml'
-  #   ports:
-  #     - 9090:9090
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./prometheus/prometheus:/etc/prometheus
-  #     - prom_data:/prometheus
-  #   networks:
-  #     - test  
+  prometheus-sim:
+    image: prom/prometheus
+    container_name: prometheus-sim
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    networks:
+      - test  
 
   # grafana-sim:
   #   image: grafana/grafana

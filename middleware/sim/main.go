@@ -80,7 +80,6 @@ func main() {
 		redis_addr = "localhost:6379"
 	}
 
-
 	redis, redisErr := store.NewRedisStore(ctx, redis_addr)
 
 	if redisErr != nil {
@@ -94,7 +93,7 @@ func main() {
 
 	stream := os.Getenv("STREAM")
 	if stream == "" {
-		stream = "alerts"
+		stream = "nodeAlerts"
 	}
 
 	// Creating Alerts
@@ -129,7 +128,6 @@ func main() {
 			return
 		}
 	}
-
 }
 
 func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID string, signalChan chan os.Signal, logger *log.Logger, wg *sync.WaitGroup) {
@@ -152,3 +150,4 @@ func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID s
 		}
 	}
 }
+
