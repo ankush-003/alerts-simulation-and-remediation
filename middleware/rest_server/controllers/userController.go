@@ -346,7 +346,7 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 
 		// Return a success response with the inserted alert
 		log.Println("Alert published successfully")
-		
+
 		c.JSON(http.StatusOK, gin.H{"message": "Alert inserted successfully", "alertID": result.InsertedID})
 	}
 }
