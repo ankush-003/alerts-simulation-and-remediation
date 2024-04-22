@@ -14,12 +14,12 @@ func Authenticate() gin.HandlerFunc{
 		// fmt.Println(c.Request.Header)
 		// fmt.Println(c.Request)
 
-		fmt.Println(clientToken)
+		// fmt.Println(clientToken)
 
 
 		clientToken = clientToken[7:]
 
-		fmt.Println(clientToken)
+		// fmt.Println(clientToken)
 
 
 
@@ -52,7 +52,7 @@ func Authenticate() gin.HandlerFunc{
 		c.Set("user_type", claims.User_type)
 		c.Next()
 
-		fmt.Println("end")
+		// fmt.Println("end")
 
 	}
 }

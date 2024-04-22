@@ -154,12 +154,15 @@ func Login() gin.HandlerFunc{
 			return 
 		}
 
+
+
 		err := userCollection.FindOne(ctx, bson.M{"email":user.Email}).Decode(&foundUser)
 		defer cancel()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error":"email or password is incorrect"})
 			return
 		}
+
 
 		passwordIsValid, msg := VerifyPassword(*user.Password, *foundUser.Password)
 		defer cancel()
@@ -421,67 +424,48 @@ func checkForDuplicateAlert(alert models.Alerts) (bool, error) {
 
 
 func AlertConfig() gin.HandlerFunc {
-	return func(c *gin.Context) {
+    return func(c *gin.Context) {
+        fmt.Println("IN ALERT CONFIG")
+        userID := c.GetString("email")
+        if userID == "" {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "User ID not found"})
+            return
+        }
 
-		fmt.Println("IN ALERT CONFIG")
-		// Get the user ID from the context
-		userID := c.GetString("email")
-		fmt.Println(userID)
-		if userID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "User ID not found"})
-			return
-		}
+		// fmt.println()
 
-		// Retrieve the user details from the database using the userID
-		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-		defer cancel()
-
-		var user models.User
+        var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+        defer cancel()
+        var user models.User
 		err := userCollection.FindOne(ctx, bson.M{"email": userID}).Decode(&user)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
 
-		var alertConfig struct {
-			Categories struct {
-				Memory  bool `json:"memory"`
-				CPU     bool `json:"cpu"`
-				Disk    bool `json:"disk"`
-				Power   bool `json:"power"`
-			} `json:"categories"`
-			Severities struct {
-				Warning  bool `json:"warning"`
-				Critical bool `json:"critical"`
-				Error    bool `json:"error"`
-			} `json:"severities"`
-		}
+        var alertConfig struct {
+            Categories []string `json:"categories"`
+            Severities []string `json:"severities"`
+        }
+        if err := c.BindJSON(&alertConfig); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+            return
+        }
 
-		if err := c.BindJSON(&alertConfig); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+        filter := bson.M{"email": userID}
+        update := bson.M{
+            "$set": bson.M{
+                "alert.categories": alertConfig.Categories,
+                "alert.severities": alertConfig.Severities,
+            },
+        }
+        _, err = userCollection.UpdateOne(ctx, filter, update)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user document"})
+            return
+        }
 
-		// Convert the alertConfig to a string
-		alertConfigString, err := bson.Marshal(alertConfig)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal alert configuration"})
-			return
-		}
-
-		fmt.Println(alertConfigString)
-
-		// Update the user document with the alert configuration
-		filter := bson.M{"email": userID}
-		update := bson.M{"$set": bson.M{"alert": alertConfigString}}
-		_, err = userCollection.UpdateOne(ctx, filter, update)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user document"})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"message": "Alert configuration saved successfully"})
-	}
+        c.JSON(http.StatusOK, gin.H{"message": "Alert configuration saved successfully"})
+    }
 }
-
 

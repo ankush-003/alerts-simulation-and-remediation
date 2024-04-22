@@ -57,25 +57,38 @@ const titleStyle: React.CSSProperties = {
   color: '#ff6600',
 };
 
+const submitButtonStyle: React.CSSProperties = {
+  backgroundColor: '#ff6600',
+  color: 'white',
+  padding: '12px 24px',
+  border: 'none',
+  borderRadius: '4px',
+  fontSize: '18px',
+  cursor: 'pointer',
+  marginTop: '24px',
+};
+
+
 export default function AlertConfig() {
-  const [categories, setCategories] = useState({
-    memory: false,
-    cpu: false,
-    disk: false,
-    power: false,
-  });
-  const [severities, setSeverities] = useState({
-    warning: false,
-    critical: false,
-    error: false,
-  });
+  const [categories, setCategories] = useState([]);
+  const [severities, setSeverities] = useState([]);
 
   const handleCategoryChange = (event) => {
-    setCategories({ ...categories, [event.target.name]: event.target.checked });
+    const category = event.target.name;
+    if (event.target.checked) {
+      setCategories([...categories, category]);
+    } else {
+      setCategories(categories.filter((c) => c !== category));
+    }
   };
 
   const handleSeverityChange = (event) => {
-    setSeverities({ ...severities, [event.target.name]: event.target.checked });
+    const severity = event.target.name;
+    if (event.target.checked) {
+      setSeverities([...severities, severity]);
+    } else {
+      setSeverities(severities.filter((s) => s !== severity));
+    }
   };
 
   const handleSubmit = async () => {
@@ -84,8 +97,7 @@ export default function AlertConfig() {
       severities,
     };
 
-    const jwtToken = sessionStorage.getItem('token'); // Assuming the JWT token is stored in localStorage
-    console.log(jwtToken, alertConfig)
+    const jwtToken = sessionStorage.getItem('token');
 
     try {
       const response = await fetch('http://localhost:8000/users/alertconfig', {
@@ -99,8 +111,10 @@ export default function AlertConfig() {
 
       if (response.ok) {
         console.log('Alert configuration saved successfully');
+        window.location.href = "/home"
       } else {
-        console.error('Failed to save alert configuration');
+        const errorData = await response.json();
+        console.error('Failed to save alert configuration', errorData.error);
       }
     } catch (error) {
       console.error('Error saving alert configuration:', error);
@@ -184,11 +198,11 @@ export default function AlertConfig() {
               onChange={handleSeverityChange}
               style={inputStyle}
             />
-            <span style={{ marginLeft: '8px' }}>Error</span>
+            <span style={{ marginLeft: '8px' }}>Severe</span>
           </div>
         </div>
       </div>
-      <button onClick={handleSubmit} style={{ marginTop: '24px' }}>
+      <button onClick={handleSubmit} style={submitButtonStyle}>
         Submit
       </button>
       

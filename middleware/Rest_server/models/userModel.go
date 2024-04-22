@@ -1,8 +1,9 @@
 package models
 
-import(
+import (
 	"time"
-"go.mongodb.org/mongo-driver/bson/primitive"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct{
@@ -18,5 +19,7 @@ type User struct{
 	Created_at		time.Time				`json:"created_at"`
 	Updated_at		time.Time				`json:"updated_at"`
 	User_id			string					`json:"user_id"`
-	Alert      		[]string				`json:"alert_id"`
-}
+	Alert struct {
+        Categories []string `bson:"categories"`
+        Severities []string `bson:"severities"`
+    } `bson:"alert"`}
