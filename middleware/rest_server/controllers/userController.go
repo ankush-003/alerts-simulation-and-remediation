@@ -3,6 +3,7 @@ package controllers
 import (
 	"Rest_server/database"
 	helper "Rest_server/helpers"
+	middleware "Rest_server/middleware"
 	"Rest_server/models"
 	"context"
 	"fmt"
@@ -11,154 +12,228 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 
-	// "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = database.OpenCollection(database.Client, "AlertSimAndRemediation")
-var alertCollection *mongo.Collection = database.OpenCollection(database.Client, "Alerts")
+var userCollection *mongo.Collection
+
+func init() {
+	userCollection = database.OpenCollection("AlertSimAndRemediation","Users")
+}
+var alertCollection *mongo.Collection
+
+func init() {
+	alertCollection = database.OpenCollection("AlertSimAndRemediation","Users")
+}
+
 
 var validate = validator.New()
 
-func HashPassword(password string) string {
+func HashPassword(password string) string{
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	if err != nil {
+	if err!=nil{
 		log.Panic(err)
 	}
 	return string(bytes)
 }
 
-func VerifyPassword(userPassword string, providedPassword string) (bool, string) {
+func VerifyPassword(userPassword string, providedPassword string)(bool, string){
 	err := bcrypt.CompareHashAndPassword([]byte(providedPassword), []byte(userPassword))
 	check := true
 	msg := ""
 
-	if err != nil {
+	if err!= nil {
 		msg = fmt.Sprintf("email of password is incorrect")
-		check = false
+		check=false
 	}
 	return check, msg
 }
 
 func Signup() gin.HandlerFunc {
-
 	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-		var user models.User
+		// Create a context with a timeout for database operations
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel() // Always defer the cancel function to release resources
 
+		// Bind the request JSON to a User struct
+		var user models.User
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
+		// Perform validation of the user struct
 		validationErr := validate.Struct(user)
 		if validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			return
 		}
 
+		// Check if the email already exists in the database
 		count, err := userCollection.CountDocuments(ctx, bson.M{"email": user.Email})
-		defer cancel()
 		if err != nil {
 			log.Panic(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while checking for the email"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the email"})
+			return
+		}
+		if count > 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email already exists"})
+			return
 		}
 
+		// Check if the phone number already exists in the database
+		count, err = userCollection.CountDocuments(ctx, bson.M{"phone": user.Phone})
+		if err != nil {
+			log.Panic(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occurred while checking for the phone number"})
+			return
+		}
+		if count > 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "this phone number already exists"})
+			return
+		}
+
+		// Hash the password before storing it in the database
 		password := HashPassword(*user.Password)
 		user.Password = &password
 
-		count, err = userCollection.CountDocuments(ctx, bson.M{"phone": user.Phone})
-		defer cancel()
-		if err != nil {
-			log.Panic(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while checking for the phone number"})
-		}
+		// Set the created_at and updated_at fields
+		user.Created_at = time.Now()
+		user.Updated_at = time.Now()
 
-		if count > 0 {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "this email or phone number already exists"})
-		}
-
-		user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		user.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		user.ID = primitive.NewObjectID()
-		user.User_id = user.ID.Hex()
-		token, refreshToken, _ := helper.GenerateAllTokens(*user.Email, *user.First_name, *user.Last_name, *user.User_type, *&user.User_id)
+		// Generate authentication tokens
+		token, refreshToken, _ := helper.GenerateAllTokens(*user.Email, *user.First_name, *user.Last_name, *user.User_type, user.ID.Hex())
 		user.Token = &token
 		user.Refresh_token = &refreshToken
 
-		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, user)
-		if insertErr != nil {
-			msg := fmt.Sprintf("User item was not created")
-			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
-			return
-		}
-		defer cancel()
-		c.JSON(http.StatusOK, resultInsertionNumber)
+		// Insert only the required fields into the database
+		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, bson.M{
+    		"first_name":    user.First_name,
+    		"last_name":     user.Last_name,
+    		"email":         user.Email,
+    		"password":      user.Password,
+    		"phone":         user.Phone,
+    		"user_type":     user.User_type,
+    		"created_at":    user.Created_at,
+    		"updated_at":    user.Updated_at,
+	})
+	if insertErr != nil {
+    	msg := fmt.Sprintf("User item was not created")
+    	c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+    	return
 	}
 
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "session_token",
+		Value:    token,
+		Expires:  time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+		HttpOnly: true,
+	})
+
+	
+	// Return success response with the inserted document ID
+	//c.JSON(http.StatusOK, gin.H{"inserted_id": resultInsertionNumber.InsertedID})
+	c.JSON(http.StatusOK, gin.H{"token": token, "inserted_id": resultInsertionNumber.InsertedID})
+	}
 }
 
-func Login() gin.HandlerFunc {
-	return func(c *gin.Context) {
+
+func Login() gin.HandlerFunc{
+	return func(c *gin.Context){
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var user models.User
 		var foundUser models.User
 
 		if err := c.BindJSON(&user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error":err.Error()})
+			return 
+		}
+
+
+
+		err := userCollection.FindOne(ctx, bson.M{"email":user.Email}).Decode(&foundUser)
+		defer cancel()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"email or password is incorrect"})
 			return
 		}
 
-		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&foundUser)
-		defer cancel()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "email or password is incorrect"})
-			return
-		}
 
 		passwordIsValid, msg := VerifyPassword(*user.Password, *foundUser.Password)
 		defer cancel()
-		if passwordIsValid != true {
+		if passwordIsValid != true{
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
 
-		if foundUser.Email == nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "user not found"})
+		if foundUser.Email == nil{
+			c.JSON(http.StatusInternalServerError, gin.H{"error":"user not found"})
 		}
 		token, refreshToken, _ := helper.GenerateAllTokens(*foundUser.Email, *foundUser.First_name, *foundUser.Last_name, *foundUser.User_type, foundUser.User_id)
 		helper.UpdateAllTokens(token, refreshToken, foundUser.User_id)
-		err = userCollection.FindOne(ctx, bson.M{"user_id": foundUser.User_id}).Decode(&foundUser)
+		err = userCollection.FindOne(ctx, bson.M{"user_id":foundUser.User_id}).Decode(&foundUser)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, foundUser)
+
+		/*type Session struct {
+			Token    string
+			ExpireAt time.Time
+		}
+
+		var sessions map[string]Session
+
+		session := Session{
+			Token:    token,
+			ExpireAt: time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+		}
+
+		// Store session data
+		sessions[token] = session
+
+		// Set session cookie in the response
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "session_token",
+			Value:    token,
+			Expires:  session.ExpireAt,
+			HttpOnly: true,
+		})*/
+
+		/*http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "session_token",
+			Value:    token,
+			Expires:  time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+			HttpOnly: true,
+		})*/
+
+		//c.JSON(http.StatusOK, foundUser)
+		// Store the tokens in the session storage
+		//sessionStorage.setItem('accessToken', token);
+		c.JSON(http.StatusOK, gin.H{"token": token, "user": foundUser})
 	}
 }
 
-func GetUsers() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func GetUsers() gin.HandlerFunc{
+	return func(c *gin.Context){
 		if err := helper.CheckUserType(c, "ADMIN"); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error":err.Error()})
 			return
 		}
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-
+		
 		recordPerPage, err := strconv.Atoi(c.Query("recordPerPage"))
-		if err != nil || recordPerPage < 1 {
+		if err != nil || recordPerPage <1{
 			recordPerPage = 10
 		}
 		page, err1 := strconv.Atoi(c.Query("page"))
-		if err1 != nil || page < 1 {
+		if err1 !=nil || page<1{
 			page = 1
 		}
 
@@ -167,42 +242,40 @@ func GetUsers() gin.HandlerFunc {
 
 		matchStage := bson.D{{"$match", bson.D{{}}}}
 		groupStage := bson.D{{"$group", bson.D{
-			{"_id", bson.D{{"_id", "null"}}},
-			{"total_count", bson.D{{"$sum", 1}}},
+			{"_id", bson.D{{"_id", "null"}}}, 
+			{"total_count", bson.D{{"$sum", 1}}}, 
 			{"data", bson.D{{"$push", "$$ROOT"}}}}}}
 		projectStage := bson.D{
 			{"$project", bson.D{
 				{"_id", 0},
 				{"total_count", 1},
-				{"user_items", bson.D{{"$slice", []interface{}{"$data", startIndex, recordPerPage}}}}}}}
-		result, err := userCollection.Aggregate(ctx, mongo.Pipeline{
-			matchStage, groupStage, projectStage})
-		defer cancel()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "error occured while listing user items"})
-		}
-		var allusers []bson.M
-		if err = result.All(ctx, &allusers); err != nil {
-			log.Fatal(err)
-		}
-		c.JSON(http.StatusOK, allusers[0])
-	}
+				{"user_items", bson.D{{"$slice", []interface{}{"$data", startIndex, recordPerPage}}}},}}}
+result,err := userCollection.Aggregate(ctx, mongo.Pipeline{
+	matchStage, groupStage, projectStage})
+defer cancel()
+if err!=nil{
+	c.JSON(http.StatusInternalServerError, gin.H{"error":"error occured while listing user items"})
 }
+var allusers []bson.M
+if err = result.All(ctx, &allusers); err!=nil{
+	log.Fatal(err)
+}
+c.JSON(http.StatusOK, allusers[0])}}
 
-func GetUser() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func GetUser() gin.HandlerFunc{
+	return func(c *gin.Context){
 		userId := c.Param("user_id")
 
 		if err := helper.MatchUserTypeToUid(c, userId); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error":err.Error()})
 			return
 		}
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 
 		var user models.User
-		err := userCollection.FindOne(ctx, bson.M{"user_id": userId}).Decode(&user)
+		err := userCollection.FindOne(ctx, bson.M{"user_id":userId}).Decode(&user)
 		defer cancel()
-		if err != nil {
+		if err != nil{
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -246,139 +319,152 @@ func GetUser() gin.HandlerFunc {
 	}
 }*/
 
-func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc {
+func PostRem() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// var alert models.Alerts
+		var alert models.Alerts
 		//var alertOutput models.AlertOutput
 
 		// Bind alert and alertOutput from the request
-		// var alertMap map[string]interface{}
-
-		// // Bind the JSON data into a map
-		// if err := c.ShouldBindJSON(&alertMap); err != nil {
-		// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		// 	return
-		// }
-		var alertMap map[string]interface{}
-
-		// Bind the JSON data into a map
-		if err := c.ShouldBindJSON(&alertMap); err != nil {
+		if err := c.ShouldBindJSON(&alert); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		alertMap["node"] = alertMap["Origin"]
-		delete(alertMap, "Origin")
-		delete(alertMap, "ID")
-		alertMap["Acknowledged"] = false
-
-		log.Println("Received alert")
-		PrintAlert(alertMap)
-
 		/*if err := c.ShouldBindJSON(&alertOutput); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}*/
 
 		// Get the user ID from the context or request headers
-		// userIDHandler := middleware.GetUserIdContext()
-		// userIDHandler(c)
-		// userID := c.GetString("uid")
-		// //fmt.Print("userid=", userID)
-		// if userID == "" {
-		// 	c.JSON(http.StatusBadRequest, gin.H{"error": "user ID not found"})
-		// 	return
-		// }
-
-		// // Check for duplicate alert
-		// if isDuplicate, err := checkForDuplicateAlert(alert); err != nil {
-		//     c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check for duplicate alert"})
-		//     return
-		// } else if isDuplicate {
-		//     c.JSON(http.StatusBadRequest, gin.H{"error": "Duplicate alert found"})
-		//     return
-		// }
-
-		// Insert the alert into the alerts collection
-		result, err := alertCollection.InsertOne(context.Background(), alertMap)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
+		userIDHandler := middleware.GetUserIdContext()
+		userIDHandler(c)
+		userID := c.GetString("uid")
+		//fmt.Print("userid=", userID)
+		if userID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "user ID not found"})
 			return
 		}
-		log.Println("Alert inserted successfully with ID:", result.InsertedID)
 
-		// publish the alert to the Redis stream
-		if err := redisClient.PublishData(ctx, alertMap, "alerts"); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish alert to Redis stream"})
+		
+		// Check for duplicate alert
+        if isDuplicate, err := checkForDuplicateAlert(alert); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check for duplicate alert"})
+            return
+        } else if isDuplicate {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Duplicate alert found"})
+            return
+        }
+        
+
+		// Insert the alert into the alerts collection
+		result, err := alertCollection.InsertOne(context.Background(), alert)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
 			return
 		}
 
 		// Add the alert ID to the user's Alerts array field
 
 		/*res, err := userCollection.update(
-		   		{ _id: ObjectId(userID) }, // Query to find the document
-		   		{ $push: { Alerts: { $each: [alert.ID] } } } // Update operation
-				)*/
+   		{ _id: ObjectId(userID) }, // Query to find the document
+   		{ $push: { Alerts: { $each: [alert.ID] } } } // Update operation
+		)*/
 
-		// alertIDString := alert.ID.String()
+		alertIDString := alert.ID.String()
 
-		// // Define the filter to match the userID
-		// filter := bson.M{"user_id": userID}
+		// Define the filter to match the userID
+		filter := bson.M{"user_id": userID}
 
-		// // Define the update operation to push alertIDString into the Alert array
-		// update := bson.M{"$push": bson.M{"Alert": alertIDString}}
+		// Define the update operation to push alertIDString into the Alert array
+		update := bson.M{"$push": bson.M{"Alert": alertIDString}}
 
-		// // Perform the update operation
-		// res, err := userCollection.UpdateOne(context.Background(), filter, update)
-		// if err != nil {
-		// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user document"})
-		// 	return
-		// }
+		// Perform the update operation
+		res, err := userCollection.UpdateOne(context.Background(), filter, update)
+		if err != nil {
+    		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user document"})
+    		return
+		}
 
-		// // Use res for error checking or logging if needed
-		// if res.ModifiedCount == 0 {
-		// 	// Log a message indicating that no documents were modified
-		// 	log.Println("No documents were modified during the update operation")
-		// } else {
-		// 	// Log a message indicating the number of documents modified
-		// 	log.Printf("%d document(s) were modified during the update operation\n", res.ModifiedCount)
-		// }
+		// Use res for error checking or logging if needed
+		if res.ModifiedCount == 0 {
+    		// Log a message indicating that no documents were modified
+    		log.Println("No documents were modified during the update operation")
+		} else {
+    		// Log a message indicating the number of documents modified
+    		log.Printf("%d document(s) were modified during the update operation\n", res.ModifiedCount)
+		}
 
 		// Return a success response with the inserted alert
-		log.Println("Alert published successfully")
-
 		c.JSON(http.StatusOK, gin.H{"message": "Alert inserted successfully", "alertID": result.InsertedID})
 	}
 }
 
 func checkForDuplicateAlert(alert models.Alerts) (bool, error) {
-	// Query the MongoDB collection to check for duplicates
-	// Exclude _id field from the filter
-	filter := bson.M{
-		"id":          alert.ID,
-		"nodeid":      alert.NodeID,
-		"description": alert.Description,
-		"severity":    alert.Severity,
-		"source":      alert.Source,
-		"createdat":   alert.CreatedAt,
-		// Add other fields as needed
-	}
+    // Query the MongoDB collection to check for duplicates
+    // Exclude _id field from the filter
+    filter := bson.M{
+        "id":          alert.ID,
+        "nodeid":      alert.NodeID,
+        "description": alert.Description,
+        "severity":    alert.Severity,
+        "source":      alert.Source,
+        "createdat":   alert.CreatedAt,
+        // Add other fields as needed
+    }
 
-	// Count the number of documents that match the filter
-	count, err := alertCollection.CountDocuments(context.Background(), filter)
-	if err != nil {
-		// Return error if there's any issue with the database query
-		return false, err
-	}
+    // Count the number of documents that match the filter
+    count, err := alertCollection.CountDocuments(context.Background(), filter)
+    if err != nil {
+        // Return error if there's any issue with the database query
+        return false, err
+    }
 
-	// If count is greater than 0, a duplicate alert exists
-	return count > 0, nil
+    // If count is greater than 0, a duplicate alert exists
+    return count > 0, nil
 }
 
-func PrintAlert(alertMap map[string]interface{}) {
-	// Print the alert data
-	log.Println("Alert data:")
-	for key, value := range alertMap {
-		log.Printf("%s: %v\n", key, value)
-	}
+
+func AlertConfig() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        fmt.Println("IN ALERT CONFIG")
+        userID := c.GetString("email")
+        if userID == "" {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "User ID not found"})
+            return
+        }
+
+		// fmt.println()
+
+        var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+        defer cancel()
+        var user models.User
+		err := userCollection.FindOne(ctx, bson.M{"email": userID}).Decode(&user)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+
+        var alertConfig struct {
+            Categories []string `json:"categories"`
+            Severities []string `json:"severities"`
+        }
+        if err := c.BindJSON(&alertConfig); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+            return
+        }
+
+        filter := bson.M{"email": userID}
+        update := bson.M{
+            "$set": bson.M{
+                "alert.categories": alertConfig.Categories,
+                "alert.severities": alertConfig.Severities,
+            },
+        }
+        _, err = userCollection.UpdateOne(ctx, filter, update)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user document"})
+            return
+        }
+
+        c.JSON(http.StatusOK, gin.H{"message": "Alert configuration saved successfully"})
+    }
 }

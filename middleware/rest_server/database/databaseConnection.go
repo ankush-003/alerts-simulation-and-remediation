@@ -1,15 +1,15 @@
 package database
 
 import (
-    "fmt"
-    "log"
-    "os"
-    "context"
-    "time"
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"time"
 
-    "github.com/joho/godotenv"
-    "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func DBinstance() *mongo.Client {
@@ -42,8 +42,6 @@ func DBinstance() *mongo.Client {
 
 var Client *mongo.Client = DBinstance()
 
-func OpenCollection(client *mongo.Client, collectionName string) *mongo.Collection{
-	var collection *mongo.Collection = client.Database("users").Collection(collectionName)
-	return collection
+func OpenCollection(databaseName, collectionName string) *mongo.Collection {
+    return Client.Database("AlertSimAndRemediation").Collection(collectionName)
 }
-
