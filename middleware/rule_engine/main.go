@@ -89,7 +89,12 @@ func notifyRestServer(alertContext *AlertContext) {
 		panic(err)
 	}
 
-	req, err := http.NewRequest("POST", "http://rest-server:8000/postRemedy", bytes.NewBuffer(jsonBytes))
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "localhost"
+	}
+
+	req, err := http.NewRequest("POST", "http://"+host+":8000/postRemedy", bytes.NewBuffer(jsonBytes))
 
 	if err != nil {
 		// panic(err)

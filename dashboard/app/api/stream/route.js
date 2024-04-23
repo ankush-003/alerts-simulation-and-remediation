@@ -36,13 +36,13 @@ export async function GET() {
                         //     }
                         // }
                         const messages = await redisClient.xread('BLOCK', 0, 'STREAMS', stream, lastId || '$');
-                        console.log('Received messages', messages);
+                        // console.log('Received messages', messages);
                         // console.table(messages[0]);
                         if (messages && messages.length > 0) {
                             const [streamName, messageEntries] = messages[0];
                             // console.log('Received messages', messageEntries);
                             messageEntries.forEach(([id, fields]) => {
-                                console.log('Processing message', id, fields);
+                                // console.log('Processing message', id, fields);
                                 const alert = fields.reduce((acc, field, index) => {
                                     if (index % 2 === 0) {
                                         acc[field] = fields[index + 1];

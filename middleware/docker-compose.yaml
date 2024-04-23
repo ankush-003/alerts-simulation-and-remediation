@@ -14,6 +14,8 @@ services:
     build: ./rule_engine
     networks:
       - test       
+    environment:
+      - HOST = "rest-server"
 
   rest-server:
     build: ./rest_server

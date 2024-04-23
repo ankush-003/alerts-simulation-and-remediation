@@ -22,7 +22,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = database.OpenCollection(database.Client, "AlertSimAndRemediation")
+var userCollection *mongo.Collection = database.OpenCollection(database.Client, "Users")
 var alertCollection *mongo.Collection = database.OpenCollection(database.Client, "Alerts")
 
 var validate = validator.New()
@@ -305,7 +305,8 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
 			return
 		}
-		log.Println("Alert inserted successfully with ID:", result.InsertedID)
+		log.Println("Alert inserted successfully with ID:", result.InsertedID.(primitive.ObjectID).Hex())
+		alertMap["id"] = result.InsertedID.(primitive.ObjectID).Hex()
 
 		// publish the alert to the Redis stream
 		if err := redisClient.PublishData(ctx, alertMap, "alerts"); err != nil {

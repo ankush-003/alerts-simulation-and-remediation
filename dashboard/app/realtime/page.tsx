@@ -33,10 +33,8 @@ export default function Realtime() {
     }, []);
 
     return (
-        <TracingBeam className="px-6">
         <div className="container mx-auto py-10">
             <DataTable columns={columns} data={data} />
         </div>
-        </TracingBeam>
     )
 }
