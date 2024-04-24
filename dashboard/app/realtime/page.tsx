@@ -2,10 +2,24 @@
 
 import { useEffect, useState } from "react"
 import { Alert as AlertData, columns } from "./columns"
-import { DataTable } from "@/components/DataTable";
+import { DataTable } from "@/app/realtime/components/DataTable";
 import { toast } from "sonner"
-import { TracingBeam } from "@/components/ui/tracing-beam"
+// import { TracingBeam } from "@/components/ui/tracing-beam"
 
+async function handleAcknowledge(id: string) {
+    const response = await fetch(`/api/ack/${id}`)
+    if (!response.ok) {
+        // throw new Error("Failed to acknowledge alert")
+        console.error("Failed to acknowledge alert")
+        // toast.error("Failed to acknowledge alert")
+        return false;
+    }
+    // return response.json()
+    // toast.success("Alert acknowledged")
+    console.log("Alert acknowledged")
+    return true;
+
+}  
 
 export default function Realtime() {
     const [data, setData] = useState<AlertData[]>([]);
@@ -30,11 +44,11 @@ export default function Realtime() {
         return () => {
             eventSource.close()
         }
-    }, []);
+    }, [])
 
     return (
         <div className="container mx-auto py-10">
-            <DataTable columns={columns} data={data} />
+            <DataTable columns={columns} data={data} setData={setData} ackfn={handleAcknowledge} />
         </div>
     )
 }

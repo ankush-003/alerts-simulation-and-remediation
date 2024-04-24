@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { z } from "zod"
 import { cn } from "@/lib/utils";
-import { parse, format, addDays, subMonths } from 'date-fns';
+import { parse, format, addDays, subMonths, set } from 'date-fns';
 import { Activity, CalendarDays } from 'lucide-react';
 import {
     AlertDialog,
@@ -15,6 +15,9 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { CardTitle, CardHeader, CardContent, CardFooter, Card } from "@/components/ui/card"
+import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { toast } from "sonner"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import {
     Alert,
@@ -27,6 +30,8 @@ import {
     HoverCardContent,
     HoverCardTrigger,
 } from "@/components/ui/hover-card"
+import { Console } from "console";
+import { cloneUniformsGroups } from "three";
 
 const dateSchema = 'yyyy-MM-dd HH:mm:ss'
 
@@ -45,16 +50,46 @@ const alertSchema = z.object({
 export type Alert = z.infer<typeof alertSchema>;
 
 export const columns: ColumnDef<Alert>[] = [
-    // {
+    // {  
     //     header: "Id",
     //     accessorKey: "id",
-    // },
+    // },  
     // {
     //     header: "Node Id",
     //     accessorKey: "node",
     // },
     {
-        header: "Category",
+        id: "select",
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        ),
+    },
+    {
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Category
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
         accessorKey: "Category",
     },
     {
@@ -66,7 +101,17 @@ export const columns: ColumnDef<Alert>[] = [
         accessorKey: "Source",
     },
     {
-        header: "Created At",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Created At
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
         accessorKey: "CreatedAt",
         cell: ({ row }) => {
             const dateString: string = row.getValue("CreatedAt")
@@ -83,94 +128,22 @@ export const columns: ColumnDef<Alert>[] = [
         header: "Status",
         accessorKey: "Acknowledged",
         cell: ({ row }) => {
-            const acknowledged = row.getValue("Acknowledged")
-
-            return (
-                <span
-                    className={cn(
-                        "px-2 py-1 rounded-full text-xs font-semibold",
-                        acknowledged === "0" ? "text-red-600" : "text-green-600"
-                    )}
-                >
-                    {acknowledged === "0" ? "Pending" : "Acknowledged"}
-                </span>
-            )
-        }
-    },
-    {
-        header: "Remedy",
-        accessorKey: "Remedy",
-        cell: ({ row }) => {
-            const dateString: string = row.getValue("CreatedAt")
+            const alert = (row.original as Alert)
+            const dateString: string = alert.CreatedAt
             const date = parse(dateString, dateSchema, new Date())
 
             return (
                 <div>
-                    {row.getValue("Acknowledged") === "0" ? (
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="outline">Acknowledge</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure you want to acknowledge this alert?</AlertDialogTitle>
-                                    <AlertDialogDescription className="flex flex-col gap-1 justify-center items-center">
-                                        <Card className="w-full">
-                                            <CardHeader>
-                                                <CardTitle>{`Alert ${row.getValue("id")}`}</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="grid gap-4">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="space-y-1">
-                                                        <p className="text-sm font-medium">Category</p>
-                                                        <p className="text-gray-500 dark:text-gray-400">{row.getValue("Category")}</p>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <p className="text-sm font-medium">Node</p>
-                                                        <p className="text-gray-500 dark:text-gray-400">{row.getValue("node")}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="space-y-1">
-                                                        <p className="text-sm font-medium">Severity</p>
-                                                        <p className="text-gray-500 dark:text-gray-400">{row.getValue("Severity")}</p>
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <p className="text-sm font-medium">Source</p>
-                                                        <p className="text-gray-500 dark:text-gray-400">{row.getValue("Source")}</p>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                            <CardFooter className="flex justify-end">
-                                                <Alert variant="default">
-                                                    <Activity className="h-4 w-4" />
-                                                    <AlertTitle>Recommended Remedy!</AlertTitle>
-                                                    <AlertDescription>
-                                                        <div>
-                                                            <p>
-                                                                {row.getValue("Remedy")}
-                                                            </p>
-                                                            <p className="flex items-center pt-2">
-                                                                <CalendarDays className="mr-2 h-6 w-6 opacity-70 rounded-lg" />{" "}
-                                                                Created At: {format(date, "yyyy-MM-dd HH:mm:ss")}
-                                                            </p>
-                                                        </div>
-                                                    </AlertDescription>
-                                                </Alert>
-                                            </CardFooter>
-                                        </Card>
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction>Continue</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    ) : (
-                        <HoverCard>
+                    <HoverCard>
                             <HoverCardTrigger asChild>
-                                <Button variant="outline" className="text-green-500">Acknowledged</Button>
+                                <Button variant="outline" className={
+                                    cn(
+                                        "text-sm",
+                                        row.getValue("Acknowledged") === '0' ? "text-red-600" : "text-green-600"
+                                    )
+                                }>
+                                    {row.getValue("Acknowledged") === '0' ? "Pending" : "Acknowledged"}
+                                </Button>
                             </HoverCardTrigger>
                             <HoverCardContent className="w-80">
                                 <div className="flex justify-between space-x-4">
@@ -178,7 +151,13 @@ export const columns: ColumnDef<Alert>[] = [
                                     <div className="space-y-1">
                                         <h4 className="text-sm font-semibold">Recommended Remedy</h4>
                                         <p className="text-sm">
-                                            {row.getValue("Remedy")}
+                                            {alert.Remedy}
+                                        </p>
+                                        <p>
+                                            alert id: {alert.id}
+                                        </p>
+                                        <p>
+                                            node id: {alert.node}
                                         </p>
                                         <div className="flex items-center pt-2">
                                             <CalendarDays className="mr-2 h-6 w-6 opacity-70 rounded-lg" />{" "}
@@ -190,7 +169,6 @@ export const columns: ColumnDef<Alert>[] = [
                                 </div>
                             </HoverCardContent>
                         </HoverCard>
-                    )}
                 </div>
             )
         }
