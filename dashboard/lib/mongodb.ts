@@ -1,32 +1,39 @@
-// "use server";
-import { MongoClient } from 'mongodb';
+import { MongoClient, ServerApiVersion } from "mongodb";
 
+if (!process.env.MONGODB_URI) {
+  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
+}
 
-// console.log("HEREE")
-
-
-const uri = process.env.MONGO_URI;
-const options = {};
-const client =  new MongoClient(uri, options);
-console.log("client", client)
-let clientPromise: Promise<MongoClient>;
-
-
-const getClient = async (): Promise<MongoClient> => {
-  if (!client) {
-    await client.connect();
-  }
-  return client;
+const uri = process.env.MONGODB_URI;
+const options = {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
 };
 
-// console.log("client",typeof(client))
+let client;
+let clientPromise: Promise<MongoClient>;
 
+if (process.env.NODE_ENV === "development") {
+  // In development mode, use a global variable so that the value
+  // is preserved across module reloads caused by HMR (Hot Module Replacement).
+  let globalWithMongo = global as typeof globalThis & {
+    _mongoClientPromise?: Promise<MongoClient>;
+  };
 
-clientPromise = getClient();
+  if (!globalWithMongo._mongoClientPromise) {
+    client = new MongoClient(uri, options);
+    globalWithMongo._mongoClientPromise = client.connect();
+  }
+  clientPromise = globalWithMongo._mongoClientPromise;
+} else {
+  // In production mode, it's best to not use a global variable.
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
+}
 
-// console.log("ccccc", typeof(client))
-// console.log(client._bsontype)
-
-
-
+// Export a module-scoped MongoClient promise. By doing this in a
+// separate module, the client can be shared across functions.
 export default clientPromise;

@@ -22,7 +22,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection = database.OpenCollection(database.Client, "AlertSimAndRemediation")
+var userCollection *mongo.Collection = database.OpenCollection(database.Client, "Users")
 var alertCollection *mongo.Collection = database.OpenCollection(database.Client, "Alerts")
 
 var validate = validator.New()
@@ -300,17 +300,26 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 		// }
 
 		// Insert the alert into the alerts collection
-		result, err := alertCollection.InsertOne(context.Background(), alertMap)
+		result, err := alertCollection.InsertOne(context.Background(), bson.M{
+			"node": alertMap["node"],
+			"category": alertMap["Category"],
+			"severity": alertMap["Severity"],
+			"source": alertMap["Source"],
+			"createdAt": primitive.NewDateTimeFromTime(time.Now()),
+			"acknowledged": alertMap["Acknowledged"],
+			"remedy": alertMap["Remedy"],  
+		})
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
 			return
 		}
-		log.Println("Alert inserted successfully with ID:", result.InsertedID)
+		log.Println("Alert inserted successfully with ID:", result.InsertedID.(primitive.ObjectID).Hex())
+		alertMap["id"] = result.InsertedID.(primitive.ObjectID).Hex()
 
 		// publish the alert to the Redis stream
 		if err := redisClient.PublishData(ctx, alertMap, "alerts"); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish alert to Redis stream"})
-			return
 		}
 
 		// Add the alert ID to the user's Alerts array field
