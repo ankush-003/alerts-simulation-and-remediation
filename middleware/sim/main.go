@@ -20,7 +20,7 @@ func main() {
 	// loading .env file
 	err_load := godotenv.Load()
 	if err_load != nil {
-		log.Fatalf("Error loading .env file: %s\n", err_load)
+		log.Fatalf("Error loading .env file in sim main: %s\n", err_load)
 	}
 
 	ctx := context.Background()
@@ -54,7 +54,7 @@ func main() {
 
 	if broker == "" {
 		broker = "localhost:9092"
-		logger.Println("KAFKA_BROKER not set, using default %s\n", broker)
+		logger.Println("KAFKA_BROKER not set, using default", broker)
 	}
 
 	brokers := []string{broker}
@@ -150,4 +150,3 @@ func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID s
 		}
 	}
 }
-
