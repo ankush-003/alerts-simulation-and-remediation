@@ -111,17 +111,26 @@ export function DataTable<TData, TValue>({
             const acknowledged = await ackfn(id)
             if (acknowledged) {
                 toast.success(`Alert ${id} acknowledged`)
-                data.forEach((alert) => {
-                    if ((alert as AlertData).id === id) {
-                        (alert as AlertData).Acknowledged = "1"
-                    }
+                // data.forEach((alert) => {
+                //     if ((alert as AlertData).id === id) {
+                //         (alert as AlertData).Acknowledged = "1"
+                //     }
+                // })
+                setData((prevData) => {
+                    return prevData.map((alert) => {
+                        if ((alert as AlertData).id === id) {
+                            (alert as AlertData).Acknowledged = "1"
+                        }
+                        return alert
+                    })
                 })
 
             } else {
                 toast.error(`Failed to acknowledge alert ${id}`)
             }
         })
-        setData([...data])
+        
+        setRowSelection({})
     }
 
     return (

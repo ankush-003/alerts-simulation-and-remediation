@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/hover-card"
 import { Console } from "console";
 import { cloneUniformsGroups } from "three";
+import { Badge } from "@/components/ui/badge"
+
 
 const dateSchema = 'yyyy-MM-dd HH:mm:ss'
 
@@ -46,6 +48,20 @@ const alertSchema = z.object({
     Acknowledged: z.string(),
     Remedy: z.string(),
 })
+
+const colorMap : Record<string, string> = {
+    "Memory": "red",
+    "CPU": "blue",
+    "Disk": "green",
+    "Network": "purple",
+    "Power": "yellow",
+    "Applications": "indigo",
+    "Security": "pink",
+    "RuntimeMetrics": "red",
+    "Safe": "green",
+    "Critical": "red",
+    "Warning": "yellow",
+}
 
 export type Alert = z.infer<typeof alertSchema>;
 
@@ -91,10 +107,31 @@ export const columns: ColumnDef<Alert>[] = [
             )
         },
         accessorKey: "Category",
+        cell: ({ row }) => {
+            const alert = (row.original as Alert)
+            return (
+                <Badge
+                    variant={
+                        alert.Category === "RuntimeMetrics" ? "default" : "outline"
+                    }
+                >
+                    {alert.Category}
+                </Badge>
+            )
+        }
+
     },
     {
         header: "Severity",
         accessorKey: "Severity",
+        cell: ({ row }) => {
+            const alert = (row.original as Alert)
+            return (
+                <p className={`text-${colorMap[alert.Severity]}-500`}>
+                    {alert.Severity}
+                </p>
+            )
+        }
     },
     {
         header: "Source",

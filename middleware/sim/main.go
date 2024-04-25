@@ -88,8 +88,10 @@ func main() {
 
 	defer redis.Close()
 
-	signalChan := make(chan os.Signal, 2)
+	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
+	heartbeatDoneChan := make(chan struct{})
+
 
 	stream := os.Getenv("STREAM")
 	if stream == "" {
@@ -105,7 +107,7 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go sendHeartBeatToRedis(ctx, redis, NodeID, signalChan, logger, &wg)
+	go sendHeartBeatToRedis(ctx, redis, NodeID, heartbeatDoneChan, logger, &wg)
 	defer wg.Wait()
 	defer redis.KillHeartBeat(ctx, NodeID, logger)
 
@@ -125,12 +127,13 @@ func main() {
 
 		case <-signalChan:
 			logger.Println("Received signal to stop")
+			close(heartbeatDoneChan)
 			return
 		}
 	}
 }
 
-func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID string, signalChan chan os.Signal, logger *log.Logger, wg *sync.WaitGroup) {
+func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID string, doneChan chan struct{}, logger *log.Logger, wg *sync.WaitGroup) {
 	defer wg.Done()
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -144,8 +147,8 @@ func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID s
 			}
 			logger.Printf("Sent heartbeat: %s\n", NodeID)
 
-		case <-signalChan:
-			logger.Println("Received signal to stop")
+		case <-doneChan:
+			logger.Println("Received signal to stop Heartbeat")
 			return
 		}
 	}
