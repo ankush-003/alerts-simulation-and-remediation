@@ -1,0 +1,322 @@
+[
+    {
+      "name": "MEM_RULE_1",
+      "desc": "Memory Limit check Critical",
+      "salience": 10,
+      "when": "AlertInput.Handled != true && AlertInput.Category == \"Memory\" && MemInput.Usage > 90",
+      "then": [
+        "AlertOutput.Remedy = \"Stop some processes now, Memory utilized more then 90%\"",
+        "AlertOutput.Severity = \"Critical\"",
+        "AlertInput.Handled = true"
+      ]
+    },
+    {
+      "name": "MEM_RULE_2",
+      "desc": "Memory Limit check Severe",
+      "salience": 9,
+      "when": "AlertInput.Handled != true && AlertInput.Category == \"Memory\" && MemInput.Usage > 75",
+      "then": [
+        "AlertOutput.Remedy = \"Monitor high RAM usage processes\"",
+        "AlertOutput.Severity = \"Severe\"",
+        "AlertInput.Handled = true"
+      ]
+    },
+    {
+      "name": "MEM_RULE_3",
+      "desc": "Memory Limit check Warning",
+      "salience": 4,
+      "when": "AlertInput.Handled != true && AlertInput.Category == \"Memory\" && MemInput.Usage > 50",
+      "then": [
+        "AlertOutput.Remedy = \"Memory utilization at 50% \"",
+        "AlertOutput.Severity = \"Warning\"",
+        "AlertInput.Handled = true"
+      ]
+    },
+    {
+      "name": "MEM_RULE_4",
+      "desc": "Memory Limit Safe",
+      "salience": 0,
+      "when": "AlertInput.Handled != true && AlertInput.Category == \"Memory\"",
+      "then": [
+        "AlertOutput.Remedy = \"No Alert\"",
+        "AlertOutput.Severity = \"Safe\"",
+        "AlertInput.Handled = true"
+      ]
+    },
+    {
+      "name": "CPU_RULE_1",
+      "desc": "CPU Utilization has crossed the critical limit - CPU utilization > 80",
+      "salience": 10,
+      "when": "AlertInput.Handled != true && AlertInput.Category == \"CPU\" && CpuInput.Utilization > 80",
+      "then": [
+        "AlertOutput.Remedy = \"CPU Utilzation at 90%, Reduce CPU intensive tasks immediately \"",
+        "AlertOutput.Severity = \"Critical\"",
+        "AlertInput.Handled = true"
+      ]
+    },
+    {
+      "name": "CPU_RULE_2",
+      "desc": "CPU Utilization has exceeded the warning limit, CPU utilization > 60",
+      "salience": 9,
+      "when": "AlertInput.Handled != true && AlertInput.Category == \"CPU\" && CpuInput.Utilization > 60",
+      "then": [
+        "AlertOutput.Remedy = \"Monitor CPU-intensive processes\"",
+        "AlertOutput.Severity = \"Warning\"",
+        "AlertInput.Handled = true"
+      ]
+    },
+    {
+      "name": "DISK_RULE_1",
+      "desc": "Disk Usage has crossed the critical limit - Usage > 90",
+      "salience": 10,
+      "when": "AlertInput.Handled != true && AlertInput.Category == \"Disk\" && DiskInput.Usage > 90",
+      "then": [
+        "AlertOutput.Remedy = \"Free up disk usage Now, DISK at 90% capacity\"",
+        "AlertOutput.Severity = \"Critical\"",
+        "AlertInput.Handled = true"
+      ]
+    },
+    {
+      "name": "DISK_RULE_2",
+      "desc": "Disk Usage has exceeded the warning limit, Usage - > 75",
+      "salience": 9,
+      "when": "AlertInput.Handled != true && AlertInput.Category == \"Disk\" && DiskInput.Usage > 75",
+      "then": [
+        "AlertOutput.Remedy = \"Disk Space at 70% capacity\"",
+        "AlertOutput.Severity = \"Severe\"",
+        "AlertInput.Handled = true"
+      ]
+    },
+    {
+        "name": "BATTERY_RULE_1",
+          "desc": "Battery Level is critically low",
+          "salience": 10,
+          "when": "AlertInput.Handled != true && AlertInput.Category == \"Power\" && PowerInput.BatteryLevel <= 20",
+          "then": [
+            "AlertOutput.Remedy = \"Connect to power source immediately\"",
+            "AlertOutput.Severity = \"Critical\"",
+            "AlertInput.Handled = true"
+          ]
+        },
+        {
+          "name": "BATTERY_RULE_2",
+          "desc": "Battery Level is below warning threshold",
+          "salience": 9,
+          "when": "AlertInput.Handled != true && AlertInput.Category == \"Power\" && PowerInput.BatteryLevel <= 40",
+          "then": [
+            "AlertOutput.Remedy = \"Charge the device\"",
+            "AlertOutput.Severity = \"Warning\"",
+            "AlertInput.Handled = true"
+          ]
+        },
+        {
+          "name": "CPU_RULE_3",
+          "desc": "CPU Utilization Safe",
+          "salience": 0,
+          "when": "AlertInput.Handled != true && AlertInput.Category == \"CPU\" && CpuInput.Utilization < 60",
+          "then": [
+            "AlertOutput.Remedy = \"No Alert\"",
+            "AlertOutput.Severity = \"Safe\"",
+            "AlertInput.Handled = true"
+          ]
+        },
+        {
+          "name": "DISK_RULE_3",
+          "desc": "Disk Usage - >50 ",
+          "salience": 4,
+          "when": "AlertInput.Handled != true && AlertInput.Category == \"Disk\" && DiskInput.Usage > 50",
+          "then": [
+            "AlertOutput.Remedy = \"Disk Space at 50% capacity\"",
+            "AlertOutput.Severity = \"Warning\"",
+            "AlertInput.Handled = true"
+          ]
+        },
+        {
+          "name": "DISK_RULE_4",
+          "desc": "Disk Usage Safe ",
+          "salience": 0,
+          "when": "AlertInput.Handled != true && AlertInput.Category == \"Disk\" && DiskInput.Usage < 50",
+          "then": [
+            "AlertOutput.Remedy = \"Disk Usage optimal\"",
+            "AlertOutput.Severity = \"Safe\"",
+            "AlertInput.Handled = true"
+          ]
+        },
+        {
+          "name": "BATTERY_RULE_3",
+          "desc": "Battery Level is Optimal",
+          "salience": 0,
+          "when": "AlertInput.Handled != true && AlertInput.Category == \"Power\" && PowerInput.BatteryLevel > 40",
+          "then": [
+            "AlertOutput.Remedy = \"No Alert\"",
+            "AlertOutput.Severity = \"Safe\"",
+            "AlertInput.Handled = true"
+          ]
+        },
+        {
+          "name": "NETWORK_RULE_1",
+          "desc": "Network Traffic Critical",
+          "salience": 10,
+          "when": "AlertInput.Handled != true && AlertInput.Category == \"Network\" && NetworkInput.Traffic > 200",
+          "then": [
+            "AlertOutput.Remedy = \"Investigate high network traffic\"",
+            "AlertOutput.Severity = \"Critical\"",
+            "AlertInput.Handled = true"
+          ]
+        },
+        {
+          "name": "NETWORK_RULE_2",
+          "desc": "Network Traffic Severe",
+          "salience": 9,
+          "when": "AlertInput.Handled != true && AlertInput.Category == \"Network\" && NetworkInput.Traffic > 100",
+          "then": [
+            "AlertOutput.Remedy = \"Monitor network traffic closely\"",
+            "AlertOutput.Severity = \"Severe\"",
+            "AlertInput.Handled = true"
+          ]
+        },
+        {
+            "name": "NETWORK_RULE_3",
+              "desc": "Network Traffic Warning",
+              "salience": 4,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"Network\" && NetworkInput.Traffic > 50",
+              "then": [
+                "AlertOutput.Remedy = \"Check network traffic usage\"",
+                "AlertOutput.Severity = \"Warning\"",
+                "AlertInput.Handled = true"
+              ]
+            },
+            {
+              "name": "NETWORK_RULE_4",
+              "desc": "Network Traffic Safe",
+              "salience": 0,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"Network\" && NetworkInput.Traffic < 50",
+              "then": [
+                "AlertOutput.Remedy = \"No Alert\"",
+                "AlertOutput.Severity = \"Safe\"",
+                "AlertInput.Handled = true"
+              ]
+            },
+            {
+              "name": "APPLICATIONS_RULE_1",
+              "desc": "Too Many Processes Running",
+              "salience": 10,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"Applications\" && ApplicationsInput.Processes > 500",
+              "then": [
+                "AlertOutput.Remedy = \"Number of Processes running at critical level\"",
+                "AlertOutput.Severity = \"Critical\"",
+                "AlertInput.Handled = true"
+              ]
+            },
+            {
+              "name": "APPLICATIONS_RULE_2",
+              "desc": "Many Processes running",
+              "salience": 9,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"Applications\" && ApplicationsInput.Processes > 300",
+              "then": [
+                "AlertOutput.Remedy = \"Monitor the number of Processes\"",
+                "AlertOutput.Severity = \"Severe\"",
+                "AlertInput.Handled = true"
+              ]
+            },
+            {
+              "name": "APPLICATIONS_RULE_3",
+              "desc": "Number of Processes under threshold",
+              "salience": 0,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"Applications\" && ApplicationsInput.Processes < 300",
+              "then": [
+                "AlertOutput.Remedy = \"No Alert\"",
+                "AlertOutput.Severity = \"Safe\"",
+                "AlertInput.Handled = true"
+              ]
+            },
+            {
+              "name": "SECURITY_RULE_1",
+              "desc": "Failed Login Attempts Exceeding Threshold",
+              "salience": 10,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"Security\" && SecurityInput.FailedLogins > 10",
+              "then": [
+                "AlertOutput.Remedy = \"Investigate potential security breach\"",
+                "AlertOutput.Severity = \"Critical\"",
+                "AlertInput.Handled = true"
+              ]
+            },
+            {
+              "name": "SECURITY_RULE_2",
+              "desc": "High Number of Login Attempts",
+              "salience": 10,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"Security\" && SecurityInput.LoginAttempts > 30",
+              "then": [
+                "AlertOutput.Remedy = \"Strengthen account security\"",
+                "AlertOutput.Severity = \"Critical\"",
+                "AlertInput.Handled = true"
+              ]
+            },
+            {
+              "name": "SECURITY_RULE_3",
+              "desc": "Suspicious Files Detected",
+              "salience": 4,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"Security\" && SecurityInput.SuspectedFiles > 5",
+              "then": [
+                "AlertOutput.Remedy = \"Quarantine suspicious files\"",
+                "AlertOutput.Severity = \"Warning\"",
+                "AlertInput.Handled = true"
+              ]
+            },
+            {
+              "name": "SECURITY_RULE_4",
+              "desc": "No Security Issues Detected",
+              "salience": 0,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"Security\"",
+              "then": [
+                "AlertOutput.Remedy = \"No Alert\"",
+                "AlertOutput.Severity = \"Safe\"",
+                "AlertInput.Handled = true"
+              ]
+            },
+            {
+                "name": "RUNTIME_RULE_1",
+                "desc": "High Number of Goroutines",
+                "salience": 10,
+                "when": "AlertInput.Handled != true && AlertInput.Category == \"RuntimeMetrics\" && RuntimeMetricsInput.NumGoroutine > 300",
+                "then": [
+                  "AlertOutput.Remedy = \"Investigate high number of goroutines\"",
+                  "AlertOutput.Severity = \"Critical\"",
+                  "AlertInput.Handled = true"
+                ]
+              },
+              {
+                "name": "RUNTIME_RULE_2",
+                "desc": "High CPU Usage",
+                "salience": 9,
+                "when": "AlertInput.Handled != true && AlertInput.Category == \"RuntimeMetrics\" && RuntimeMetricsInput.CpuUsage > 150",
+                "then": [
+                  "AlertOutput.Remedy = \"Investigate high CPU usage\"",
+                  "AlertOutput.Severity = \"Severe\"",
+                  "AlertInput.Handled = true"
+                ]
+              },
+              {
+                "name": "RUNTIME_RULE_3",
+                "desc": "High RAM Usage",
+                "salience": 4,
+                "when": "AlertInput.Handled != true && AlertInput.Category == \"RuntimeMetrics\" && RuntimeMetricsInput.RamUsage > 90",
+                "then": [
+                  "AlertOutput.Remedy = \"Investigate high RAM usage\"",
+                  "AlertOutput.Severity = \"Warning\"",
+                  "AlertInput.Handled = true"
+                ]
+              },
+              {
+                "name": "RUNTIME_RULE_4",
+                "desc": "Normal Runtime Metrics",
+                "salience": 0,
+                "when": "AlertInput.Handled != true && AlertInput.Category == \"RuntimeMetrics\"",
+                "then": [
+                  "AlertOutput.Remedy = \"No Alert\"",
+                  "AlertOutput.Severity = \"Safe\"",
+                  "AlertInput.Handled = true"
+                ]
+              }
+            ]
+        
