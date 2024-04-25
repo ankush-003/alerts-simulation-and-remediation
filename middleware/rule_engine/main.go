@@ -95,8 +95,7 @@ func notifyRestServer(alertContext *AlertContext) {
 	req, err := http.NewRequest("POST", "http://"+host+":8000/postRemedy", bytes.NewBuffer(jsonBytes))
 
 	if err != nil {
-		// panic(err)
-		fmt.Println("Error in creating request")
+		fmt.Println("Error in creating request", err)
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -104,10 +103,8 @@ func notifyRestServer(alertContext *AlertContext) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error in Connecting to Rest Server")
+		fmt.Println("Error in Connecting to Rest Server ", err)
 		return
-		// panic(err)
-
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
