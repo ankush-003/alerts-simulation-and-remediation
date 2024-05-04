@@ -2,7 +2,56 @@ package controllers
 
 import (
 	"Rest_server/database"
-	helper "Rest_server/helpers"
+	helper "Rest_server/helpers"ndUser.Password)
+	defer cancel()
+	if passwordIsValid != true{
+		c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+		return
+	}
+
+	if foundUser.Email == nil{
+		c.JSON(http.StatusInternalServerError, gin.H{"error":"user not found"})
+	}
+	token, refreshToken, _ := helper.GenerateAllTokens(*foundUser.Email, *foundUser.First_name, *foundUser.Last_name, *foundUser.User_type, foundUser.User_id)
+	helper.UpdateAllTokens(token, refreshToken, foundUser.User_id)
+	err = userCollection.FindOne(ctx, bson.M{"user_id":foundUser.User_id}).Decode(&foundUser)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	/*type Session struct {
+		Token    string
+		ExpireAt time.Time
+	}
+
+	var sessions map[string]Session
+
+	session := Session{
+		Token:    token,
+		ExpireAt: time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+	}
+
+	// Store session data
+	sessions[token] = session
+
+	// Set session cookie in the response
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "session_token",
+		Value:    token,
+		Expires:  session.ExpireAt,
+		HttpOnly: true,
+	})*/
+
+	/*http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "session_token",
+		Value:    token,
+		Expires:  time.Now().Add(24 * time.Hour), // Session expires in 24 hours
+		HttpOnly: true,
+	})*/
+
+	//
 	middleware "Rest_server/middleware"
 	"Rest_server/models"
 	"context"
@@ -20,17 +69,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var userCollection *mongo.Collection
-
-func init() {
-	userCollection = database.OpenCollection("AlertSimAndRemediation","Users")
-}
-var alertCollection *mongo.Collection
-
-func init() {
-	alertCollection = database.OpenCollection("AlertSimAndRemediation","Users")
-}
-
+var userCollection *mongo.Collection = database.OpenCollection(database.Client, "Users")
+var alertCollection *mongo.Collection = database.OpenCollection(database.Client, "Alerts")
 
 var validate = validator.New()
 
@@ -356,10 +396,26 @@ func PostRem() gin.HandlerFunc {
         
 
 		// Insert the alert into the alerts collection
-		result, err := alertCollection.InsertOne(context.Background(), alert)
+		result, err := alertCollection.InsertOne(context.Background(), bson.M{
+			"node": alertMap["node"],
+			"category": alertMap["Category"],
+			"severity": alertMap["Severity"],
+			"source": alertMap["Source"],
+			"createdAt": primitive.NewDateTimeFromTime(time.Now()),
+			"acknowledged": alertMap["Acknowledged"],
+			"remedy": alertMap["Remedy"],  
+		})
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
 			return
+		}
+		log.Println("Alert inserted successfully with ID:", result.InsertedID.(primitive.ObjectID).Hex())
+		alertMap["id"] = result.InsertedID.(primitive.ObjectID).Hex()
+
+		// publish the alert to the Redis stream
+		if err := redisClient.PublishData(ctx, alertMap, "alerts"); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish alert to Redis stream"})
 		}
 
 		// Add the alert ID to the user's Alerts array field

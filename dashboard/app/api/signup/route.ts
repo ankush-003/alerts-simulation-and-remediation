@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from "../../../lib/mongodb";
-import { hash } from 'bcrypt';
+import { hash } from 'argon2';
 
 interface UserDetails {
   name: string;
@@ -11,7 +11,7 @@ interface UserDetails {
 export async function POST(req: Request) {
   try {
     const { name, email, password } = await req.json() as UserDetails;
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = await hash(password);
     const client = await clientPromise;
     const db = client.db("AlertSimAndRemediation");
     const usersCollection = db.collection("Users");

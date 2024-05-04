@@ -7,7 +7,6 @@ import (
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"log"
 	"time"
-
 	"github.com/redis/go-redis/v9"
 )
 

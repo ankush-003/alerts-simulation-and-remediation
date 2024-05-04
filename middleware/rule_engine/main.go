@@ -9,14 +9,15 @@ import (
 	"net/http"
 	"os"
 	"sync"
+
 	// "time"
 
 	rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine/engine"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine/mailserver"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine/mongo"
-	"github.com/joho/godotenv"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
+	"github.com/joho/godotenv"
 )
 
 type AlertContext struct {
@@ -46,16 +47,12 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 		&alertInput.Params,
 	}
 
-	printStruct(*alertInput)
-
 	err := ruleEngineSvc.Execute(&alertContext)
 	if err != nil {
 		panic(err)
 	}
 	// Methods after parsing the alert
-	printStruct(*alertInput)
-	fmt.Println("Severity -> ", alertContext.AlertOutput.Severity)
-	fmt.Println("Remedy -> ", alertContext.AlertOutput.Remedy)
+	printStruct(alertInput, alertContext.AlertOutput)
 
 	// Find the user associated with alertContext.AlertInput.source Node
 	email, err := mongo.FindUser(alertInput.Origin)
@@ -89,7 +86,12 @@ func notifyRestServer(alertContext *AlertContext) {
 		panic(err)
 	}
 
-	req, err := http.NewRequest("POST", "http://rest-server:8000/postRemedy", bytes.NewBuffer(jsonBytes))
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "localhost"
+	}
+
+	req, err := http.NewRequest("POST", "http://"+host+":8000/postRemedy", bytes.NewBuffer(jsonBytes))
 
 	if err != nil {
 		// panic(err)
@@ -131,22 +133,14 @@ func main() {
 	// 	CreatedAt: time.Now().Format(time.DateTime),
 	// 	Handled:   false,
 	// }
-	// alertA := alerts.AlertInput{
-	// 	ID:        "ID1",
-	// 	Category:  "Runtime",
-	// 	Source:    "Hardware",
-	// 	Origin:    "NodeB",
-	// 	Params:    &alerts.RuntimeMetrics{NumGoroutine: 10, CpuUsage: 60, RamUsage: 50},
-	// 	CreatedAt: time.Now().Format(time.DateTime),
-	// 	Handled:   false,
-	// }
+
 	// alertB := alerts.AlertInput{
 	// 	ID:        "ID2",
 	// 	Category:  "CPU",
 	// 	Source:    "Hardware",
 	// 	Origin:    "NodeA",
 	// 	Params:    &alerts.CPU{Utilization: 40, Temperature: 65},
-	// 	CreatedAt: time.Now(),
+	// 	CreatedAt: time.Now().Format(time.DateTime),
 	// 	Handled:   false,
 	// }
 
@@ -201,7 +195,7 @@ consumerLoop:
 	for {
 		select {
 		case alert := <-alertsChan:
-			printStruct(alert)
+			printStruct(&alert, nil)
 			wg.Add(1)
 			NewAlert(&alert, ruleEngineSvc)
 		case <-doneChan:
@@ -210,10 +204,21 @@ consumerLoop:
 	}
 }
 
-func printStruct(alert alerts.AlertInput) {
+func printStruct(alert *alerts.AlertInput, output *alerts.AlertOutput) {
+	fmt.Println("------------ALERT--------------------")
 	fmt.Println("ID: ", alert.ID)
 	fmt.Println("Category: ", alert.Category)
 	fmt.Println("Origin: ", alert.Origin)
 	fmt.Println("Source: ", alert.Source)
-	fmt.Println("Params: ", alert.Params)
+	b, err := json.MarshalIndent(alert.Params, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	fmt.Print("Params: ", string(b))
+	if output != nil {
+		fmt.Println("--------------OUTPUT-----------------")
+		fmt.Println("Severity -> ", output.Severity)
+		fmt.Println("Remedy -> ", output.Remedy)
+	}
+	fmt.Println("-------------------------------------")
 }

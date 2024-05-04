@@ -1,6 +1,14 @@
-"use client";
-import React, { useState } from 'react';
+"use client"
+import React, { useState } from 'react'
 import { CSSProperties } from 'react';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query'
+import CalendarStats from '@/components/CalendarStats'
+
+const queryClient = new QueryClient()
 
 const Page = () => {
   const [isHovered, setIsHovered] = useState(false);

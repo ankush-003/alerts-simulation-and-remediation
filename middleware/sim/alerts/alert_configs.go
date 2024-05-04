@@ -196,7 +196,7 @@ func (disk *Disk) DataKey() string {
 }
 
 func (net *Network) DataKey() string {
-	return "NetInput"
+	return "NetworkInput"
 }
 
 func (pow *Power) DataKey() string {
@@ -204,11 +204,11 @@ func (pow *Power) DataKey() string {
 }
 
 func (apps *Applications) DataKey() string {
-	return "AppInput"
+	return "ApplicationsInput"
 }
 
 func (sec *Security) DataKey() string {
-	return "SecInput"
+	return "SecurityInput"
 }
 
 func (mem *Memory) Unmarshal(paramsData map[string]interface{}) error {
@@ -329,7 +329,7 @@ type RuntimeMetrics struct {
 }
 
 func (*RuntimeMetrics) DataKey() string {
-	return "RuntimeMetrics"
+	return "RuntimeMetricsInput"
 }
 
 func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
@@ -341,6 +341,7 @@ func (rt *RuntimeMetrics) Unmarshal(paramsData map[string]interface{}) error {
 }
 
 func (rt *RuntimeMetrics) GenerateMetrics() {
+	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
 	randomSimulator := rand.Intn(2)
 
 	if randomSimulator == 0 {

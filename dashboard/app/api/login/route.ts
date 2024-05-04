@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from "@/lib/mongodb";
-import { compare } from 'bcrypt';
+// import { compare } from 'bcrypt';
+import { verify } from 'argon2';
 
 interface UserCredentials {
   email: string;
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
     }
 
-    const isPasswordValid = await compare(password, user.password);
+    const isPasswordValid = await verify(user.password, password);
 
     if (!isPasswordValid) {
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
