@@ -49,6 +49,7 @@ const Page = () => {
       >
         Logout
       </button>
+      <CalendarStats />
     </div>
   );
 };
