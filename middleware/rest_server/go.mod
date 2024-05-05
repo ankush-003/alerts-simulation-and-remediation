@@ -3,7 +3,7 @@ module Rest_server
 go 1.22.1
 
 require (
-	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240422064728-deef3cbd7531 // indirect
+	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240505052255-7f4005cc1089 // indirect
 	github.com/bytedance/sonic v1.11.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
