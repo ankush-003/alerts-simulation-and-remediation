@@ -1,5 +1,7 @@
 github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240422064728-deef3cbd7531 h1:gguClX/JXktz8gtlxQRFYKc3qUlLgJepk6U7KxkobW0=
 github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240422064728-deef3cbd7531/go.mod h1:DC08oaPGsAG7jLxNVcxpmfXPNjAR7waVYT9xEpqFoTk=
+github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240505052255-7f4005cc1089 h1:8qHEkX2ukJVtzIxHcu88AgVsACq4oWufUeRmuKzNVCw=
+github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240505052255-7f4005cc1089/go.mod h1:DC08oaPGsAG7jLxNVcxpmfXPNjAR7waVYT9xEpqFoTk=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=
 github.com/bytedance/sonic v1.9.1 h1:6iJ6NqdoxCDr6mbY8h18oSO+cShGSMRGCEo7F2h0x8s=
 github.com/bytedance/sonic v1.9.1/go.mod h1:i736AoUSYt75HyZLoJW9ERYxcy6eaN6h4BZXU064P/U=

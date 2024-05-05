@@ -4,9 +4,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+    "context"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+    "github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 
 	routes "Rest_server/routes"
 )
@@ -18,11 +20,29 @@ func main() {
         log.Fatal("Error loading .env file")
     }
 
+    logger := log.New(os.Stdout, "Rest Server:", log.LstdFlags)
+
     // Get the port from environment variables, default to 8000 if not set
     port := os.Getenv("PORT")
     if port == "" {
         port = "8000"
     }
+
+    redis_addr := os.Getenv("REDIS_ADDR")
+	if redis_addr == "" {
+		logger.Println("REDIS_ADDR not set, using default localhost:6379")
+		redis_addr = "localhost:6379"
+	}
+
+    ctx := context.Background()
+
+    redis, redisErr := store.NewRedisStore(ctx, redis_addr)
+
+	if redisErr != nil {
+		logger.Fatalf("Error creating redis store: %s\n", redisErr)
+	}
+
+	defer redis.Close()
 
     // Create a new Gin router
     router := gin.New()
@@ -44,7 +64,7 @@ func main() {
     // Define routes
     routes.AuthRoutes(router)
     routes.UserRoutes(router)
-    routes.PostRemedy(router)
+    routes.PostRemedy(ctx, router, redis)
 
     // Define a simple route for testing
     router.GET("/home", func(c *gin.Context) {
