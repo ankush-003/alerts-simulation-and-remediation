@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 	"time"
+
 	"Rest_server/database"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,27 +16,34 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type SignedDetails struct{
-	Email 		string
-	First_name 	string
-	Last_name 	string
-	Uid 		string
-	User_type	string
-	jwt.StandardClaims 
+type SignedDetails struct {
+	Email          string
+	First_name     string
+	Last_name      string
+	Uid            string
+	User_type      string
+	jwt.StandardClaims
 }
 
+var userCollection *mongo.Collection
 
-var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
+func init() {
+	userCollection = database.OpenCollection("AlertSimAndRemediation","Users")
+}
 
-var SECRET_KEY string = os.Getenv("SECRET_KEY")
+var SECRET_KEY string
 
-func GenerateAllTokens(email string, firstName string, lastName string, userType string, uid string) (signedToken string, signedRefreshToken string, err error){
+func init() {
+	SECRET_KEY = os.Getenv("SECRET_KEY")
+}
+
+func GenerateAllTokens(email string, firstName string, lastName string, userType string, uid string) (signedToken string, signedRefreshToken string, err error) {
 	claims := &SignedDetails{
-		Email : email,
+		Email:      email,
 		First_name: firstName,
-		Last_name: lastName,
-		Uid : uid,
-		User_type: userType,
+		Last_name:  lastName,
+		Uid:        uid,
+		User_type:  userType,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
 		},
@@ -46,12 +55,12 @@ func GenerateAllTokens(email string, firstName string, lastName string, userType
 		},
 	}
 
-	token ,err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SECRET_KEY))
 
 	if err != nil {
 		log.Panic(err)
-		return 
+		return
 	}
 
 	return token, refreshToken, err

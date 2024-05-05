@@ -1,63 +1,56 @@
 package main
 
-import(
-	routes "Rest_server/routes"
-	"os"
+import (
 	"log"
+	"net/http"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"context"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
+
+	routes "Rest_server/routes"
 )
 
-func main(){
-	err := godotenv.Load(".env")
+func main() {
+    // Load environment variables from .env file
+    err := godotenv.Load(".env")
+    if err != nil {
+        log.Fatal("Error loading .env file")
+    }
 
-	logger := log.New(os.Stdout, "Rest Server:", log.LstdFlags)
+    // Get the port from environment variables, default to 8000 if not set
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8000"
+    }
 
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	port := os.Getenv("PORT")
+    // Create a new Gin router
+    router := gin.New()
+    router.Use(gin.Logger())
 
-	if port==""{
-		port="8000"
-	}
+    // Enable CORS middleware
+    router.Use(func(c *gin.Context) {
+        c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+        c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS ,HEAD, PUT, FETCH")
+        c.Writer.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Authorization, Access-Control-Request-Method, Access-Control-Request-Headers");
 
-	redis_addr := os.Getenv("REDIS_ADDR")
-	if redis_addr == "" {
-		logger.Println("REDIS_ADDR not set, using default localhost:6379")
-		redis_addr = "localhost:6379"
-	}
+        if c.Request.Method == "OPTIONS" {
+            c.AbortWithStatus(http.StatusNoContent)
+            return
+        }
+        c.Next()
+    })
 
-	ctx := context.Background()
+    // Define routes
+    routes.AuthRoutes(router)
+    routes.UserRoutes(router)
+    routes.PostRemedy(router)
 
-	redis, redisErr := store.NewRedisStore(ctx, redis_addr)
+    // Define a simple route for testing
+    router.GET("/home", func(c *gin.Context) {
+        c.JSON(http.StatusOK, gin.H{"success": "Access granted for home"})
+    })
 
-	if redisErr != nil {
-		logger.Fatalf("Error creating redis store: %s\n", redisErr)
-	}
-
-	defer redis.Close()
-
-	router := gin.New()
-	router.Use(gin.Logger())
-
-	//router.Static("/", "./dashboard")
-
-	// routes.AuthRoutes(router)
-	// routes.UserRoutes(router)
-	routes.PostRemedy(ctx, router, redis)
-	
-	//routes.AlertConfigRoutes(router)
-
-	router.GET("/home", func(c *gin.Context){
-		c.JSON(200, gin.H{"success":"Access granted for home"})
-	})
-
-	/*router.GET("/alertConfig", func(c *gin.Context){
-		c.JSON(200, gin.H{"success":"Access granted for alert-config"})
-	})*/
-
-	router.Run(":" + port)
-}	
+    // Run the server
+    router.Run(":" + port)
+}

@@ -1,7 +1,8 @@
 package helper
 
-import(
+import (
 	"errors"
+
 	"github.com/gin-gonic/gin"
 )
 

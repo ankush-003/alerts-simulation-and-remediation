@@ -13,33 +13,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
 import Lottie from "lottie-react";
 import alertAnimation from "../public/alertAnimation.json";
-import { Login, LoginType } from "@/components/Login";
+import LoginRegisterForm from "@/components/Login";
 import Globe from "@/components/Globe";
 
 export default function Home() {
   const words = [
-    {
-      text: "Keep",
-    },
-    {
-      text: "up",
-    },
-    {
-      text: "with",
-    },
-    {
-      text: "your",
-    },
-    {
-      text: "Alerts.",
-      className: "text-red-500 dark:text-red-500",
-    },
+    { text: "Keep", },
+    { text: "up", },
+    { text: "with", },
+    { text: "your", },
+    { text: "Alerts.", className: "text-red-500 dark:text-red-500", },
   ];
 
   return (
@@ -69,7 +57,7 @@ export default function Home() {
         className="div"
       >
         <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 space-x-0 md:space-x-4 mt-10">
-          <Dialog>
+          {/* <Dialog>
             <DialogTrigger asChild>
               <Button variant="secondary" className="w-40 h-15 rounded-xl border border-black  text-2xl">Login</Button>
             </DialogTrigger>
@@ -84,7 +72,8 @@ export default function Home() {
             <DialogContent className="flex flex-col items-center justify-center">
               <Login type={LoginType.REGISTER} />
             </DialogContent>
-          </Dialog>
+          </Dialog> */}
+          <LoginRegisterForm />
         </div>
       </motion.div>
       <div>
