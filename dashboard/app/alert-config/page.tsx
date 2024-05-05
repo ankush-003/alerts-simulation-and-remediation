@@ -71,29 +71,29 @@ const submitButtonStyle: React.CSSProperties = {
 
 
 export default function AlertConfig() {
-  const [categories, setCategories] = useState([]);
-  const [severities, setSeverities] = useState([]);
+  let [categories, setCategories] = useState<any>([]);
+  let [severities, setSeverities] = useState<any>([]);
 
-  const handleCategoryChange = (event) => {
+  const handleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const category = event.target.name;
     if (event.target.checked) {
       setCategories([...categories, category]);
     } else {
-      setCategories(categories.filter((c) => c !== category));
+      setCategories(categories.filter((c:any) => c !== category));
     }
   };
 
-  const handleSeverityChange = (event) => {
+  const handleSeverityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const severity = event.target.name;
     if (event.target.checked) {
       setSeverities([...severities, severity]);
     } else {
-      setSeverities(severities.filter((s) => s !== severity));
+      setSeverities(severities.filter((s:any) => s !== severity));
     }
   };
 
   const handleSubmit = async () => {
-    const alertConfig = {
+    let alertConfig = {
       categories,
       severities,
     };
