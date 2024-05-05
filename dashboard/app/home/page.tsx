@@ -35,22 +35,26 @@ const Page = () => {
     transition: 'transform 0.2s ease-in-out',
     transform: isHovered ? 'scale(1.05)' : 'none',
   };
-  
+
 
   return (
-    <div>
-      <h1>Welcome to Home</h1>
-      <button
-        type="button"
-        style={buttonStyle}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onClick={onclick} // Connect onclick function to onClick event
-      >
-        Logout
-      </button>
-      <CalendarStats />
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <div>
+        <h1>Welcome to Home</h1>
+        <button
+          type="button"
+          style={buttonStyle}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onClick={onclick} // Connect onclick function to onClick event
+        >
+          Logout
+        </button>
+      </div>
+      <div className='w-full'>
+        <CalendarStats />
+      </div>
+    </QueryClientProvider>
   );
 };
 
