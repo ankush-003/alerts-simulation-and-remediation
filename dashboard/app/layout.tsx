@@ -60,6 +60,7 @@ export default function RootLayout({
             </div>
           </div>
         </ThemeProvider>
+        <SpeedInsights/>
       </body>
     </html>
   );
