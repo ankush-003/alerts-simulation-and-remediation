@@ -62,9 +62,9 @@ func main() {
     })
 
     // Define routes
+    routes.PostRemedy(ctx, router, redis)
     routes.AuthRoutes(router)
     routes.UserRoutes(router)
-    routes.PostRemedy(ctx, router, redis)
 
     // Define a simple route for testing
     router.GET("/home", func(c *gin.Context) {

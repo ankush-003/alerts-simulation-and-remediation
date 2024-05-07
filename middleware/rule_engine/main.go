@@ -55,15 +55,17 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 	printStruct(alertInput, alertContext.AlertOutput)
 
 	// Find the user associated with alertContext.AlertInput.source Node
-	email, err := mongo.FindUser(alertInput.Origin)
+	emails, err := mongo.FindUsers(alertInput.Category, alertContext.AlertOutput.Severity)
 	if err != nil {
 		// panic(err)
 		fmt.Println("Error in finding user")
 	}
 
 	// Call mail server
-	if err = mailserver.SendEmail(*alertInput, *alertContext.AlertOutput, email); err != nil {
-		fmt.Println(err)
+	for _, email := range emails {
+		if err = mailserver.SendEmail(*alertInput, *alertContext.AlertOutput, email); err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	// Call Rest server notification handler
@@ -94,7 +96,6 @@ func notifyRestServer(alertContext *AlertContext) {
 	req, err := http.NewRequest("POST", "http://"+host+":8000/postRemedy", bytes.NewBuffer(jsonBytes))
 
 	if err != nil {
-		// panic(err)
 		fmt.Println("Error in creating request")
 		return
 	}
@@ -103,10 +104,8 @@ func notifyRestServer(alertContext *AlertContext) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error in Connecting to Rest Server")
+		fmt.Println("Error in Connecting to Rest Server: ", err)
 		return
-		// panic(err)
-
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)

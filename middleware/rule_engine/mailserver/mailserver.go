@@ -18,23 +18,20 @@ func SendEmail(input alerts.AlertInput, output alerts.AlertOutput, mail string) 
 	// fmt.Println(Severity, Remedy)
 	// fmt.Println(ID, Category, CreatedAt, Handled, Source, Origin, Severity, Remedy)
 	body := fmt.Sprintf(
-		"%s: %s, %s: %s, %s: %s, %s: %t, %s: %s, %s: %s, %s: %s, %s: %s",
+		"%s: %s, %s: %s, %s: %s, %s: %s, %s: %s, %s: %s, %s: %s",
 		"ID", input.ID,
 		"Category", input.Category,
 		"CreatedAt", input.CreatedAt,
-		"Handled", input.Handled,
 		"Source", input.Source,
 		"Origin", input.Origin,
 		"Severity", output.Severity,
 		"Remedy", output.Remedy,
 	)
-	// // fmt.Println(body)
+	// fmt.Println(body)
 	mailer.SetBody("text/plain", body)
 
-	// // SMTP server settings
-	// fmt.Println(os.Getenv("APP_PWD"))
+	// SMTP server settings
 	dialer := gomail.NewDialer("smtp.gmail.com", 587, "alertssim@gmail.com", os.Getenv("APP_PWD"))
-	// fmt.Println(dialer)
 
 	err := dialer.DialAndSend(mailer)
 
@@ -42,7 +39,7 @@ func SendEmail(input alerts.AlertInput, output alerts.AlertOutput, mail string) 
 		fmt.Println("Email sending failed!")
 		return fmt.Errorf("error sending email: %v", err)
 	}
-	fmt.Println("Email sent successfully!")
+	fmt.Println("Email sent to ", mail, "successfully!")
 	return nil
 
 }

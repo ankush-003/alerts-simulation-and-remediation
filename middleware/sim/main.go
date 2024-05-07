@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
@@ -89,9 +90,8 @@ func main() {
 	defer redis.Close()
 
 	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	heartbeatDoneChan := make(chan struct{})
-
 
 	stream := os.Getenv("STREAM")
 	if stream == "" {
