@@ -275,13 +275,13 @@
               ]
             },
             {
-                "name": "RUNTIME_RULE_1",
-                "desc": "High Number of Goroutines",
-                "salience": 10,
-                "when": "AlertInput.Handled != true && AlertInput.Category == \"RuntimeMetrics\" && RuntimeMetricsInput.NumGoroutine > 300",
-                "then": [
-                  "AlertOutput.Remedy = \"Investigate high number of goroutines\"",
-                  "AlertOutput.Severity = \"Critical\"",
+              "name": "RUNTIME_RULE_1",
+              "desc": "High Number of Goroutines",
+              "salience": 10,
+              "when": "AlertInput.Handled != true && AlertInput.Category == \"RuntimeMetrics\" && RuntimeMetricsInput.NumGoroutine > 100",
+              "then": [
+                "AlertOutput.Remedy = \"Investigate high number of goroutines\"",
+                "AlertOutput.Severity = \"Critical\"",
                   "AlertInput.Handled = true"
                 ]
               },

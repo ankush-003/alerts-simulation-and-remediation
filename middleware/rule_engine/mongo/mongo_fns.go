@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 
@@ -42,7 +43,7 @@ func Close(client *mongo.Client, ctx context.Context,
 	}()
 }
 
-func FindUser(node string) (string, error) {
+func FindUsers(category, severity string) ([]string, error) {
 	MONGO_URI := os.Getenv("MONGO_URI")
 	client, ctx, cancelFunc, err := Connect(MONGO_URI)
 	if err != nil {
@@ -50,20 +51,31 @@ func FindUser(node string) (string, error) {
 	}
 	defer Close(client, ctx, cancelFunc)
 	db := client.Database("AlertSimAndRemediation")
-	collection := db.Collection("Nodes")
-	var data bson.M
-	err = collection.FindOne(ctx, bson.M{"node": node}).Decode(&data)
-	if err != nil {
-		return "", err
+	collection := db.Collection("Users")
+	filter := bson.M{
+		"alert.categories": category,
+		"alert.severities": severity,
 	}
-	err = db.Collection("Users").FindOne(ctx, bson.M{"user": data["user"]}).Decode(&data)
+	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
-		return "", err
+		return nil, fmt.Errorf("error finding users: %w", err)
 	}
-	return data["email"].(string), nil
+	var results []string
+	for cursor.Next(ctx) {
+		var user map[string]interface{}
+		err := cursor.Decode(&user)
+		if err != nil {
+			return nil, fmt.Errorf("error decoding user document: %w", err)
+		}
+		results = append(results, user["email"].(string))
+	}
 
+	if err := cursor.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating cursor: %w", err)
+	}
+
+	return results, nil
 }
-
 func GetRules() ([]byte, error) {
 	err := godotenv.Load()
 	if err != nil {

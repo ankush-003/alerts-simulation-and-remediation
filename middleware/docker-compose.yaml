@@ -15,14 +15,15 @@ services:
     networks:
       - test       
     environment:
-      - HOST = "rest-server"
+      - HOST=rest-server
 
   rest-server:
     build: ./rest_server
+    container_name: rest-server
     networks:
       - test
     ports:
-      - "8000:8000"      
+      - "8000:8000"
 
   # redis:
   #   image: redis/redis-stack
