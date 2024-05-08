@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"time"
 
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -477,3 +479,42 @@ func AlertConfig() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"message": "Alert configuration saved successfully"})
 	}
 }
+
+func GetAllAlerts() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+        defer cancel()
+
+        // Define the options for the find operation
+
+		fmt.Println("here")
+        options := options.Find()
+        options.SetSort(bson.D{{Key: "createdAt", Value: -1}}) // Sort by createdAt in descending order
+        options.SetLimit(10) // Limit to 10 most recent alerts
+
+		fmt.Println("In this ")
+
+        // Perform find operation on the alertCollection
+        cursor, err := alertCollection.Find(ctx, bson.D{}, options)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch alerts"})
+            return
+        }
+        defer cursor.Close(ctx)
+
+		fmt.Println(cursor)
+
+        // Iterate through the cursor and store alerts in a slice
+        var alerts []bson.M
+        if err := cursor.All(ctx, &alerts); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode alerts"})
+            return
+        }
+
+		fmt.Println(alerts)
+
+        // Return the fetched alerts
+        c.JSON(http.StatusOK, alerts)
+    }
+}
+

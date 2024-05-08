@@ -14,9 +14,16 @@ func AuthRoutes(incomingRoutes *gin.Engine){
 
 	incomingRoutes.POST("users/login", controller.Login())
 	authenticated := incomingRoutes.Group("/")
+	authenticated.GET("/alerts", controller.GetAllAlerts())
+
     authenticated.Use(middleware.Authenticate())
     {
         authenticated.POST("users/alertconfig", controller.AlertConfig())
+		
+
     }
+
+	
+
 
 }

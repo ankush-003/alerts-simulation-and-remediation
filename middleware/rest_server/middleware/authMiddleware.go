@@ -11,10 +11,10 @@ import (
 func Authenticate() gin.HandlerFunc{
 	return func(c *gin.Context){
 		clientToken := c.Request.Header.Get("Authorization")
-		// fmt.Println(c.Request.Header)
-		// fmt.Println(c.Request)
+		fmt.Println(c.Request.Header)
+		fmt.Println(c.Request)
 
-		// fmt.Println(clientToken)
+		fmt.Println("Here", clientToken)
 
 
 		clientToken = clientToken[7:]
