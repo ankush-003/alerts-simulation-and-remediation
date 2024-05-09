@@ -20,6 +20,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -362,7 +363,15 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 		// }
 
 		// Insert the alert into the alerts collection
-		result, err := alertCollection.InsertOne(context.Background(), alertMap)
+		result, err := alertCollection.InsertOne(context.Background(), bson.M{
+			"node": alertMap["node"],
+			"category": alertMap["Category"],
+			"severity": alertMap["Severity"],
+			"source": alertMap["Source"],
+			"createdAt": primitive.NewDateTimeFromTime(time.Now()),
+			"acknowledged": alertMap["Acknowledged"],
+			"remedy": alertMap["Remedy"],  
+		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
 			return
@@ -371,8 +380,10 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 		// publish the alert to the Redis stream
 		if err := redisClient.PublishData(ctx, alertMap, "alerts"); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish alert to Redis stream"})
-			return
 		}
+
+		log.Println("Alert inserted successfully with ID:", result.InsertedID.(primitive.ObjectID).Hex())
+		alertMap["id"] = result.InsertedID.(primitive.ObjectID).Hex()
 
 		// Add the alert ID to the user's Alerts array field
 

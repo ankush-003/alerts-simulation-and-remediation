@@ -43,8 +43,13 @@ func (r *RedisStore) PublishData(ctx context.Context, data map[string]interface{
 		Values: data,
 	}
 
-	result, err := r.Client.XAdd(ctx, entry).Result()
+	txn := r.Client.TxPipeline()
+	
+	txn.XAdd(ctx, entry)
+
+	result, err := txn.Exec(ctx)
 	if err != nil {
+		txn.Discard()
 		return fmt.Errorf("error publishing data to Redis Stream: %s", err)
 	}
 
@@ -216,6 +221,23 @@ func (r *RedisStore) StoreHeartBeat(ctx context.Context, NodeID string, metrics 
 	
 	logger.Printf("Published heartbeat to Redis Stream: %s\n %s\n", NodeID, values)
 
+	return nil
+}
+
+func (r *RedisStore) StreamHeartBeat(ctx context.Context, NodeID string, metrics *alerts.RuntimeMetrics, logger *log.Logger) error {
+	values := map[string]interface{}{
+		"nodeID":       NodeID,
+		"numGoroutine": metrics.NumGoroutine,
+		"cpuUsage":     metrics.CpuUsage,
+		"ramUsage":     metrics.RamUsage,
+		"status":       "UP",
+	}
+
+	if err := r.PublishData(ctx, values, "nodeHeartbeats"); err != nil {
+		return fmt.Errorf("error streaming heartbeat: %s", err)
+	}
+
+	logger.Printf("Published heartbeat to Redis Stream: %s\n %s\n", NodeID, values)
 	return nil
 }
 

@@ -8,7 +8,8 @@ import {
     Box,
     ChevronRight,
     ChevronLeft,
-    PlugZap
+    PlugZap,
+    Activity
   } from "lucide-react"
 import { Nav } from '@/components/Nav'
 import { Button } from '@/components/ui/button'
@@ -59,6 +60,12 @@ export default function Sidebar() {
                 icon: Box,
                 variant: "default",
                 href: "/logs",
+              },
+              {
+                title: "nodes",
+                icon: Activity,
+                variant: "default",
+                href: "/nodes",
               },
               {
                 title: "about",

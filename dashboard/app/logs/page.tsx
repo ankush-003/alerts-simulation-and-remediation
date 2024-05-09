@@ -1,8 +1,19 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 
+interface Log {
+  Acknowledged: boolean;
+  Category: string;
+  CreatedAt: string;
+  Remedy: string;
+  Severity: string;
+  Source: string;
+  node: string;
+  _id: string;
+}
+
 export default function Logs() {
-  const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState<Log[] | null>(null);
 
   useEffect(() => {
     const fetchLogs = async () => {
