@@ -9,7 +9,8 @@ import {
     ChevronRight,
     ChevronLeft,
     PlugZap,
-    Activity
+    Activity,
+    Bot
   } from "lucide-react"
 import { Nav } from '@/components/Nav'
 import { Button } from '@/components/ui/button'
@@ -54,6 +55,12 @@ export default function Sidebar() {
                 icon: PlugZap,
                 variant: "default",
                 href: "/realtime",
+              },
+              {
+                title: "chatbot",
+                icon: Bot,
+                variant: "default",
+                href: "/chat",
               },
               {
                 title: "logs",
