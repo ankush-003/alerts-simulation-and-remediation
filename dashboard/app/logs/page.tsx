@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from 'react';
 
 interface Log {
-  Acknowledged: boolean;
-  Category: string;
-  CreatedAt: string;
-  Remedy: string;
-  Severity: string;
-  Source: string;
+  acknowledged: boolean;
+  category: string;
+  createdAt: string;
+  remedy: string;
+  severity: string;
+  source: string;
   node: string;
   _id: string;
 }
@@ -49,12 +49,12 @@ export default function Logs() {
         ) : (
           logs.map((log, index) => (
             <div key={index} className="border border-gray-300 p-4 mb-4">
-              <p>Acknowledged: {log.Acknowledged ? 'true' : 'false'}</p>
-              <p>Category: {log.Category}</p>
-              <p>CreatedAt: {log.CreatedAt}</p>
-              <p>Remedy: {log.Remedy}</p>
-              <p>Severity: {log.Severity}</p>
-              <p>Source: {log.Source}</p>
+              <p>Acknowledged: {log.acknowledged ? 'true' : 'false'}</p>
+              <p>Category: {log.category}</p>
+              <p>CreatedAt: {log.createdAt}</p>
+              <p>Remedy: {log.remedy}</p>
+              <p>Severity: {log.severity}</p>
+              <p>Source: {log.source}</p>
               <p>Node: {log.node}</p>
               <p>_id: {log._id}</p>
             </div>

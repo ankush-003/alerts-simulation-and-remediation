@@ -18,11 +18,8 @@ func AuthRoutes(incomingRoutes *gin.Engine){
 
     authenticated.Use(middleware.Authenticate())
     {
-
 		authenticated.GET("/alerts", controller.GetUserAlerts())
         authenticated.POST("users/alertconfig", controller.AlertConfig())
-		
-
     }
 
 	
