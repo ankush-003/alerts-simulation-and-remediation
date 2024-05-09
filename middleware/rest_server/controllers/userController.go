@@ -377,13 +377,14 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 			return
 		}
 
+		
+		log.Println("Alert inserted successfully with ID:", result.InsertedID.(primitive.ObjectID).Hex())
+		alertMap["id"] = result.InsertedID.(primitive.ObjectID).Hex()
+		
 		// publish the alert to the Redis stream
 		if err := redisClient.PublishData(ctx, alertMap, "alerts"); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish alert to Redis stream"})
 		}
-
-		log.Println("Alert inserted successfully with ID:", result.InsertedID.(primitive.ObjectID).Hex())
-		alertMap["id"] = result.InsertedID.(primitive.ObjectID).Hex()
 
 		// Add the alert ID to the user's Alerts array field
 
