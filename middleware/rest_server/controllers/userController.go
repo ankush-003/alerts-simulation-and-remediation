@@ -13,11 +13,14 @@ import (
 	"strconv"
 	"time"
 
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -360,16 +363,27 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 		// }
 
 		// Insert the alert into the alerts collection
-		result, err := alertCollection.InsertOne(context.Background(), alertMap)
+		result, err := alertCollection.InsertOne(context.Background(), bson.M{
+			"node": alertMap["node"],
+			"category": alertMap["Category"],
+			"severity": alertMap["Severity"],
+			"source": alertMap["Source"],
+			"createdAt": primitive.NewDateTimeFromTime(time.Now()),
+			"acknowledged": alertMap["Acknowledged"],
+			"remedy": alertMap["Remedy"],  
+		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert alert"})
 			return
 		}
 
+		
+		log.Println("Alert inserted successfully with ID:", result.InsertedID.(primitive.ObjectID).Hex())
+		alertMap["id"] = result.InsertedID.(primitive.ObjectID).Hex()
+		
 		// publish the alert to the Redis stream
 		if err := redisClient.PublishData(ctx, alertMap, "alerts"); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish alert to Redis stream"})
-			return
 		}
 
 		// Add the alert ID to the user's Alerts array field
@@ -434,7 +448,7 @@ func checkForDuplicateAlert(alert models.Alerts) (bool, error) {
 
 func AlertConfig() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("IN ALERT CONFIG")
+		// fmt.Println("IN ALERT CONFIG")
 		userID := c.GetString("email")
 		if userID == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "User ID not found"})
@@ -477,3 +491,131 @@ func AlertConfig() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"message": "Alert configuration saved successfully"})
 	}
 }
+
+func GetAllAlerts() gin.HandlerFunc {
+    return func(c *gin.Context) {
+
+        var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+        defer cancel()
+
+        // Define the options for the find operation
+
+		// fmt.Println("here")
+        options := options.Find()
+        options.SetSort(bson.D{{Key: "createdAt", Value: -1}}) // Sort by createdAt in descending order
+        options.SetLimit(10) // Limit to 10 most recent alerts
+
+		// fmt.Println("In this ")
+
+        // Perform find operation on the alertCollection
+        cursor, err := alertCollection.Find(ctx, bson.D{}, options)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch alerts"})
+            return
+        }
+        defer cursor.Close(ctx)
+
+		// fmt.Println(cursor)
+
+        // Iterate through the cursor and store alerts in a slice
+        var alerts []bson.M
+        if err := cursor.All(ctx, &alerts); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode alerts"})
+            return
+        }
+
+		// fmt.Println(alerts)
+
+        // Return the fetched alerts
+        c.JSON(http.StatusOK, alerts)
+    }
+}
+
+func GetUserAlertPreferences() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// fmt.Println("IN GET USER ALERT PREFERENCES")
+		userID := c.GetString("email")
+		if userID == "" {
+			// fmt.Println("Here")
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User ID not found"})
+			return
+		}
+		// fmt.Println(userID)
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+		var user models.User
+		err := userCollection.FindOne(ctx, bson.M{"email": userID}).Decode(&user)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+
+		alertPreferences := struct {
+			Categories []string `json:"categories"`
+			Severities []string `json:"severities"`
+		}{
+			Categories: user.Alert.Categories,
+			Severities: user.Alert.Severities,
+		}
+
+		// fmt.Println("HERE", alertPreferences)
+
+
+		c.JSON(http.StatusOK, alertPreferences)
+	}
+}
+
+func GetUserAlerts() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+        defer cancel()
+
+        // Retrieve user ID from the context
+        userID := c.GetString("email")
+        if userID == "" {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "User ID not found"})
+            return
+        }
+
+        // Find the user document based on the email (userID)
+        var user models.User
+        err := userCollection.FindOne(ctx, bson.M{"email": userID}).Decode(&user)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+
+        // Define the filter based on the user's alert preferences
+        filter := bson.D{
+            {"Category", bson.D{{"$in", user.Alert.Categories}}},
+            {"Severity", bson.D{{"$in", user.Alert.Severities}}},
+        }
+		
+		// fmt.Println(user, user.Alert.Categories, user.Alert.Severities)
+        // Define the options for the find operation
+        options := options.Find()
+        options.SetSort(bson.D{{Key: "createdAt", Value: -1}}) // Sort by createdAt in descending order
+        options.SetLimit(10)                                    // Limit to 10 most recent alerts
+
+        // Perform find operation on the alertCollection with filter and options
+        cursor, err := alertCollection.Find(ctx, filter, options)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch alerts"})
+            return
+        }
+        defer cursor.Close(ctx)
+
+
+        // Iterate through the cursor and store alerts in a slice
+        var alerts []bson.M
+        if err := cursor.All(ctx, &alerts); err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode alerts"})
+            return
+        }
+
+        // Return the fetched alerts
+        c.JSON(http.StatusOK, alerts)
+    }
+}
+

@@ -109,7 +109,7 @@ func main() {
 
 	go sendHeartBeatToRedis(ctx, redis, NodeID, heartbeatDoneChan, logger, &wg)
 	defer wg.Wait()
-	defer redis.KillHeartBeat(ctx, NodeID, logger)
+	// defer redis.KillHeartBeat(ctx, NodeID, logger)
 
 	for {
 		select {
@@ -141,7 +141,9 @@ func sendHeartBeatToRedis(ctx context.Context, redis *store.RedisStore, NodeID s
 	for {
 		select {
 		case <-ticker.C:
-			err := redis.StoreHeartBeat(ctx, NodeID, alerts.NewRuntimeMetrics(), logger)
+			// err := redis.StoreHeartBeat(ctx, NodeID, alerts.NewRuntimeMetrics(), logger)
+			err := redis.StreamHeartBeat(ctx, NodeID, alerts.NewRuntimeMetrics(), logger)
+
 			if err != nil {
 				logger.Printf("Error sending heartbeat: %s\n", err)
 			}

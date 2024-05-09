@@ -131,7 +131,7 @@ export default function AlertConfig() {
           <div style={{ ...labelStyle, color: '#ffff00' }}>
             <input
               type="checkbox"
-              name="memory"
+              name="Memory"
               checked={categories.memory}
               onChange={handleCategoryChange}
               style={inputStyle}
@@ -141,7 +141,7 @@ export default function AlertConfig() {
           <div style={{ ...labelStyle, color: '#ffff00' }}>
             <input
               type="checkbox"
-              name="cpu"
+              name="CPU"
               checked={categories.cpu}
               onChange={handleCategoryChange}
               style={inputStyle}
@@ -151,7 +151,7 @@ export default function AlertConfig() {
           <div style={{ ...labelStyle, color: '#ffff00' }}>
             <input
               type="checkbox"
-              name="disk"
+              name="Disk"
               checked={categories.disk}
               onChange={handleCategoryChange}
               style={inputStyle}
@@ -161,7 +161,7 @@ export default function AlertConfig() {
           <div style={{ ...labelStyle, color: '#ffff00' }}>
             <input
               type="checkbox"
-              name="power"
+              name="Power"
               checked={categories.power}
               onChange={handleCategoryChange}
               style={inputStyle}
@@ -174,7 +174,7 @@ export default function AlertConfig() {
           <div style={{ ...labelStyle, color: '#ff0000' }}>
             <input
               type="checkbox"
-              name="warning"
+              name="Warning"
               checked={severities.warning}
               onChange={handleSeverityChange}
               style={inputStyle}
@@ -184,7 +184,7 @@ export default function AlertConfig() {
           <div style={{ ...labelStyle, color: '#ff0000' }}>
             <input
               type="checkbox"
-              name="critical"
+              name="Critical"
               checked={severities.critical}
               onChange={handleSeverityChange}
               style={inputStyle}
@@ -194,7 +194,7 @@ export default function AlertConfig() {
           <div style={{ ...labelStyle, color: '#ff0000' }}>
             <input
               type="checkbox"
-              name="severe"
+              name="Severe"
               checked={severities.severe}
               onChange={handleSeverityChange}
               style={inputStyle}

@@ -1,98 +1,66 @@
-import React from 'react'
-import Alert from '@/components/Alert'
+"use client";
+import React, { useState, useEffect } from 'react';
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
+interface Log {
+  Acknowledged: boolean;
+  Category: string;
+  CreatedAt: string;
+  Remedy: string;
+  Severity: string;
+  Source: string;
+  node: string;
+  _id: string;
+}
 
-const fakeData = [
-  {
-    id: "1",
-    nodeID: "1",
-    description: "Low Disk Space",
-    severity: "critical",
-    source: "disk",
-    createdAt: new Date().toDateString()
-  },
-  {
-    id: "2",
-    nodeID: "1",
-    description: "Low Disk Space",
-    severity: "critical",
-    source: "disk",
-    createdAt: new Date().toDateString()
-  },
-  {
-    id: "3",
-    nodeID: "1",
-    description: "Low Disk Space",
-    severity: "critical",
-    source: "disk",
-    createdAt: new Date().toDateString()
-  },
-  {
-    id: "4",
-    nodeID: "1",
-    description: "Low Disk Space",
-    severity: "critical",
-    source: "disk",
-    createdAt: new Date().toDateString()
-  },
-  {
-    id: "5",
-    nodeID: "1",
-    description: "Low Disk Space",
-    severity: "critical",
-    source: "disk",
-    createdAt: new Date().toDateString()
-  },
-  {
-    id: "6",
-    nodeID: "1",
-    description: "Low Disk Space",
-    severity: "critical",
-    source: "disk",
-    createdAt: new Date().toDateString()
-  },
-  {
-    id: "7",
-    nodeID: "1",
-    description: "Low Disk Space",
-    severity: "critical",
-    source: "disk",
-    createdAt: new Date().toDateString()
-  },
-  {
-    id: "8",
-    nodeID: "1",
-    description: "Low Disk Space",
-    severity: "critical",
-    source: "disk",
-    createdAt: new Date().toDateString()
-  },
-]
+export default function Logs() {
+  const [logs, setLogs] = useState<Log[] | null>(null);
 
-export default function logs() {
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const jwtToken = sessionStorage.getItem('token');
+        const response = await fetch('http://localhost:8000/alerts', {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch logs');
+        }
+
+        const data = await response.json();
+        setLogs(data);
+        console.log(data);
+      } catch (error) {
+        console.error('Error fetching logs:', error);
+      }
+    };
+
+    fetchLogs();
+  }, []);
+
   return (
-    <div className='p-2'>
-      <div className='mt-4 p-8'>
-        <Carousel>
-          <CarouselContent>
-            {fakeData.map((item) => (
-              <CarouselItem key={item.id} className="md:basis-1/3 lg:basis-1/4">
-                <Alert key={item.id} {...item} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+    <div className='container mx-auto mt-8'>
+      <h1 className='text-2xl font-bold mb-4'>Logs</h1>
+      <div>
+        {logs === null? (
+          <p>No alert preferences have been selected.</p>
+        ) : (
+          logs.map((log, index) => (
+            <div key={index} className="border border-gray-300 p-4 mb-4">
+              <p>Acknowledged: {log.Acknowledged ? 'true' : 'false'}</p>
+              <p>Category: {log.Category}</p>
+              <p>CreatedAt: {log.CreatedAt}</p>
+              <p>Remedy: {log.Remedy}</p>
+              <p>Severity: {log.Severity}</p>
+              <p>Source: {log.Source}</p>
+              <p>Node: {log.node}</p>
+              <p>_id: {log._id}</p>
+            </div>
+          ))
+        )}
       </div>
-
     </div>
-  )
+  );
 }

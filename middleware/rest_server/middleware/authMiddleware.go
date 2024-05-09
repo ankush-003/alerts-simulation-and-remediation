@@ -13,19 +13,10 @@ func Authenticate() gin.HandlerFunc{
 		clientToken := c.Request.Header.Get("Authorization")
 		// fmt.Println(c.Request.Header)
 		// fmt.Println(c.Request)
-
-		// fmt.Println(clientToken)
-
-
+		// fmt.Println("Here", clientToken)
 		clientToken = clientToken[7:]
-
 		// fmt.Println(clientToken)
-
-
-
 		// clientToken = strings.Split(clientToken, "Bearer ")[1]
-
-
 		if clientToken == ""{
 			c.JSON(http.StatusInternalServerError, gin.H{"error":fmt.Sprintf("No Authorization header provided")})
 			c.Abort()

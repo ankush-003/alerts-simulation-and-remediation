@@ -3,9 +3,11 @@ package main
 import (
 	"os"
 	"time"
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine/mongo"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
+	"log"
+	"context"
 )
 
 type Node struct {
@@ -20,12 +22,18 @@ func main() {
 		panic(err_load)
 	}
 
-	client, ctx, cancel, err := mongo.Connect(os.Getenv("MONGO_URI"))
-	if err != nil {
-		panic(err)
+	ctx := context.Background()
+
+	mongo_uri := os.Getenv("MONGO_URI")
+	if mongo_uri == "" {
+		log.Fatalf("MONGO_URI not set\n")
 	}
-	defer mongo.Close(client, ctx, cancel)
-	db := client.Database("AlertSimAndRemediation")
+	mongo_client, err := store.NewMongoStore(ctx, mongo_uri, "AlertSimAndRemediation", "Nodes")
+	if err != nil {
+		log.Fatalf("Error creating mongo store: %s\n", err)
+	}
+	defer mongo_client.Close(ctx)
+	db := mongo_client.Client.Database("AlertSimAndRemediation")
 	collection := db.Collection("Nodes")
 	for i := 0; i < 10; i++ {
 		node := Node{
