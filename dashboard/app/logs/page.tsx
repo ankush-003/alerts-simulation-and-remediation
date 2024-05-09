@@ -33,7 +33,7 @@ export default function Logs() {
     <div className='container mx-auto mt-8'>
       <h1 className='text-2xl font-bold mb-4'>Logs</h1>
       <div>
-        {logs.length === 0 ? (
+        {logs === null? (
           <p>No alert preferences have been selected.</p>
         ) : (
           logs.map((log, index) => (
