@@ -1,12 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"sync"
 
@@ -20,39 +16,30 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type AlertContext struct {
-	AlertInput  *alerts.AlertInput
-	AlertOutput *alerts.AlertOutput
-	AlertParam  *alerts.ParamInput
-}
-
-func (alertContext *AlertContext) RuleInput() rule_engine.RuleInput {
-	return alertContext.AlertInput
-}
-
-func (alertContext *AlertContext) RuleOutput() rule_engine.RuleOutput {
-	return alertContext.AlertOutput
-}
-
-func (alertContext *AlertContext) ParamInput() rule_engine.ParamInput {
-	return *alertContext.AlertParam
-}
-
-func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngineSvc) {
+func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngineSvc, cache rule_engine.Cache) {
 	defer wg.Done()
 
-	alertContext := AlertContext{
-		alertInput,
-		&alerts.AlertOutput{Remedy: "Too be decided soon...", Severity: "NIL"},
-		&alertInput.Params,
+	alertContext := rule_engine.AlertContext{
+		AlertInput:  alertInput,
+		AlertOutput: &alerts.AlertOutput{Remedy: "Too be decided soon...", Severity: "NIL"},
+		AlertParam:  &alertInput.Params,
 	}
 
-	err := ruleEngineSvc.Execute(&alertContext)
+	err := ruleEngineSvc.Execute(alertContext)
 	if err != nil {
 		panic(err)
 	}
+
 	// Methods after parsing the alert
-	printStruct(alertInput, alertContext.AlertOutput)
+	if alertContext.AlertOutput.Severity == "Safe" {
+		fmt.Println("Safe event")
+		return
+	} else if !rule_engine.CacheChecker(alertInput.Category, alertInput.Source, alertContext.AlertOutput, &cache) {
+		rule_engine.PrintStruct(alertInput, alertContext.AlertOutput)
+		fmt.Println("Not alert")
+		return
+	}
+	rule_engine.PrintStruct(alertInput, alertContext.AlertOutput)
 
 	// Find the user associated with alertContext.AlertInput.source Node
 	emails, err := mongo.FindUsers(alertInput.Category, alertContext.AlertOutput.Severity)
@@ -69,52 +56,7 @@ func NewAlert(alertInput *alerts.AlertInput, ruleEngineSvc *rule_engine.RuleEngi
 	}
 
 	// Call Rest server notification handler
-	notifyRestServer(&alertContext)
-}
-
-func notifyRestServer(alertContext *AlertContext) {
-	jsonData := map[string]interface{}{
-		"ID":        alertContext.AlertInput.ID,
-		"Category":  alertContext.AlertInput.Category,
-		"Source":    alertContext.AlertInput.Source,
-		"Origin":    alertContext.AlertInput.Origin,
-		"CreatedAt": alertContext.AlertInput.CreatedAt,
-		"Severity":  alertContext.AlertOutput.Severity,
-		"Remedy":    alertContext.AlertOutput.Remedy,
-	}
-
-	jsonBytes, err := json.Marshal(jsonData)
-	if err != nil {
-		panic(err)
-	}
-
-	host := os.Getenv("HOST")
-	if host == "" {
-		host = "localhost"
-	}
-
-	req, err := http.NewRequest("POST", "http://"+host+":8000/postRemedy", bytes.NewBuffer(jsonBytes))
-
-	if err != nil {
-		fmt.Println("Error in creating request")
-		return
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error in Connecting to Rest Server: ", err)
-		return
-	}
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	// Convert the response body to a string and print it
-	fmt.Println("Response Body:", string(body))
+	alertContext.NotifyRestServer()
 }
 
 var wg sync.WaitGroup
@@ -189,35 +131,18 @@ func kafka_consumer(ruleEngineSvc *rule_engine.RuleEngineSvc) {
 	logger.Println("Consuming alerts !")
 
 	go consumer.ConsumeAlerts("alerts", alertsChan, doneChan)
+	cache := rule_engine.Cache{}
+	cache = cache.New()
 
 consumerLoop:
 	for {
 		select {
 		case alert := <-alertsChan:
-			printStruct(&alert, nil)
+			rule_engine.PrintStruct(&alert, nil)
 			wg.Add(1)
-			NewAlert(&alert, ruleEngineSvc)
+			NewAlert(&alert, ruleEngineSvc, cache)
 		case <-doneChan:
 			break consumerLoop
 		}
 	}
-}
-
-func printStruct(alert *alerts.AlertInput, output *alerts.AlertOutput) {
-	fmt.Println("------------ALERT--------------------")
-	fmt.Println("ID: ", alert.ID)
-	fmt.Println("Category: ", alert.Category)
-	fmt.Println("Origin: ", alert.Origin)
-	fmt.Println("Source: ", alert.Source)
-	b, err := json.MarshalIndent(alert.Params, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	fmt.Print("Params: ", string(b))
-	if output != nil {
-		fmt.Println("--------------OUTPUT-----------------")
-		fmt.Println("Severity -> ", output.Severity)
-		fmt.Println("Remedy -> ", output.Remedy)
-	}
-	fmt.Println("-------------------------------------")
 }

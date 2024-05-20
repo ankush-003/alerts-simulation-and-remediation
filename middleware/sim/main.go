@@ -115,12 +115,14 @@ func main() {
 		select {
 		case <-ticker.C:
 			alert := alerts.GenRandomAlert(NodeID)
-			if err := producer.SendAlert("alerts", &alert); err != nil {
-				logger.Printf("Error sending alert: %s\n", err)
+			times := rand.Int() % 6
+			for i := 0; i < times; i++ {
+				if err := producer.SendAlert("alerts", &alert); err != nil {
+					logger.Printf("Error sending alert: %s\n", err)
+				}
+				logger.Printf("Sent alert: %v\n", alert)
+				redis.PublishAlertInputs(ctx, &alert, stream)
 			}
-			logger.Printf("Sent alert: %v\n", alert)
-			redis.PublishAlertInputs(ctx, &alert, stream)
-
 			newDuration := time.Duration(rand.Intn(30)+1) * time.Second // Random duration between 1 and 30 seconds
 			ticker.Stop()
 			ticker = time.NewTicker(newDuration)
