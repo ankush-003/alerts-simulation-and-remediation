@@ -582,17 +582,28 @@ func GetUserAlerts() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
 		// Define the filter based on the user's alert preferences
 		filter := bson.D{
 			{Key: "category", Value: bson.D{{Key: "$in", Value: user.Alert.Categories}}},
 			{Key: "severity", Value: bson.D{{Key: "$in", Value: user.Alert.Severities}}},
 		}
 
-		// fmt.Println(user, user.Alert.Categories, user.Alert.Severities)
+		// Retrieve pagination parameters
+		page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+		limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+		if page < 1 {
+			page = 1
+		}
+		if limit < 1 {
+			limit = 10
+		}
+
 		// Define the options for the find operation
 		options := options.Find()
 		options.SetSort(bson.D{{Key: "createdAt", Value: -1}}) // Sort by createdAt in descending order
-		options.SetLimit(10)                                   // Limit to 10 most recent alerts
+		options.SetLimit(int64(limit))                          // Limit the number of results
+		options.SetSkip(int64((page - 1) * limit))              // Skip the appropriate number of documents
 
 		// Perform find operation on the alertCollection with filter and options
 		cursor, err := alertCollection.Find(ctx, filter, options)
@@ -608,8 +619,29 @@ func GetUserAlerts() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode alerts"})
 			return
 		}
-		// Return the fetched alerts
-		c.JSON(http.StatusOK, alerts)
 
+		// Return the fetched alerts with pagination metadata
+		c.JSON(http.StatusOK, gin.H{
+			"alerts": alerts,
+			"page":   page,
+			"limit":  limit,
+		})
 	}
+}
+
+
+func AcknowledgeLog(c *gin.Context) {
+    id := c.Query("id")
+
+    // Update log document to set acknowledged field to true
+    filter := bson.M{"_id": id}
+    update := bson.M{"$set": bson.M{"acknowledged": true}}
+
+    _, err := alertCollection.UpdateOne(context.Background(), filter, update)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to acknowledge log"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "Log acknowledged successfully"})
 }

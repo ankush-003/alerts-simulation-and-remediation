@@ -149,6 +149,7 @@ type Disk struct {
 // Latency (ms)
 
 type Network struct {
+	On         bool `json:"On"`
 	Traffic    uint `json:"traffic"`
 	PacketLoss uint `json:"packetLoss"`
 	Latency    uint `json:"latency"`
@@ -294,6 +295,7 @@ func (d *Disk) GenerateMetrics() {
 
 func (n *Network) GenerateMetrics() {
 	rand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	n.On = rand.Intn(2) == 1
 	n.Traffic = uint(rand.Intn(500))            // Traffic in Mbytes per second
 	n.PacketLoss = uint(rand.Intn(4000)) + 1000 // Packet loss percentage
 	n.Latency = uint(rand.Intn(100))            // Latency in milliseconds

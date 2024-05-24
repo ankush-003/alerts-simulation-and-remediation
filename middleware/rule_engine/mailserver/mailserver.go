@@ -18,7 +18,7 @@ func SendEmail(input alerts.AlertInput, output alerts.AlertOutput, mail string) 
 	// fmt.Println(Severity, Remedy)
 	// fmt.Println(ID, Category, CreatedAt, Handled, Source, Origin, Severity, Remedy)
 	body := fmt.Sprintf(
-		"%s: %s, %s: %s, %s: %s, %s: %s, %s: %s, %s: %s, %s: %s",
+		"%s: %s\n, %s: %s\n, %s: %s\n, %s: %s\n, %s: %s\n, %s: %s\n, %s: %s\n",
 		"ID", input.ID,
 		"Category", input.Category,
 		"CreatedAt", input.CreatedAt,
