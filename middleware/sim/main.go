@@ -21,7 +21,7 @@ func main() {
 	// loading .env file
 	err_load := godotenv.Load()
 	if err_load != nil {
-		log.Fatalf("Error loading .env file in sim main: %s\n", err_load)
+		log.Println("Error loading .env file")
 	}
 
 	ctx := context.Background()
