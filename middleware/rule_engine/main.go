@@ -102,7 +102,7 @@ func kafka_consumer(ruleEngineSvc *rule_engine.RuleEngineSvc) {
 	// loading .env file
 	err_load := godotenv.Load()
 	if err_load != nil {
-		log.Fatalf("Error loading .env file: %v\n", err_load)
+		log.Println("Error loading .env file")
 	}
 
 	logger := log.New(os.Stdout, "kafka-consumer: ", log.LstdFlags)
