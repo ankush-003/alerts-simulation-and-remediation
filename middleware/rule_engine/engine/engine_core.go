@@ -4,7 +4,7 @@ import (
 	"fmt"
 	// "os"
 
-	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/mongo"
+	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine/mongo"
 	"github.com/hyperjumptech/grule-rule-engine/ast"
 	"github.com/hyperjumptech/grule-rule-engine/builder"
 	"github.com/hyperjumptech/grule-rule-engine/engine"

@@ -3,8 +3,7 @@ module github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_e
 go 1.22.1
 
 require (
-	github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2 v0.0.0-20240418180447-4d80977c94ca
-	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240425100358-576fb88fce66
+	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240525121857-b9a01336917f
 	github.com/hyperjumptech/grule-rule-engine v1.15.0
 	go.mongodb.org/mongo-driver v1.15.0
 )
@@ -30,12 +29,12 @@ require (
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
-	github.com/Microsoft/go-winio v0.6.1 // indirect
+	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr v1.4.10 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
-	github.com/cloudflare/circl v1.3.7 // indirect
-	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
+	github.com/cloudflare/circl v1.3.8 // indirect
+	github.com/cyphar/filepath-securejoin v0.2.5 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
@@ -59,13 +58,11 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20240424034433-3c2c7870ae76 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
-	golang.org/x/mod v0.17.0 // indirect
-	golang.org/x/net v0.24.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.20.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
