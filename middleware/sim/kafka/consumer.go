@@ -21,7 +21,7 @@ func NewConsumer(brokers []string, config *sarama.Config, logger *log.Logger) (*
 	consumer, err := sarama.NewConsumer(brokers, config)
 	if err != nil {
 		log.Printf("Error creating consumer: %s\n", err)
-		return &Consumer{}, fmt.Errorf("Error creating consumer: %s", err)
+		return &Consumer{}, fmt.Errorf("error creating consumer: %s", err)
 	}
 
 	return &Consumer{
