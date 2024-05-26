@@ -16,6 +16,7 @@ type Producer struct {
 }
 
 func NewProducer(brokers []string, config *sarama.Config, logger *log.Logger) (*Producer, error) {
+	sarama.Logger = log.New(os.Stdout, "[kafka] ", log.LstdFlags)
 	producer, err := sarama.NewAsyncProducer(brokers, config)
 	if err != nil {
 		log.Printf("Error creating producer: %s\n", err)

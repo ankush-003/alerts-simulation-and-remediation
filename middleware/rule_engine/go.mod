@@ -3,7 +3,7 @@ module github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_e
 go 1.22.1
 
 require (
-	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240525121857-b9a01336917f
+	github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim v0.0.0-20240526202959-7717b3148c2e
 	github.com/hyperjumptech/grule-rule-engine v1.15.0
 	go.mongodb.org/mongo-driver v1.15.0
 )

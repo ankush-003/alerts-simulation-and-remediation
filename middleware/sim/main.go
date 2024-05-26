@@ -10,7 +10,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/kafka"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/store"
@@ -23,9 +22,9 @@ func main() {
 	if err_load != nil {
 		log.Println("Error loading .env file")
 	}
-
+	
 	ctx := context.Background()
-
+	
 	// create a new mongo store
 	mongo_uri := os.Getenv("MONGO_URI")
 	if mongo_uri == "" {
@@ -36,28 +35,24 @@ func main() {
 		log.Fatalf("Error creating mongo store: %s\n", err)
 	}
 	defer mongo_client.Close(ctx)
-
+	
 	// new uid from available nodes from mongo
 	NodeID, close_id, err := mongo_client.GetNodeId(ctx)
-	fmt.Println("NodeID: ", NodeID)
+	log.Println("Received Node ID: ", NodeID)
 	defer close_id()
 	if err != nil {
 		log.Fatalf("Error getting node id: %s\n", err)
 	}
-
-	logger := log.New(os.Stdout, fmt.Sprintf("Node %s:", NodeID), log.LstdFlags)
-
-	// config
-	// time_limit := 10 // 2 min
-
+	logger := log.New(os.Stdout, fmt.Sprintf("[Node %s] ", NodeID), log.LstdFlags)
+	
 	broker := os.Getenv("KAFKA_BROKER")
 	redis_addr := os.Getenv("REDIS_ADDR")
-
+	
 	if broker == "" {
 		broker = "localhost:9092"
 		logger.Println("KAFKA_BROKER not set, using default", broker)
 	}
-
+	
 	brokers := []string{broker}
 	// Create a new Sarama configuration
 	username := os.Getenv("KAFKA_USERNAME")
@@ -67,15 +62,16 @@ func main() {
 		// logger.Fatalf("KAFKA_USERNAME or KAFKA_PASSWORD not set\n")
 		logger.Println("KAFKA_USERNAME or KAFKA_PASSWORD not set, using KAFKA locally")
 	}
-
+	
 	config := kafka.NewConfig(username, password)
-
+	
 	producer, err := kafka.NewProducer(brokers, config, logger)
 	if err != nil {
 		logger.Fatalf("Error creating producer: %s\n", err)
 	}
 	defer producer.Close()
-
+	logger.Println("Kafka Producer created")
+	
 	if redis_addr == "" {
 		logger.Println("REDIS_ADDR not set, using default localhost:6379")
 		redis_addr = "localhost:6379"
@@ -86,21 +82,23 @@ func main() {
 	if redisErr != nil {
 		logger.Fatalf("Error creating redis store: %s\n", redisErr)
 	}
-
 	defer redis.Close()
+	logger.Println("Redis store created")
 
+	logger.Println("Setup Complete")
+	
 	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	heartbeatDoneChan := make(chan struct{})
-
+	
 	stream := os.Getenv("STREAM")
 	if stream == "" {
 		stream = "nodeAlerts"
 	}
-
+	
 	// Creating Alerts
 	logger.Println("Creating alerts")
-
+	
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
