@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulator
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simulator
+  template:
+    metadata:
+      labels:
+        app: simulator
+    spec:
+      containers:
+      - name: simulator
+        image: docker.io/ankush003/simulator:latest
+        env:
+        - name: MONGO_URI
+          value: mongodb+srv://alertssim:RRdxdKTHt99cEnWw@cluster0.aenmhq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+        - name: KAFKA_BROKER
+          value: active-boar-11578-us1-kafka.upstash.io:9092  
+        - name: KAFKA_USERNAME
+          value: YWN0aXZlLWJvYXItMTE1NzgkSad0k7Y1TR2gDOgfvRl8R5Xs7vFQITViGMqTLl8
+        - name: KAFKA_PASSWORD
+          value: YTFmMTdhNDAtMWI3Mi00ZTcyLWE1MjItYzJlMjgzOTMxZjU3
+        - name: REDIS_ADDR
+          value: redis://default:ybaCdWLadAzqrb2qXO7QhKgjiDL3pXZ5@redis-16652.c212.ap-south-1-1.ec2.cloud.redislabs.com:16652
+        - name: MONGO_URI
+          value: mongodb+srv://alertssim:RRdxdKTHt99cEnWw@cluster0.aenmhq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+      # - name: rest-server
+      #   image: docker.io/ankush003/rest-server:latest
+      #   env:
+      #   - name: MONGODB_URI
+      #     value: mongodb+srv://alertssim:RRdxdKTHt99cEnWw@cluster0.aenmhq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      #   - name: KAFKA_BROKER
+      #     value: active-boar-11578-us1-kafka.upstash.io:9092  
+      #   - name: KAFKA_USERNAME
+      #     value: YWN0aXZlLWJvYXItMTE1NzgkSad0k7Y1TR2gDOgfvRl8R5Xs7vFQITViGMqTLl8
+      #   - name: KAFKA_PASSWORD
+      #     value: YTFmMTdhNDAtMWI3Mi00ZTcyLWE1MjItYzJlMjgzOTMxZjU3
+      #   - name: REDIS_ADDR
+      #     value: redis://default:ybaCdWLadAzqrb2qXO7QhKgjiDL3pXZ5@redis-16652.c212.ap-south-1-1.ec2.cloud.redislabs.com:16652
+
+      # - name: rule-engine
+      #   image: docker.io/ankush003/rule-engine:latest
+      #   env:
+      #   - name: MONGODB_URI
+      #     value: mongodb+srv://alertssim:RRdxdKTHt99cEnWw@cluster0.aenmhq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      #   - name: KAFKA_BROKER
+      #     value: active-boar-11578-us1-kafka.upstash.io:9092  
+      #   - name: KAFKA_USERNAME
+      #     value: YWN0aXZlLWJvYXItMTE1NzgkSad0k7Y1TR2gDOgfvRl8R5Xs7vFQITViGMqTLl8
+      #   - name: KAFKA_PASSWORD
+      #     value: YTFmMTdhNDAtMWI3Mi00ZTcyLWE1MjItYzJlMjgzOTMxZjU3
+      #   - name: REDIS_ADDR
+      #     value: redis://default:ybaCdWLadAzqrb2qXO7QhKgjiDL3pXZ5@redis-16652.c212.ap-south-1-1.ec2.cloud.redislabs.com:16652
+      #   - name: MONGO_URI
+      #     value: mongodb+srv://alertssim:RRdxdKTHt99cEnWw@cluster0.aenmhq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+      #   - name: HOST  
+      #     value: rest-server
