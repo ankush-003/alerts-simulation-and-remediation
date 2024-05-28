@@ -17,17 +17,35 @@ spec:
         - name: rules-engine
           image: docker.io/ankush003/rule-engine:latest
           env:
-          - name: MONGODB_URI
-            value: mongodb+srv://alertssim:RRdxdKTHt99cEnWw@cluster0.aenmhq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-          - name: KAFKA_BROKER
-            value: active-boar-11578-us1-kafka.upstash.io:9092  
-          - name: KAFKA_USERNAME
-            value: YWN0aXZlLWJvYXItMTE1NzgkSad0k7Y1TR2gDOgfvRl8R5Xs7vFQITViGMqTLl8
-          - name: KAFKA_PASSWORD
-            value: YTFmMTdhNDAtMWI3Mi00ZTcyLWE1MjItYzJlMjgzOTMxZjU3
-          - name: REDIS_ADDR
-            value: redis://default:ybaCdWLadAzqrb2qXO7QhKgjiDL3pXZ5@redis-16652.c212.ap-south-1-1.ec2.cloud.redislabs.com:16652
-          - name: MONGO_URI
-            value: mongodb+srv://alertssim:RRdxdKTHt99cEnWw@cluster0.aenmhq0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-          - name: HOST  
-            value: rest-server
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: MONGODB_URI
+            - name: KAFKA_BROKER
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: KAFKA_BROKER
+            - name: KAFKA_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: KAFKA_USERNAME
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: KAFKA_PASSWORD
+            - name: REDIS_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: REDIS_ADDR
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: MONGO_URI
+            - name: HOST
+              value: rest-server

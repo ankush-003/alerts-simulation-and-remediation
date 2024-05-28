@@ -24,3 +24,5 @@ go.work
 
 # env setting script
 env-setter.sh
+# SECRETS
+secrets.yaml
