@@ -26,7 +26,7 @@ export default function Realtime() {
 
     useEffect(() => {
         console.log("Realtime page loaded")
-        const eventSource = new EventSource("/api/stream")
+        const eventSource = new EventSource("/api/stream/alerts")
         eventSource.addEventListener("message", (event) => {
             const data = JSON.parse(event.data)
             console.table(data)
