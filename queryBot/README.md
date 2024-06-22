@@ -2,6 +2,9 @@
 
 a real-time alert processing system with an interactive chatbot interface. It utilizes Redis Streams for data ingestion, MongoDB for vector storage, and LangChain for creating a conversational AI model.
 
+- [Embedding Service on 🤗](https://ankush-003-asmr-embedding-service.hf.space/)
+- [ChatBot on 🤗](https://ankush-003-asmr-query-bot.hf.space)
+
 ## Features
 
 - Real-time alert ingestion using Redis Streams
@@ -52,7 +55,7 @@ Set up environment variables:
 - `REDIS_HOST`: Redis host address
 - `REDIS_PWD`: Redis password
 
-## Data Pipeline 
+## Data Pipeline (Embedding Service)
 The data pipeline performs the following steps:
 
 - Connects to Redis and MongoDB
@@ -72,6 +75,17 @@ The chatbot is implemented using Streamlit and provides the following features:
 - Adjustable temperature and number of retrieved documents
 - Context-aware responses using LangChain and Groq
 - Ability to view source alerts for each response
+
+## Screenshots
+
+### Embedding Service
+
+![image](https://github.com/ankush-003/alerts-simulation-and-remediation/assets/94037471/eea1cc6a-392b-437c-b4c5-53334d586bb4)
+
+### ChatBot
+
+![image](https://github.com/ankush-003/alerts-simulation-and-remediation/assets/94037471/100277cd-52cc-41f6-bcea-da7bc836d97e)
+
 
 ## Implementation Details
 
