@@ -8,7 +8,7 @@ services:
     networks:
       - test
     deploy:
-      replicas: 2  
+      replicas: 5
 
   rule-engine:
     build: ./rule_engine

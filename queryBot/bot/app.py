@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import os
+import pandas as pd
 from collections.abc import Collection
 from langchain.memory import ChatMessageHistory
 from langchain_community.chat_message_histories import (
@@ -8,8 +9,8 @@ from langchain_community.chat_message_histories import (
 )
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_community.vectorstores import MongoDBAtlasVectorSearch
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_mongodb import MongoDBAtlasVectorSearch
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
@@ -40,68 +41,6 @@ embedding_args = {
 }
 embedding_model = HuggingFaceEmbeddings(**embedding_args)
 
-# Mongo Connection
-connection = pymongo.MongoClient(os.environ["MONGO_URI"])
-alert_collection = connection[database][collection]
-
-# Redis connection
-r = redis.Redis(host=os.environ['REDIS_HOST'], password=os.environ['REDIS_PWD'], port=16652)
-
-# Preprocessing
-async def create_textual_description(entry_data):
-    entry_dict = {k.decode(): v.decode() for k, v in entry_data.items()}
-    category = entry_dict["Category"]
-    created_at = entry_dict["CreatedAt"]
-    acknowledged = "Acknowledged" if entry_dict["Acknowledged"] == "1" else "Not Acknowledged"
-    remedy = entry_dict["Remedy"]
-    severity = entry_dict["Severity"]
-    source = entry_dict["Source"]
-    node = entry_dict["node"]
-    description = f"A {severity} alert of category {category} was raised from the {source} source for node {node} at {created_at}. The alert is {acknowledged}. The recommended remedy is: {remedy}."
-    return description, entry_dict
-
-# Saving alert doc
-async def save(entry):
-    vector_search = MongoDBAtlasVectorSearch.from_documents(
-        documents=[Document(
-            page_content=entry["content"],
-            metadata=entry["metadata"]
-        )],
-        embedding=embedding_model,
-        collection=alert_collection,
-        index_name="alert_index",
-    )
-    logging.info("Alerts stored successfully!")
-
-# Listening to alert stream
-async def listen_to_alerts(r):
-    logging.info("Listening to alerts...")
-    try:
-        last_id = '$'
-        while True:
-            entries = r.xread({stream_name: last_id}, block=0, count=None)
-            if entries:
-                stream, new_entries = entries[0]
-                for entry_id, entry_data in new_entries:
-                    description, entry_dict = await create_textual_description(entry_data)
-                    await save({"content": description, "metadata": entry_dict})
-                    # Update the last ID read
-                    last_id = entry_id
-                    st.toast(description, icon='🔔')
-    except KeyboardInterrupt:
-        print("Exiting...")
-
-# Start Redis listener in a separate thread
-def start_redis_listener():
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(listen_to_alerts(r))
-    except Exception as e:
-        print(f"Error in Redis listener: {e}")
-    finally:
-        loop.close()
-
 # Streamlit Application
 st.set_page_config(
     page_title="ASMR Query Bot 🔔",
@@ -114,10 +53,6 @@ st.set_page_config(
 )
 
 st.title('ASMR Query Bot 🔔')
-
-# Start Redis listener in a separate thread
-redis_listener_thread = threading.Thread(target=start_redis_listener)
-redis_listener_thread.start()
 
 # vector search
 vector_search = MongoDBAtlasVectorSearch.from_connection_string(
@@ -211,13 +146,20 @@ for msg in history.messages:
     st.chat_message(msg.type).write(msg.content)
 
 # preprocessing context
-def format_docs_with_metadata(docs):
-    formatted_docs = []
-    for i, doc in enumerate(docs, start=1):
-        metadata_str = "\n".join([f"**{key}**: `{value}`\n" for key, value in doc.metadata.items() if key != "embedding"])
-        formatted_doc = f"- {doc.page_content}\n\n**Metadata:**\n{metadata_str}"
-        formatted_docs.append(formatted_doc)   
-    return "\n\n".join(formatted_docs)
+def format_docs_as_table(docs):
+    # formatted_docs = []
+    # for i, doc in enumerate(docs, start=1):
+    #     metadata_str = "\n".join([f"**{key}**: `{value}`\n" for key, value in doc.metadata.items() if key != "embedding"])
+    #     formatted_doc = f"- {doc.page_content}\n\n**Metadata:**\n{metadata_str}"
+    #     formatted_docs.append(formatted_doc)   
+    # return "\n\n".join(formatted_docs)
+    rows = []
+    for doc in docs:
+        row = {'Content': doc.page_content}
+        row.update({k: v for k, v in doc.metadata.items() if k != 'embedding'})
+        rows.append(row)
+    return pd.DataFrame(rows)
+    
 
 def stream_data(response):
   for word in response.split(" "):
@@ -234,6 +176,7 @@ if prompt := st.chat_input():
 
     with st.chat_message("AI"):
       st.write_stream(stream_data(res['answer']))
-      with st.popover("View Source"):
-        st.markdown("### Source Alerts 📢")
-        st.markdown(format_docs_with_metadata(res['context']))
+      with st.expander("View Source"):
+        st.subheader("Source Alerts 📢")
+        df = format_docs_as_table(res['context'])
+        st.table(df)
