@@ -1,5 +1,14 @@
 # Kubernetes Deployment
 
+## Commands to access grafana
+
+```bash
+    kubectl port-forward deployment/prometheus-grafana 3000
+```
+
+- default username: admin
+- default password: prom-operator
+
 ## Minikube Dashboard 
 
 ![image](https://github.com/ankush-003/alerts-simulation-and-remediation/assets/94037471/5f6aeed9-471f-4cfb-b56f-1a28d9808e6f)
