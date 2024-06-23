@@ -1,7 +1,14 @@
-FROM golang:alpine
+# Builder stage
+FROM golang:alpine as builder
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 COPY . .
-RUN go build -o /rest_server
-CMD ["/rest_server"]
+RUN CGO_ENABLED=0 GOOS=linux go build -o rest_server .
+
+# Final stage
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/rest_server .
+RUN apk --no-cache add ca-certificates tzdata
+CMD ["./rest_server"]
