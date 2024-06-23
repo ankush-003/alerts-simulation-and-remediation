@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner"
+
 
 interface UserDetails {
   First_name: string;
@@ -78,11 +80,12 @@ const LoginRegisterForm = () => {
         }
       } else {
         // Invalid credentials or registration failed
-        setErrorMessage(data.message || 'An error occurred during the request');
+        toast.error(data.error);
+        setErrorMessage(data.message || 'An error occurred during the request' + data.error);
       }
     } catch (error) {
       console.error('Error:', error);
-      setErrorMessage('An error occurred during the request');
+      setErrorMessage('An error occurred during the request\n' + error);
     }
   };
 

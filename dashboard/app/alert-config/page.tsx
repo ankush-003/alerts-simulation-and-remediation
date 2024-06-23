@@ -161,6 +161,36 @@ export default function AlertConfig() {
           <div style={{ ...labelStyle, color: '#ffff00' }}>
             <input
               type="checkbox"
+              name="Network"
+              checked={categories.network}
+              onChange={handleCategoryChange}
+              style={inputStyle}
+            />
+            <span style={{ marginLeft: '8px' }}>Network</span>
+          </div>
+          <div style={{ ...labelStyle, color: '#ffff00' }}>
+            <input
+              type="checkbox"
+              name="Security"
+              checked={categories.security}
+              onChange={handleCategoryChange}
+              style={inputStyle}
+            />
+            <span style={{ marginLeft: '8px' }}>Security</span>
+          </div>
+          <div style={{ ...labelStyle, color: '#ffff00' }}>
+            <input
+              type="checkbox"
+              name="RuntimeMetrics"
+              checked={categories.runtimemetrics}
+              onChange={handleCategoryChange}
+              style={inputStyle}
+            />
+            <span style={{ marginLeft: '8px' }}>RuntimeMetrics</span>
+          </div>
+          <div style={{ ...labelStyle, color: '#ffff00' }}>
+            <input
+              type="checkbox"
               name="Power"
               checked={categories.power}
               onChange={handleCategoryChange}
