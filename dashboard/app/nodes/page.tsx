@@ -91,7 +91,7 @@ export default function Nodes() {
                   <div className="flex items-center gap-2">
                     {/* <Computer className="w-6 h-6 text-gray-500 dark:text-gray-400" /> */}
                     <h3 className="font-bold text-lg">
-                      <span className="text-red-500">{node.nodeID}</span>
+                      <span className={isDown ? "text-red-500" : "text-green-500"}>{node.nodeID}</span>
                     </h3>
                   </div>
                   {isDown ? (
