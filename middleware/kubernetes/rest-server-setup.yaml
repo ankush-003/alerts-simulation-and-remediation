@@ -1,3 +1,4 @@
+# kubernetes setup config for rest-server
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,7 +16,7 @@ spec:
     spec:
       containers:
         - name: rest-server
-          image: docker.io/ankush003/rest-server:latest
+          image: docker.io/ankush003/asmr-rest-server:latest
           ports:
             - containerPort: 8000
           env:
@@ -29,4 +30,16 @@ spec:
                 configMapKeyRef:
                   name: asmr-config
                   key: REDIS_ADDR
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rest-server
+  namespace: default
+spec:
+  selector:
+    app: rest-server
+  ports:
+  - port: 8000
+    targetPort: 8000
                     

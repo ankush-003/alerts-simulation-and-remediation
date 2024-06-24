@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: simulator
-          image: docker.io/ankush003/simulator:latest
+          image: docker.io/ankush003/asmr-simulator:latest
           env:
             - name: MONGODB_URI
               valueFrom:
