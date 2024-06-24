@@ -28,7 +28,7 @@ jobs:
           context: ./middleware/rule_engine
           file: ./middleware/rule_engine/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/rule-engine:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/asmr-rule-engine:latest
       -
         name: Build and push rest_server
         uses: docker/build-push-action@v5
@@ -36,7 +36,7 @@ jobs:
           context: ./middleware/rest_server
           file: ./middleware/rest_server/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/rest-server:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/asmr-rest-server:latest
       -
         name: Build and push simulator
         uses: docker/build-push-action@v5
@@ -44,4 +44,4 @@ jobs:
           context: ./middleware/sim
           file: ./middleware/sim/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/simulator:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/asmr-simulator:latest
