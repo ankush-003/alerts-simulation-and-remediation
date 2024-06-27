@@ -6,7 +6,9 @@ import {
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query'
-import CalendarStats from '@/components/CalendarStats'
+import CalendarStats from '@/components/charts/CalendarStats'
+import SeverityStats from '@/components/charts/SeverityStats';
+import { toast } from 'sonner';
 
 const queryClient = new QueryClient()
 
@@ -18,6 +20,8 @@ const Page = () => {
     // Redirect to "/"
     window.location.href = "/";
   };
+
+  // toast.loading("Loading...", { duration: 2000 })
 
   const buttonStyle: CSSProperties = {
     position: 'fixed',
@@ -40,7 +44,7 @@ const Page = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <div>
-        <h1>Welcome to Home</h1>
+        {/* <h1>Welcome to Home</h1> */}
         <button
           type="button"
           style={buttonStyle}
@@ -51,7 +55,8 @@ const Page = () => {
           Logout
         </button>
       </div>
-      <div className='w-full'>
+      <div className='w-full gap-2 grid'>
+        <SeverityStats />
         <CalendarStats />
       </div>
     </QueryClientProvider>

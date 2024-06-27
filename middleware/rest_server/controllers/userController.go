@@ -315,6 +315,10 @@ func GetUser() gin.HandlerFunc {
 func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// var alert models.Alerts
+		loc, loc_err := time.LoadLocation("Asia/Kolkata")
+		if loc_err != nil {
+			loc = time.FixedZone("Asia/Kolkata", 19800)
+		}
 		//var alertOutput models.AlertOutput
 
 		// Bind alert and alertOutput from the request
@@ -368,7 +372,7 @@ func PostRem(ctx context.Context, redisClient *store.RedisStore) gin.HandlerFunc
 			"category":     alertMap["Category"],
 			"severity":     alertMap["Severity"],
 			"source":       alertMap["Source"],
-			"createdAt":    primitive.NewDateTimeFromTime(time.Now()),
+			"createdAt":    primitive.NewDateTimeFromTime(time.Now().In(loc)),
 			"acknowledged": alertMap["Acknowledged"],
 			"remedy":       alertMap["Remedy"],
 		})

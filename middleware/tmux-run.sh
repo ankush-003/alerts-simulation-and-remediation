@@ -1,5 +1,8 @@
 #!/bin/env bash
 
+# run env-setter.sh, if there's error in this script, notify the user
+source env-setter.sh || { echo "Error in env-setter.sh"; exit 1; }
+
 # start new tmux session
 tmux new-session -d -s asmr
 
