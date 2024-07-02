@@ -2,7 +2,8 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { NextAuthConfig } from "next-auth";
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const backendUrl =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 export const authConfig: NextAuthConfig = {
   providers: [
@@ -15,16 +16,16 @@ export const authConfig: NextAuthConfig = {
         const email = credentials?.email as string;
         const password = credentials?.password as string;
         const res = await fetch(`${backendUrl}/users/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
         });
         const authData = await res.json();
         // console.log(authData);
         if (!res.ok) {
-            return null;
+          return false;
         }
         const user = authData?.user;
         user.token = authData?.token;
