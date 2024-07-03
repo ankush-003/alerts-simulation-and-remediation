@@ -78,6 +78,7 @@ export default function AlertConfig() {
   let [categories, setCategories] = useState<any>([]);
   let [severities, setSeverities] = useState<any>([]);
   const session = useSession();
+  console.log(session)
 
   const handleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const category = event.target.name;

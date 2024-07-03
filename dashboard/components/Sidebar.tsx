@@ -3,7 +3,7 @@
 import { useState } from "react"
 import {
     Home,
-    FlaskConical,
+    User,
     Github,
     Box,
     ChevronRight,
@@ -45,12 +45,6 @@ export default function Sidebar() {
                 href: "/home",
               },
               {
-                title: "alert config",
-                icon: FlaskConical,
-                variant: "default",
-                href: "/alert-config",
-              },
-              {
                 title: "realtime alerts",
                 icon: PlugZap,
                 variant: "default",
@@ -73,6 +67,12 @@ export default function Sidebar() {
                 icon: Activity,
                 variant: "default",
                 href: "/nodes",
+              },
+              {
+                title: "profile",
+                icon: User,
+                variant: "default",
+                href: "/profile",
               },
               {
                 title: "about",

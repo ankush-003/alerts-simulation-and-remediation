@@ -8,8 +8,7 @@ export async function middleware(req: NextRequest) {
     if (session && (
         url.toString().startsWith("/")
     )) {
-        console.log("redirecting to /home");
-        return NextResponse.redirect("/home");
+        return NextResponse.redirect(new URL("/home", req.url));
     }
     if (!session) 
         return NextResponse.redirect(new URL("/", req.url));
@@ -20,11 +19,12 @@ export async function middleware(req: NextRequest) {
 export const config = {
     matcher: [
         '/home',
-        '/alert-config',
+        '/profile',
         '/logs',
         '/about',
         '/nodes',
         '/realtime',
+        '/chat',
         // '/url',
         // '/url/:path*',
     ],

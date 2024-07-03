@@ -29,6 +29,7 @@ export const authConfig: NextAuthConfig = {
         }
         const user = authData?.user;
         user.token = authData?.token;
+        console.log(user);
         return user;
       },
     }),
@@ -40,6 +41,7 @@ export const authConfig: NextAuthConfig = {
         token.last_name = user.last_name;
         token.email = user.email;
         token.token = user.token;
+        token.alert = user.Alert;
       }
       return token;
     },
@@ -49,6 +51,7 @@ export const authConfig: NextAuthConfig = {
         session.user.last_name = token.last_name as string;
         session.user.email = token.email as string;
         session.user.token = token.token as string;
+        session.user.Alert = token.Alert as any;
       }
       return session;
     },
