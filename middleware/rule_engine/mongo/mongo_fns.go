@@ -82,7 +82,7 @@ func GetRules() ([]byte, error) {
 	if err != nil {
 		fmt.Println("Error loading .env file")
 	}
-	MONGO_URI := os.Getenv("MONGO_URI")
+	MONGO_URI := os.Getenv("MONGODB_URI")
 	client, ctx, cancelFunc, err := Connect(MONGO_URI)
 	if err != nil {
 		panic(err)
