@@ -8,28 +8,26 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Authenticate() gin.HandlerFunc{
-	return func(c *gin.Context){
+func Authenticate() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		clientToken := c.Request.Header.Get("Authorization")
 		// fmt.Println(c.Request.Header)
 		// fmt.Println(c.Request)
 		// fmt.Println("Here", clientToken)
-		clientToken = clientToken[7:]
 		// fmt.Println(clientToken)
 		// clientToken = strings.Split(clientToken, "Bearer ")[1]
-		if clientToken == ""{
-			c.JSON(http.StatusInternalServerError, gin.H{"error":fmt.Sprintf("No Authorization header provided")})
+		if clientToken == "" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("No Authorization header provided")})
 			c.Abort()
 			return
 		}
+		clientToken = clientToken[7:]
 
 		fmt.Println("He")
 
-
-
 		claims, err := helper.ValidateToken(clientToken)
-		if err !="" {
-			c.JSON(http.StatusInternalServerError, gin.H{"error":err})
+		if err != "" {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 			c.Abort()
 			return
 		}
@@ -39,7 +37,7 @@ func Authenticate() gin.HandlerFunc{
 		c.Set("email", claims.Email)
 		c.Set("first_name", claims.First_name)
 		c.Set("last_name", claims.Last_name)
-		c.Set("uid",claims.Uid)
+		c.Set("uid", claims.Uid)
 		c.Set("user_type", claims.User_type)
 		c.Next()
 
