@@ -9,7 +9,7 @@ kubectl delete -f sim-setup.yaml
 kubectl delete -f secrets.yaml
 
 # Optionally, delete specific resources by name if they are not covered in the above files
-# kubectl delete deployment <deployment-name>
+kubectl delete deployment simulator
 # kubectl delete service <service-name>
 
 # Check the status of the deployments, services, and pods to ensure they are deleted
