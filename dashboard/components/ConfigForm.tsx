@@ -18,7 +18,7 @@ const allCategories = [
 
 const allSeverities = ["Warning", "Severe", "Critical"];
 
-export default function ConfigForm({ userAlerts, token }: { userAlerts: any, token: string }) {
+export default function ConfigForm({ userAlerts, token }: { userAlerts: any, token: string | undefined }) {
   return (
     <div>
       <form className='flex flex-col gap-3' action={async (formData) => {
