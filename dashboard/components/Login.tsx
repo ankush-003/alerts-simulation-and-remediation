@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner"
+
 import { toast } from "sonner";
 import credentialsLogin from "@/actions/Auth";
 
@@ -87,15 +89,16 @@ const LoginRegisterForm = () => {
         router.push("/");
       } else {
         // Invalid credentials or registration failed
+        toast.error(data.error);
+        setErrorMessage(data.message || 'An error occurred during the request' + data.error);
         toast.error(data.error || "An error occurred during the request", {
           id: toastId,
         });
         setErrorMessage(data.error || "An error occurred during the request");
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error("An error occurred during the request", { id: toastId });
-      setErrorMessage("An error occurred during the request");
+      console.error('Error:', error);
+      setErrorMessage('An error occurred during the request\n' + error);
     }
   };
 
