@@ -23,6 +23,8 @@ export const config = {
         '/alert-config',
         '/logs',
         '/about',
+        '/nodes',
+        '/realtime',
         // '/url',
         // '/url/:path*',
     ],

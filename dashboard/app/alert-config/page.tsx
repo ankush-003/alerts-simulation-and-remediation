@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useSession } from "next-auth/react"
+
+const backendUrl =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 const containerStyle: React.CSSProperties = {
   display: 'flex',
@@ -73,6 +77,7 @@ const submitButtonStyle: React.CSSProperties = {
 export default function AlertConfig() {
   let [categories, setCategories] = useState<any>([]);
   let [severities, setSeverities] = useState<any>([]);
+  const session = useSession();
 
   const handleCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const category = event.target.name;
@@ -105,7 +110,7 @@ export default function AlertConfig() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${jwtToken}`,
+          'Authorization': `Bearer ${session.data?.user.token}`,
         },
         body: JSON.stringify(alertConfig),
       });

@@ -25,7 +25,7 @@ export const authConfig: NextAuthConfig = {
         const authData = await res.json();
         // console.log(authData);
         if (!res.ok) {
-          return false;
+          return null;
         }
         const user = authData?.user;
         user.token = authData?.token;
@@ -35,7 +35,6 @@ export const authConfig: NextAuthConfig = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // console.log("jwt callback");
       if (user) {
         token.first_name = user.first_name;
         token.last_name = user.last_name;
@@ -45,14 +44,12 @@ export const authConfig: NextAuthConfig = {
       return token;
     },
     async session({ session, token }) {
-      // console.log("session callback");
       if (token) {
         session.user.first_name = token.first_name as string;
         session.user.last_name = token.last_name as string;
         session.user.email = token.email as string;
         session.user.token = token.token as string;
       }
-
       return session;
     },
   },
