@@ -63,6 +63,10 @@ func main() {
 		c.Next()
 	})
 
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"success": "Server is up"})
+	})
+
 	// Define routes
 	routes.PostRemedy(ctx, router, redis)
 	routes.AuthRoutes(router)
