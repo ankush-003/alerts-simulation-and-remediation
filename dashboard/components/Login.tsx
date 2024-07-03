@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner"
 
 import { toast } from "sonner";
 import credentialsLogin from "@/actions/Auth";
