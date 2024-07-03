@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
-	"log"
-	"time"
 	"github.com/redis/go-redis/v9"
+	"log"
+	"os"
+	"time"
 )
 
 type RedisStore struct {
 	Client *redis.Client
+	Logger *log.Logger
 }
 
 func NewRedisStore(ctx context.Context, addr string) (*RedisStore, error) {
@@ -29,6 +31,7 @@ func NewRedisStore(ctx context.Context, addr string) (*RedisStore, error) {
 
 	return &RedisStore{
 		Client: client,
+		Logger: log.New(os.Stdout, "[redis] ", log.LstdFlags),
 	}, nil
 }
 
@@ -44,16 +47,17 @@ func (r *RedisStore) PublishData(ctx context.Context, data map[string]interface{
 	}
 
 	txn := r.Client.TxPipeline()
-	
+
 	txn.XAdd(ctx, entry)
 
 	result, err := txn.Exec(ctx)
 	if err != nil {
 		txn.Discard()
+		r.Logger.Printf("Error publishing data to Redis Stream: %s\n", err)
 		return fmt.Errorf("error publishing data to Redis Stream: %s", err)
 	}
 
-	fmt.Printf("Published data to Redis Stream: %s\n", result)
+	r.Logger.Printf("Published data to Redis Stream: %s\n", result)
 	return nil
 }
 
@@ -77,7 +81,7 @@ func (r *RedisStore) PublishAlerts(ctx context.Context, alert *alerts.AlertInput
 		return err
 	}
 
-	fmt.Printf("Published alert to Redis Stream: %s\n", result)
+	r.Logger.Printf("Published alert to Redis Stream: %s\n", result)
 	return nil
 }
 
@@ -101,7 +105,7 @@ func (r *RedisStore) PublishAlertInputs(ctx context.Context, alert *alerts.Alert
 		return err
 	}
 
-	fmt.Printf("Published alert input to Redis Stream: %s\n", result)
+	r.Logger.Printf("Published alert to Redis Stream: %s\n", result)
 	return nil
 }
 
@@ -118,12 +122,16 @@ func (r *RedisStore) ConsumeData(ctx context.Context, stream string, dataChan ch
 				Block:   0,
 			}).Result()
 			if err != nil {
-				fmt.Printf("Error reading from stream: %s\n", err)
+				r.Logger.Printf("Error reading from stream: %s\n", err)
 				continue
 			}
 
 			for _, stream := range streamData {
 				for _, message := range stream.Messages {
+					r.Logger.Println("received message: %s\n", message.ID)
+					for k, v := range message.Values {
+						r.Logger.Printf("Key: %s, Value: %s\n\t", k, v)
+					}
 					dataChan <- message.Values
 					lastID = message.ID
 				}
@@ -154,7 +162,7 @@ func (r *RedisStore) ConsumeDataGroup(ctx context.Context, stream string, dataCh
 				NoAck:   true,
 			}).Result()
 			if err != nil {
-				fmt.Printf("Error reading from stream: %s\n", err)
+				r.Logger.Printf("Error reading from stream: %s\n", err)
 				continue
 			}
 
@@ -218,7 +226,7 @@ func (r *RedisStore) StoreHeartBeat(ctx context.Context, NodeID string, metrics 
 		txn.Discard()
 		return fmt.Errorf("error storing heartbeat: %s", err)
 	}
-	
+
 	logger.Printf("Published heartbeat to Redis Stream: %s\n %s\n", NodeID, values)
 
 	return nil

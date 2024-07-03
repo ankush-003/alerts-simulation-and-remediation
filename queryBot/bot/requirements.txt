@@ -1,0 +1,13 @@
+pymongo[srv]
+sentence_transformers
+redis[hiredis]
+dnspython
+langchain 
+langchain-community
+langchain-groq
+langchain-huggingface 
+langchain-mongodb
+motor
+streamlit
+nest-asyncio
+asyncio

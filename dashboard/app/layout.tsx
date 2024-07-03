@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Separator } from "@/components/ui/separator";
 import { Toaster } from "@/components/ui/sonner";
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import UserButton from "@/components/UserButton";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -50,8 +51,9 @@ export default function RootLayout({
                 </h1>
               </a>
               <div className="flex items-center space-x-2">
-                <ThemeToggle />
-              </div>
+                  <UserButton />
+                  <ThemeToggle />
+                </div>
             </div>
             <Separator />
             <div className="mt-4 p-4">

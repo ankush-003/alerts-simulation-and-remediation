@@ -21,3 +21,8 @@ go.work
 
 # Project idx conf
 # .idx
+
+# env setting script
+env-setter.sh
+# SECRETS
+secrets.yaml

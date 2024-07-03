@@ -78,7 +78,7 @@ export default function Sidebar() {
                 title: "about",
                 icon: Github,
                 variant: "default",
-                href: "https://github.com/ankush-003"
+                href: "https://github.com/ankush-003/alerts-simulation-and-remediation"
               }
             ]}
           />

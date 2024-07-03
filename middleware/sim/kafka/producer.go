@@ -6,9 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
-
 	"github.com/IBM/sarama"
-	// rule_engine "github.com/ankush-003/alerts-simulation-and-remediation/middleware/rule_engine_v2/engine"
 	"github.com/ankush-003/alerts-simulation-and-remediation/middleware/sim/alerts"
 )
 
@@ -18,10 +16,11 @@ type Producer struct {
 }
 
 func NewProducer(brokers []string, config *sarama.Config, logger *log.Logger) (*Producer, error) {
+	sarama.Logger = log.New(os.Stdout, "[kafka] ", log.LstdFlags)
 	producer, err := sarama.NewAsyncProducer(brokers, config)
 	if err != nil {
 		log.Printf("Error creating producer: %s\n", err)
-		return &Producer{}, fmt.Errorf("Error creating producer: %s", err)
+		return &Producer{}, fmt.Errorf("error creating producer: %s", err)
 	}
 
 	return &Producer{
@@ -42,8 +41,8 @@ func (p *Producer) SendAlert(topic string, alert *alerts.AlertInput) error {
 
 	alertJSON, err := json.Marshal(alert)
 	if err != nil {
-		p.Logger.Printf("Error marshalling alert: %s\n", err)
-		return fmt.Errorf("Error marshalling alert: %s", err)
+		p.Logger.Printf("error marshalling alert: %s\n", err)
+		return fmt.Errorf("error marshalling alert: %s", err)
 	}
 
 	select {
@@ -52,8 +51,8 @@ func (p *Producer) SendAlert(topic string, alert *alerts.AlertInput) error {
 		return nil
 
 	case err := <-p.Producer.Errors():
-		p.Logger.Printf("Failed to send alert: %s\n", err)
-		return fmt.Errorf("Failed to send alert: %s", err)
+		p.Logger.Printf("failed to send alert: %s\n", err)
+		return fmt.Errorf("failed to send alert: %s", err)
 
 	case <-signals:
 		p.Logger.Printf("Interrupted\n")

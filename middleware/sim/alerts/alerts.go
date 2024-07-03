@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"runtime"
 	"strconv"
 )
@@ -63,15 +64,22 @@ func fetchMetrics(url string) (float64, error) {
 }
 
 func NewRuntimeMetrics() *RuntimeMetrics {
+	prom_host := os.Getenv("PROMETHEUS_HOST")
+	if prom_host == "" {
+		prom_host = "prometheus-kube-prometheus-prometheus.default"
+	}
+	
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
-	cpu_url := "http://prometheus-sim:9090/api/v1/query?query=100%20-%20(avg(rate(node_cpu_seconds_total{mode%3D%22idle%22}[5m]))%20*%20100)"
-	ram_url := "http://prometheus-sim:9090/api/v1/query?query=100%20-%20(node_memory_MemAvailable_bytes%20%2F%20node_memory_MemTotal_bytes%20*%20100)"
-	CpuUsage, err := fetchMetrics(cpu_url)
+	// cpu_url := "http://prometheus-kube-prometheus-prometheus.default:9090/api/v1/query?query=100%20-%20(avg(rate(node_cpu_seconds_total{mode%3D%22idle%22}[5m]))%20*%20100)"
+	prom_cpu_url := fmt.Sprintf("http://%s:9090/api/v1/query?query=100%%20-%%20(avg(rate(node_cpu_seconds_total{mode%%3D%%22idle%%22}[5m]))%%20*%%20100)", prom_host)
+	// ram_url := "http://prometheus-kube-prometheus-prometheus.default:9090/api/v1/query?query=100%20-%20(node_memory_MemAvailable_bytes%20%2F%20node_memory_MemTotal_bytes%20*%20100)"
+	prom_ram_url := fmt.Sprintf("http://%s:9090/api/v1/query?query=100%%20-%%20(node_memory_MemAvailable_bytes%%20%%2F%%20node_memory_MemTotal_bytes%%20*%%20100)", prom_host)
+	CpuUsage, err := fetchMetrics(prom_cpu_url)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	RamUsage, err := fetchMetrics(ram_url)
+	RamUsage, err := fetchMetrics(prom_ram_url)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}

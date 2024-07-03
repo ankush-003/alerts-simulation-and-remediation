@@ -1,0 +1,45 @@
+# kubernetes setup config for rest-server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rest-server
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rest-server
+  template:
+    metadata:
+      labels:
+        app: rest-server
+    spec:
+      containers:
+        - name: rest-server
+          image: docker.io/ankush003/asmr-rest-server:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: MONGODB_URI
+            - name: REDIS_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: REDIS_ADDR
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rest-server
+  namespace: default
+spec:
+  selector:
+    app: rest-server
+  ports:
+  - port: 8000
+    targetPort: 8000
+                    

@@ -19,8 +19,8 @@ import (
 // context.CancelFunc is used to cancel context and its resources
 
 func Connect(uri string) (*mongo.Client, context.Context,
-	context.CancelFunc, error) {
-
+	context.CancelFunc, error,
+) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	// ctx, cancel := context.WithTimeout(context.Background())
 	// 30*time.Second)
@@ -33,8 +33,8 @@ func Connect(uri string) (*mongo.Client, context.Context,
 // closes MongoDB connection and cancel context
 
 func Close(client *mongo.Client, ctx context.Context,
-	cancel context.CancelFunc) {
-
+	cancel context.CancelFunc,
+) {
 	defer cancel()
 	defer func() {
 		if err := client.Disconnect(ctx); err != nil {
@@ -44,7 +44,7 @@ func Close(client *mongo.Client, ctx context.Context,
 }
 
 func FindUsers(category, severity string) ([]string, error) {
-	MONGO_URI := os.Getenv("MONGO_URI")
+	MONGO_URI := os.Getenv("MONGODB_URI")
 	client, ctx, cancelFunc, err := Connect(MONGO_URI)
 	if err != nil {
 		panic(err)
@@ -76,10 +76,11 @@ func FindUsers(category, severity string) ([]string, error) {
 
 	return results, nil
 }
+
 func GetRules() ([]byte, error) {
 	err := godotenv.Load()
 	if err != nil {
-		return nil, err
+		fmt.Println("Error loading .env file")
 	}
 	MONGO_URI := os.Getenv("MONGO_URI")
 	client, ctx, cancelFunc, err := Connect(MONGO_URI)

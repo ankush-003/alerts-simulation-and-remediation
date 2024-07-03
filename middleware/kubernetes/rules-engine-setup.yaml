@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rules-engine
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rules-engine
+  template:
+    metadata:
+      labels:
+        app: rules-engine
+    spec:
+      containers:
+        - name: rules-engine
+          image: docker.io/ankush003/asmr-rule-engine:latest
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: MONGODB_URI
+            - name: KAFKA_BROKER
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: KAFKA_BROKER
+            - name: KAFKA_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: KAFKA_USERNAME
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: KAFKA_PASSWORD
+            - name: REDIS_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: REDIS_ADDR
+            - name: MONGO_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: asmr-config
+                  key: MONGO_URI
+            - name: HOST
+              value: rest-server
