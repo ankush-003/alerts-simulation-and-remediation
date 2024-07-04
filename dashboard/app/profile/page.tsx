@@ -19,10 +19,10 @@ import {
 } from "@/components/ui/select";
 import { auth } from "@/auth";
 import ConfigForm from "@/components/ConfigForm";
+import AuthProvider from "@/contexts/AuthProvider";
 
 export default async function Profile() {
   const session = await auth();
-  console.log(session);
   return (
     <div className="flex flex-col justify-center items-center gap-x-4">
       <Card className="w-full">
@@ -57,7 +57,12 @@ export default async function Profile() {
           <CardDescription>Configure your alert settings</CardDescription>
         </CardHeader>
         <CardContent>
-          <ConfigForm userAlerts={session?.user?.Alert} token={session?.user?.token} />
+          <AuthProvider>
+            <ConfigForm
+              userAlerts={session?.user?.Alert}
+              token={session?.user?.token}
+            />
+          </AuthProvider>
         </CardContent>
       </Card>
     </div>

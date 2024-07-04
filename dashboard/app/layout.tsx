@@ -15,7 +15,7 @@ import AuthProvider from "@/contexts/AuthProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "dashboard",
+  title: "ASMR dashboard",
   description: "Dashboard app for alerts simulation",
 };
 

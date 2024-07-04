@@ -23,25 +23,27 @@ export const authConfig: NextAuthConfig = {
           body: JSON.stringify({ email, password }),
         });
         const authData = await res.json();
-        // console.log(authData);
         if (!res.ok) {
           return null;
         }
         const user = authData?.user;
         user.token = authData?.token;
-        console.log(user);
         return user;
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      if(trigger === "update") {
+        console.log("trigger", trigger);
+        return token.Alert = session.user.Alert;
+      }
       if (user) {
         token.first_name = user.first_name;
         token.last_name = user.last_name;
         token.email = user.email;
         token.token = user.token;
-        token.alert = user.Alert;
+        token.Alert = user.Alert;
       }
       return token;
     },
