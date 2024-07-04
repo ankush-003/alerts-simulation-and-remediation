@@ -45,3 +45,15 @@ jobs:
           file: ./middleware/sim/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/asmr-simulator:latest
+      - 
+        name: Build and push dashboard
+        uses: docker/build-push-action@v5
+        with:
+          context: ./dashboard
+          file: ./dashboard/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/asmr-dashboard:latest 
+          build-args: |
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
+            MONGO_URI=${{ secrets.MONGODB_URI }}
+            REDIS_URL=${{ secrets.REDIS_URL }}   
