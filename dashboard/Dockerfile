@@ -21,7 +21,7 @@ ENV REDIS_URL=$REDIS_URL
 # Build the application
 RUN npm run build
 
-FROM node:20-alpine3.19 as release
+FROM node:20-alpine3.19 AS release
 WORKDIR /app
 
 # Copy necessary files from the base stage

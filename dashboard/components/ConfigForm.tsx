@@ -81,9 +81,9 @@ export default function ConfigForm({
                     name={severity}
                     checked={severities.includes(severity)}
                     onChange={(e) => {
-                      setSeverities((prev) => {
+                      setSeverities((prev: any) => {
                         if (prev.includes(severity)) {
-                          return prev.filter((s) => s !== severity);
+                          return prev.filter((s:any) => s !== severity);
                         } else {
                           return [...prev, severity];
                         }
@@ -113,9 +113,9 @@ export default function ConfigForm({
                     name={category}
                     checked={categories.includes(category)}
                     onChange={(e) => {
-                      setCategories((prev) => {
+                      setCategories((prev: any) => {
                         if (prev.includes(category)) {
-                          return prev.filter((c) => c !== category);
+                          return prev.filter((c: any) => c !== category);
                         } else {
                           return [...prev, category];
                         }
