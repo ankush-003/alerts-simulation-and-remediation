@@ -69,8 +69,8 @@ func main() {
 	routes.UserRoutes(router)
 
 	// Define a simple route for testing
-	router.GET("/home", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"success": "Access granted for home"})
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"success": "Welcome to the alerts simulation and remediation server!"})
 	})
 
 	// Run the server
