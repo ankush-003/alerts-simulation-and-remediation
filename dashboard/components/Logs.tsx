@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { TriangleAlert } from 'lucide-react';
 
 const backendUrl =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
