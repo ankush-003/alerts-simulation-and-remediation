@@ -4,6 +4,7 @@
 kubectl delete -f rest-server-setup.yaml
 kubectl delete -f rules-engine-setup.yaml
 kubectl delete -f sim-setup.yaml
+kubectl delete -f dashboard-setup.yaml
 
 # Delete the secrets
 kubectl delete -f secrets.yaml
@@ -18,4 +19,4 @@ kubectl get services
 kubectl get pods
 
 # Shutdown Minikube
-minikube stop
+# minikube stop
